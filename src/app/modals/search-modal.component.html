@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Buscar destino</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <br />
+  <ion-note class="ion-padding">- Calle + Número de puerta</ion-note><br/>
+  <ion-note class="ion-padding">- Por nombre del lugar.</ion-note>
+  <br />
+  <br />
+  <ion-searchbar class="buscador" [debounce]="100" [(ngModel)]="searchTerm" (ionInput)="search()" placeholder="Buscar destino" clearInput="true">
+  </ion-searchbar>
+  <br/>
+  <div *ngIf="suggestions.length > 0">
+    <ion-list>
+      <ion-item *ngFor="let suggestion of suggestions" (click)="setDestination(suggestion)">
+        <ion-label>
+          <h6>{{ suggestion.place_name }}</h6>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+
+  </div>
+</ion-content>

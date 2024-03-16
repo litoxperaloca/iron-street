@@ -1,0 +1,20 @@
+.speedometer {
+  width: 200px;
+  height: 200px;
+  background-color: lightgray;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  margin: auto;
+
+  .needle {
+    width: 2px;
+    height: 100px;
+    background-color: red;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: bottom;
+    transform: translateX(-50%);
+  }
+}

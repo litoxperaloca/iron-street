@@ -1,26 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8" />
-  <title>Ionic App</title>
+  <meta charset="utf-8"/>
+  <title>Iron Street</title>
+  <base href="/"/>
+  <meta name="color-scheme" content="dark"/>
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="msapplication-tap-highlight" content="no"/>
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png"/>
+  <link rel="apple-touch-icon" href="assets/icon/apple-touch-icon.png"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.3.0/mapbox-gl-directions.css" type="text/css"/>
+  <link href="https://unpkg.com/threebox-plugin/dist/threebox.css" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1976d2" />
+  <style>
+    .map-button:hover circle {
+      fill: #4264FB;
+    }
 
-  <base href="/" />
+    .map-button:hover path {
+      stroke: #fff;
+    }
 
-  <meta name="color-scheme" content="light dark" />
-  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="format-detection" content="telephone=no" />
-  <meta name="msapplication-tap-highlight" content="no" />
+    .map-button:active circle {
+      fill: #4264FB;
+    }
 
-  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+    .map-button:active path {
+      stroke: #fff;
+    }
 
-  <!-- add to homescreen for ios -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    .map-button.selected circle {
+      fill: #4264FB;
+    }
+
+    .map-button.selected path {
+      stroke: #fff;
+    }
+
+    .map-button {
+      display: flex;
+      border-radius: 8px;
+      justify-content: center;
+      transition: fill 2s ease, stroke 2s ease;
+    }
+
+  .map-control-button-right-vertical {
+      margin-bottom: 15px;
+    }
+
+    .map-controls {
+      grid-column-gap: 10px;
+      border-radius: 32px;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 6px;
+      display: flex;
+      position: absolute;
+      z-index: 10;
+      bottom: auto;
+      left: 13px;
+      right: auto;
+      box-shadow: 0 0 4px rgba(21, 45, 72, .25)
+    }
+  </style>
 </head>
-
-<body>
+<body class="dark">
   <app-root></app-root>
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>
-
 </html>
