@@ -1,14 +1,14 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'uy.com.ironplatform.ironstreet',
   appName: 'IronStreet',
   webDir: 'www',
   server: {
     androidScheme: 'https'
   },
   "plugins": {
-    "CapacitorHttp": {
+    CapacitorHttp: {
       enabled: true,
     },
     "SplashScreen": {

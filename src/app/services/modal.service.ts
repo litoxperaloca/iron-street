@@ -28,8 +28,8 @@ export class ModalService {
       componentProps: componentRef.props || {},
       cssClass: componentRef.cssClass,
       breakpoints: componentRef.breakpoints || [0, 0.5, 0.75, 1],
-      initialBreakpoint: componentRef.initialBreakpoint || 0.5,
-      backdropBreakpoint: componentRef.backdropBreakpoint || 0.75,
+      initialBreakpoint: componentRef.initialBreakpoint || 1,
+      backdropBreakpoint: componentRef.backdropBreakpoint || 1,
     });
 
     this.setModal(modal);

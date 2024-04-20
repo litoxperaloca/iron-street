@@ -1,0 +1,150 @@
+// Importing variables for theme consistency
+@import 'src/theme/variables.scss';
+
+.search-modal {
+  ion-header {
+    --background: var(--background-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  ion-toolbar {
+    --background: var(--background-color);
+    --color: var(--text-color);
+  }
+
+  ion-title {
+    font-weight: bold;
+  }
+
+  ion-content {
+    --background: var(--background-color);
+    --color: var(--text-color);
+    padding: 15px;
+  }
+
+  // Search input styling
+  .search-input {
+    background-color: var(--accent-color-light);
+    border-radius: var(--modal-border-radius);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 10px 15px;
+    margin-bottom: 20px;
+
+    &::placeholder {
+      color: var(--accent-color-dark);
+    }
+  }
+
+  // Search results list
+  .search-results {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    .result-item {
+      background-color: var(--accent-color-light);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px;
+      color: var(--text-color);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: var(--accent-color);
+        color: var(--background-color);
+      }
+    }
+  }
+
+  // No results found message
+  .no-results {
+    text-align: center;
+    color: var(--text-color);
+    padding: 20px;
+  }
+}
+
+// Responsive adjustments for the search modal
+@media (min-width: 768px) {
+  .search-modal {
+    ion-content {
+      padding: 20px;
+    }
+
+    .search-input {
+      margin-bottom: 25px;
+    }
+
+    .search-results .result-item {
+      padding: 15px;
+    }
+  }
+}
+ion-header ion-toolbar{
+    padding: 20px !important;
+}
+
+ion-segment-button {
+    min-width: auto !important;
+}
+
+
+.popover-viewport #background-content{
+
+}
+
+
+ion-fab.md.fab-horizontal-end.fab-vertical-bottom.hydrated{
+    bottom: 0px;
+    left: 0px;
+    height: 90px;
+}
+
+
+searchbar-input-container{
+  background: #565555;
+}
+
+.list-md {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background: var(--ion-item-background, var(--ion-background-color, #fff));
+}
+
+
+ion-item.suggestion-item{
+      width: 100%;
+    color: white;
+}
+ion-icon{
+    color: white;
+}
+
+.item.sc-ion-label-md-h, .item .sc-ion-label-md-h {
+    --color: initial;
+    display: block;
+    color: var(--color);
+    font-family: var(--ion-font-family, inherit);
+    font-size: inherit;
+    text-overflow: ellipsis;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.item ion-label h3 {
+
+    font-size: 16pt !important;
+    font-weight: normal !important;
+    line-height: normal !important;
+}

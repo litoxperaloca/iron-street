@@ -1,0 +1,115 @@
+
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">Buscar destino, lugares, etc.</ion-title>
+    </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <br />
+      <!-- Segment Selector with Icons -->
+      <ion-segment (ionChange)="segmentChanged($event)" value="buscar" class="segment-selector">
+        <ion-segment-button value="buscar">
+          <ion-icon name="search-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="cercaMio">
+          <ion-icon name="locate-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="lugares">
+          <ion-icon name="globe-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="historial">
+          <ion-icon name="time-outline"></ion-icon>
+        </ion-segment-button>
+        <ion-segment-button value="favoritos">
+          <ion-icon name="heart-outline"></ion-icon>
+        </ion-segment-button>
+      </ion-segment>
+
+      <!-- Buscar Segment with Tooltip Instructions -->
+      <div *ngIf="currentSegment === 'buscar'" class="segment-content">
+        <h2>¿A dónde vamos?</h2>
+
+          <ion-searchbar
+            debounce="500"
+            placeholder="Buscar dirección, lugar, etc."
+            [(ngModel)]="searchTerm"
+            (ionInput)="searchAWS('strContains')"
+            color="search-bar dark left">
+          </ion-searchbar>
+
+          <!-- Tooltip Trigger Button -->
+          <ion-item lines="none" id="search-instructions" class="tooltip-button">
+            <ion-button fill="clear" size="small" (click)="toggleTooltip()" class="tooltip-button">
+              <ion-icon slot="icon-only" name="help-circle-outline" class="help-icon"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+        <!-- Search Instructions Tooltip -->
+        <ion-popover trigger="search-instructions" showBackdrop="false" side="bottom" alignment="start">
+          <ng-template>
+            <ion-content class="tooltip-content">
+              <p>Detalles de búsqueda:</p>
+              <ul>
+                <li>Calle + Número de puerta</li>
+                <li>Intersección</li>
+                <li>Nombre del lugar</li>
+              </ul>
+            </ion-content>
+          </ng-template>
+        </ion-popover>
+
+        <!-- Suggestions and Loading Logic Remains the Same -->
+        <div *ngIf="isLoading">
+          <ion-spinner name="crescent"></ion-spinner>
+        </div>
+        <div *ngIf="!isLoading">
+          <ion-list *ngIf="suggestions.length > 0; else noSuggestions">
+            <ion-item *ngFor="let suggestion of suggestions; let i = index"
+            (click)="setDestinationFromPlace(suggestion)"
+            class="suggestion-item">
+              <ion-icon [name]="getSuggestionIcon(suggestion)" slot="start"></ion-icon>
+              <ion-label>
+                <h3>{{ suggestion.label }}</h3>
+                <p>{{ suggestion.municipality }}, {{ suggestion.country }}</p>
+              </ion-label>
+              <ion-icon name="location-outline" slot="end"></ion-icon>
+            </ion-item>
+          </ion-list>
+
+          <ng-template #noSuggestions>
+            <ion-text color="medium" class="no-suggestions-text" *ngIf="searchTerm.length > 0 && suggestions.length > 0">
+              <p>No se encontraron sugerencias.</p>
+            </ion-text>
+          </ng-template>
+
+        </div>
+      </div>
+
+      <!-- Placeholder Content for Other Segments -->
+      <div *ngIf="currentSegment === 'cercaMio'" class="segment-content">
+
+        <h2>Cerca Mío</h2>
+        <!-- Additional content for Cerca Mío -->
+      </div>
+
+      <div *ngIf="currentSegment === 'lugares'" class="segment-content">
+        <h2>Lugares</h2>
+        <!-- Additional content for Lugares -->
+      </div>
+
+      <div *ngIf="currentSegment === 'historial'" class="segment-content">
+        <h2>Historial</h2>
+        <!-- Additional content for Historial -->
+      </div>
+
+      <div *ngIf="currentSegment === 'favoritos'" class="segment-content">
+        <h2>Favoritos</h2>
+        <!-- Additional content for Favoritos -->
+      </div>
+    </ion-content>

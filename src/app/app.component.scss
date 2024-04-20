@@ -1,119 +1,108 @@
-ion-menu ion-content {
-  --background: var(--ion-item-background, var(--ion-background-color, #fff));
+/* General Styles for ion-menu */
+ion-menu {
+  ion-content {
+    --background: var(--ion-item-background, var(--ion-background-color, #fff));
+  }
+
+  ion-list {
+    padding: 20px 0;
+  }
+
+  ion-note {
+    display: inline-block;
+    font-size: 16px;
+    color: var(--ion-color-medium-shade);
+    line-height: 24px;
+    margin-bottom: 20px; /* Default margin-bottom for both platforms */
+  }
+
+  ion-item {
+    --padding-start: 10px; /* Default padding for MD, overridden for iOS below */
+    --padding-end: 10px;
+    --min-height: 50px; /* Ensures consistent item height */
+    border-radius: 4px;
+    font-weight: 500; /* Default font-weight for labels */
+
+    &.selected {
+      --background: rgba(var(--ion-color-primary-rgb), 0.14);
+      --color: var(--ion-color-primary);
+
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
+    }
+
+    ion-icon {
+      font-size: 24px; /* Default font-size for iOS, consider if adjustment needed for MD */
+      color: #616e7e; /* Default icon color, overridden for iOS below */
+    }
+
+    ion-label {
+      font-weight: 500;
+    }
+  }
 }
 
-ion-menu.md ion-content {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
+/* Platform-specific adjustments */
+ion-menu.md {
+  ion-content {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --padding-top: 20px;
+    --padding-bottom: 20px;
+  }
+
+  ion-list-header,
+  ion-note {
+    padding-left: 10px;
+  }
+
+  ion-list#inbox-list {
+    border-bottom: 1px solid var(--ion-color-step-150, #d7d8da);
+
+    ion-list-header {
+      font-size: 22px;
+      font-weight: 600;
+      min-height: 20px;
+    }
+  }
+
+  ion-list#labels-list ion-list-header {
+    font-size: 16px;
+    margin-bottom: 18px;
+    color: #757575;
+    min-height: 26px;
+  }
 }
 
-ion-menu.md ion-list {
-  padding: 20px 0;
-}
+ion-menu.ios {
+  ion-content {
+    --padding-bottom: 20px;
+  }
 
-ion-menu.md ion-note {
-  margin-bottom: 30px;
-}
+  ion-list {
+    padding: 20px 0 0 0;
+  }
 
-ion-menu.md ion-list-header,
-ion-menu.md ion-note {
-  padding-left: 10px;
-}
+  ion-item {
+    --padding-start: 16px; /* iOS specific padding */
+    --padding-end: 16px;
+    ion-icon {
+      color: #73849a; /* iOS specific icon color */
+    }
+  }
 
-ion-menu.md ion-list#inbox-list {
-  border-bottom: 1px solid var(--ion-color-step-150, #d7d8da);
-}
+  ion-list-header,
+  ion-note {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 
-ion-menu.md ion-list#inbox-list ion-list-header {
-  font-size: 22px;
-  font-weight: 600;
+  ion-list#labels-list ion-list-header {
+    margin-bottom: 8px;
+  }
 
-  min-height: 20px;
-}
-
-ion-menu.md ion-list#labels-list ion-list-header {
-  font-size: 16px;
-
-  margin-bottom: 18px;
-
-  color: #757575;
-
-  min-height: 26px;
-}
-
-ion-menu.md ion-item {
-  --padding-start: 10px;
-  --padding-end: 10px;
-  border-radius: 4px;
-}
-
-ion-menu.md ion-item.selected {
-  --background: rgba(var(--ion-color-primary-rgb), 0.14);
-}
-
-ion-menu.md ion-item.selected ion-icon {
-  color: var(--ion-color-primary);
-}
-
-ion-menu.md ion-item ion-icon {
-  color: #616e7e;
-}
-
-ion-menu.md ion-item ion-label {
-  font-weight: 500;
-}
-
-ion-menu.ios ion-content {
-  --padding-bottom: 20px;
-}
-
-ion-menu.ios ion-list {
-  padding: 20px 0 0 0;
-}
-
-ion-menu.ios ion-note {
-  line-height: 24px;
-  margin-bottom: 20px;
-}
-
-ion-menu.ios ion-item {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --min-height: 50px;
-}
-
-ion-menu.ios ion-item.selected ion-icon {
-  color: var(--ion-color-primary);
-}
-
-ion-menu.ios ion-item ion-icon {
-  font-size: 24px;
-  color: #73849a;
-}
-
-ion-menu.ios ion-list#labels-list ion-list-header {
-  margin-bottom: 8px;
-}
-
-ion-menu.ios ion-list-header,
-ion-menu.ios ion-note {
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-ion-menu.ios ion-note {
-  margin-bottom: 8px;
-}
-
-ion-note {
-  display: inline-block;
-  font-size: 16px;
-
-  color: var(--ion-color-medium-shade);
-}
-
-ion-item.selected {
-  --color: var(--ion-color-primary);
+  ion-note {
+    margin-bottom: 8px;
+  }
 }

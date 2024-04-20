@@ -1,0 +1,95 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Iron Street</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!--<ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Iron Street</ion-title>
+    </ion-toolbar>
+  </ion-header>-->
+
+  <div id="container">
+      <div id="mapbox" class="mapboxgl-map"></div>
+
+      <!--<div class="speed-indicators">
+        <div id="maxSpeedDiv">{{ getMaxSpeed() }} km/h</div>
+        <div id="speedometer">{{ getSpeed() }} km/h</div>
+      </div>-->
+
+      <div id="mapFabIcons">
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+          <ion-fab-button size="small" (click)="openModal('Search')">
+            <ion-icon name="search-sharp"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button size="small" (click)="setCameraMode('POV')">
+            <ion-icon name="navigate-circle-sharp"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button size="small" (click)="setCameraMode('SKY')">
+            <ion-icon name="analytics-sharp"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button size="small" (click)="openModal('MapSettings')">
+            <ion-icon name="map-sharp"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      </div>
+
+      <div id="tripDetailsContainer">
+            <ion-icon name="map-sharp" (click)="cancelTrip()"></ion-icon>
+
+            <h4 id="tripDestination">{{tripDestination}}</h4>
+            <!--<h5 id="tripDestinationAddress">{{tripDestinationAddress}}</h5>-->
+            <div id="tripDuration">
+              <ion-icon name="map-sharp"></ion-icon>
+              {{tripDuration}} minutos
+            </div>
+            <ion-button  class="almost-half" (click)="startTrip()">Vamos!</ion-button>
+            <div id="tripDistance">
+              <ion-icon name="map-sharp"></ion-icon>
+              {{tripDistance}} km
+            </div>
+      </div>
+      <div id="tripStepDetails">
+          <h3 id="currentManeuver">{{currentManeuver}}</h3>
+          <div id="stepIcon" class="directions-icon-{{currentManeuvreIcon}}"></div>
+      </div>
+
+
+
+      <div id="tripProgress" style="display: none !important">
+        <div id="ETA">{{eta}}</div>
+        <ion-progress-bar value="0.5"></ion-progress-bar>
+        <div id="DTA">{{dta}}</div>
+      </div>
+
+
+
+    <ion-card class="card_left" id="card_left">
+      <ion-card-header class="max">
+        {{ currentMaxSpeed }} <span class="smallSize">km/h</span>
+      </ion-card-header>
+      <ion-card-header class="current">
+        {{ currentSpeed }} <span class="smallSize">km/h</span>
+      </ion-card-header>
+    </ion-card>
+
+    <!--<ion-card class="card_right" id="card_right">
+      <ion-card-content>
+        <div class="speedometer">
+          <div class="needle" [style.transform]="'rotate(' + currentSpeedometerNeedleRotation + 'deg)'"></div>
+        </div>
+      </ion-card-content>
+    </ion-card>-->
+
+    <div id="geolocating">
+      <h4>Buscando ubicación...</h4>
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  </div>
+</ion-content>
+

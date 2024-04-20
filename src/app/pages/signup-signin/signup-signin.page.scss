@@ -1,0 +1,60 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+ion-content {
+  --background: #121212; // Dark background
+  font-family: 'Roboto', sans-serif;
+}
+
+.logo-container img {
+  display: block;
+  margin: 0 auto;
+  max-width: 120px;
+  padding-top: 2rem;
+}
+
+ion-segment {
+  margin: 20px 0;
+}
+
+ion-item {
+  --background: #1e1e1e;
+  --placeholder-color: #ccc;
+  --color: #fff;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+ion-label {
+  --color: #b3b3b3;
+}
+
+ion-input {
+  --color: #fff;
+}
+
+ion-button {
+  margin: 8px 0;
+  --background: #673ab7; // Dark purple
+  --background-activated: #5e35b1; // Slightly darker purple on click
+  --background-focused: #5e35b1; // Slightly darker purple on focus
+  --border-radius: 8px;
+}
+
+ion-button[color="danger"] {
+  --background: #7b1fa2; // A different shade for Google button
+}
+
+ion-button[color="primary"] {
+  --background: #303f9f; // A different shade for Facebook button
+}
+
+.error-message {
+  color: #ff3d71; // Bright color for error messages
+  background-color: #1e1e1e; // Dark background for contrast
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}

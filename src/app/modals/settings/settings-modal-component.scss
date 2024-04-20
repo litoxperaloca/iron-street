@@ -1,0 +1,76 @@
+@import 'src/theme/variables.scss';
+
+
+.settings-modal {
+  // Modal content general styling
+  ion-content {
+    --background: var(--background-color);
+    --color: var(--text-color);
+  }
+
+  // Header styling
+  ion-header {
+    --background: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  ion-toolbar {
+    --background: var(--background-color);
+    color: var(--text-color);
+  }
+
+  ion-title {
+    font-weight: bold;
+  }
+
+  // Setting item styling
+  .setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+
+    ion-label {
+      color: var(--text-color);
+    }
+
+    ion-toggle {
+      --background-checked: var(--accent-color);
+      --handle-background: var(--text-color);
+    }
+  }
+
+  // For segments within settings to group related options
+  ion-segment {
+    --background-color: var(--accent-color-dark);
+    --indicator-color: var(--accent-color);
+    --color-checked: var(--text-color);
+  }
+
+  // Custom button for actions within settings
+  .settings-button {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    margin: 20px;
+    border-radius: 4px;
+    text-align: center;
+    padding: 10px;
+
+    &:hover {
+      background-color: var(--accent-color-light);
+    }
+  }
+}
+
+// Responsive design for larger screens
+@media (min-width: 768px) {
+  .settings-modal {
+    max-width: 500px; // Constrain width for larger screens
+    margin: 0 auto; // Center the modal on larger screens
+
+    .setting-item {
+      padding: 20px; // Increase padding for larger displays
+    }
+  }
+}

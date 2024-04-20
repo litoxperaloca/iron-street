@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
+import { ThemeService } from './services/theme-service.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
+
   public appPages = [
     { title: 'Mapa', url: '/home/map', icon: 'map' },
-    { title: 'Registrarse / Login', url: '/folder/signin', icon: 'paper-plane' },
+    { title: 'Registrarse / Login', url: '/signin', icon: 'paper-plane' },
     { title: 'Favoritos', url: '/folder/favorites', icon: 'heart' },
     { title: 'Historial', url: '/folder/history', icon: 'archive' },
     { title: 'Contacto', url: '/folder/contact', icon: 'trash' },
@@ -18,5 +20,5 @@ export class AppComponent {
 
   ];
   public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
-  constructor() { }
+  constructor(private themeService: ThemeService) { this.themeService.applyTheme(); }
 }

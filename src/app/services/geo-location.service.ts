@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Geolocation, GeolocationPosition } from '@capacitor/geolocation';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import * as turf from '@turf/turf';
+import { Point } from 'geojson';
 import { environment } from 'src/environments/environment';
 import { MapService } from './map.service';
 import { SpeedService } from './speed.service';
@@ -11,21 +12,20 @@ export class GeoLocationService {
   private watchID!: string | null;
   private currentPosition: any = null;
   private lastCurrentLocation: any;
-  private firstDataLoaded: boolean = false;
   private lastBboxCalculatedForDataIncome: any = null;
 
-  getLastCurrentLocation() {
+  getLastCurrentLocation(): Position {
     return this.lastCurrentLocation;
   }
 
-  setLastCurrentPosition(position: GeolocationPosition) {
+  setLastCurrentPosition(position: Position) {
     this.currentPosition = position;
     this.lastCurrentLocation = position;
   }
 
   constructor(private mapService: MapService, private speedService: SpeedService) { }
 
-  getLastValidCurrentPosition(): GeolocationPosition {
+  getLastValidCurrentPosition(): Position {
     return this.currentPosition;
   }
 
@@ -41,7 +41,6 @@ export class GeoLocationService {
         enableHighAccuracy: true,
       };
       const coordinates = await Geolocation.getCurrentPosition(options);
-      //console.log('Current position:', coordinates);
       return coordinates;
     } catch (e) {
       console.error('Error getting location', e);
@@ -62,10 +61,6 @@ export class GeoLocationService {
         return;
       }
       //console.log('Location observer started');
-
-      // Llama a MapService para actualizar la ubicación en el mapa
-      // Asumiendo que MapService tiene un método updateLocation
-      // mapService.updateLocation(position.coords.latitude, position.coords.longitude);
     });
   }
 
@@ -75,7 +70,7 @@ export class GeoLocationService {
   }
 
   // Nuevo método para observar cambios en la posición
-  async watchPosition(callback: (position: GeolocationPosition | null, error?: any) => void) {
+  async watchPosition(callback: (position: Position | null, error?: any) => void) {
     const options = {
       maximumAge: 4000,
       timeout: 10000,
@@ -97,39 +92,10 @@ export class GeoLocationService {
     if (this.watchID != null) Geolocation.clearWatch({ id: this.watchID });
   }
 
-  keepDataUpdated(position: GeolocationPosition) {
-    /*if (!(window as any).geoLocationService.firstDataLoaded) {
-      (window as any).geoLocationService.speedService.getNearMaxSpeedData(position, (window as any).speedService);
-      (window as any).geoLocationService.firstDataLoaded = true;
-    } else if ((window as any).geoLocationService.userNearDataBboxLimits(position,
-      (window as any).geoLocationService.lastBboxCalculatedForDataIncome,
-      environment.osmApiConfig.minimunDistanceToBboxContainerDataBorder
-    )) {
-      (window as any).geoLocationService.speedService.getNearMaxSpeedData(position, (window as any).speedService);
-    }*/
-
-  }
-
-  userNearDataBboxLimits(position: GeolocationPosition, bbox: [[number, number], [number, number]], updateDataDistance: number) {
-    // Convert user's position to a Turf point for spatial operations
-    const userLocation = turf.point([position.coords.longitude, position.coords.latitude]);
-
-    // Generate the four corners of the bbox
-    //const bboxPolygon = turf.bboxPolygon(bbox);
-
-    // Calculate distance from the user's location to each of the bbox edges
-    let isNear = false;
-    const distance = this.calculateDistanceToNearestBboxEdge(userLocation.geometry, bbox);
-    if (distance <= updateDataDistance) {
-      isNear = true;
-    }
-
-    return isNear;
-  }
 
 
 
-  calculateDistanceToNearestBboxEdge(userLocation: turf.Point, bbox: [[number, number], [number, number]]) {
+  calculateDistanceToNearestBboxEdge(userLocation: Point, bbox: [[number, number], [number, number]]) {
     const [[minLongitude, minLatitude], [maxLongitude, maxLatitude]] = bbox;
 
     // Create points for bbox corners
@@ -152,7 +118,7 @@ export class GeoLocationService {
   }
 
 
-  createUserBoundingBox(position: GeolocationPosition): [[number, number], [number, number]] {
+  createUserBoundingBox(position: Position): [[number, number], [number, number]] {
     //console.log(position)
     let center: { latitude: number, longitude: number } = { latitude: 0, longitude: 0 };
     if (!position) {
@@ -199,4 +165,9 @@ export class GeoLocationService {
     return angle * 0.017453292519943295; // angle * Math.PI / 180
   }
 
+
+  getCurrentPositionScreenBox(): [[number, number], [number, number]] {
+    const userPos: Position = this.getLastCurrentLocation();
+    return this.createBoundingBox(userPos.coords, 2);
+  }
 }

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpResponse } from '@capacitor/core';
-import { Geolocation, GeolocationPosition, Position } from '@capacitor/geolocation';
+import { Geolocation, Position } from '@capacitor/geolocation';
+import * as turf from '@turf/turf';
+import { MapboxGeoJSONFeature } from 'mapbox-gl';
+import { HomePage } from '../pages/home/home.page';
 import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service';
 import { OsmService } from './osm.service';
@@ -24,59 +26,9 @@ export class SpeedService {
 
   }
 
-  addMaxSpeedDataToMap(osmApiResponse: any) {
-    // Step 1: Filter out only 'way' elements
-    const wayElements = osmApiResponse.elements.filter((el: any) => el.type === 'way' && el.tags.maxspeed);
-    // Step 3: Add the data as a source to the Mapbox map
-    let features: any[] = [];
-    // Step 2: Extract relevant data and prepare Mapbox layer data
-    wayElements.forEach((way: any) => { // Explicitly type 'way' as 'any'
-      const coordinates = way.geometry.map((geom: any) => [geom.lon, geom.lat]);
-      const maxSpeed = way.tags.maxspeed;
-
-      // Create a GeoJSON Feature for each way
-      const feature = {
-        type: 'Feature',
-        properties: {
-          id: way.id,
-          maxSpeed: maxSpeed,
-          name: way.tags.name
-        },
-        geometry: {
-          type: 'LineString',
-          coordinates: coordinates
-        }
-      };
-
-      features.push(feature);
-
-    });
-    //console.log(features);
-    ((window as any).mapService as MapService).setMaxspeedDataSourceAndLayer(features);
-    ((window as any).speedService as SpeedService).dataLoaded = true;
-
-    //this.findNearestFeatureAndMaxSpeed((window as any).geoLocationService.getLastCurrentLocation().coords, this);
-  }
-
-
   getMaxSpeedForCurrentLocation() {
     // TODO: Implement getMaxSpeedForCurrentLocation function
 
-  }
-
-  async getNearMaxSpeedData(position: GeolocationPosition) {
-    //console.log('Getting near max speed data for position:', position);
-    let userCenteredBbox: [[number, number], [number, number]] = ((window as any).geoLocationService as GeoLocationService).createUserBoundingBox(position);
-    if (userCenteredBbox[0][0] != 0) {
-      //console.log("Buscando datos de velocidad en OSM");
-      await ((window as any).osmService as OsmService).getMaxSpeedData(userCenteredBbox).then((response: HttpResponse) => {
-        //console.log(response);
-        const maxSpeedData: any = response.data;
-        //console.log('Max speed data:', maxSpeedData);
-        ((window as any).speedService as SpeedService).addMaxSpeedDataToMap(maxSpeedData);
-
-      }, error => { });
-    }
   }
 
   async getCurrentSpeedAsPromise(): Promise<number> {
@@ -104,19 +56,7 @@ export class SpeedService {
     return speed * 3.6; // Convert speed from meters per second to kilometers per hour
   }
 
-  /*async getMaxSpeed(latitude: number, longitude: number): Promise<number> {
-    const bbox = this.calculateBbox(latitude, longitude, 50); // Calculate bbox for 50km radius
-    try {
-      const maxSpeedData = await this.osmService.getMaxSpeedData(bbox).toPromise();
-      // Extract and process max speed data to get the maximum speed limit
-      const maxSpeed = this.extractMaxSpeed(maxSpeedData);
-      return maxSpeed;
-    } catch (error) {
-      console.error('Error fetching max speed data:', error);
-      // Return a default max speed or handle the error as needed
-      return 45; // Default max speed (assuming 50 km/h)
-    }
-  }*/
+
 
   calculateBbox(latitude: number, longitude: number, radius: number): number[][] {
     // Calculate bounding box (bbox) for a given radius around the user's location
@@ -130,11 +70,71 @@ export class SpeedService {
     return bbox;
   }
 
-  extractMaxSpeed(maxSpeedData: any): number {
-    // Extract and process max speed data to get the maximum speed limit
-    // Modify this function according to the format of the data returned by getMaxSpeedData()
-    // For example, if maxSpeedData is a JSON object with speed limits, you would parse it and extract the max speed
-    // For now, returning a default value of 50 km/h
-    return 50;
+  private locationInterval: any; // Store the interval ID for location monitoring
+
+  startWatchingSpeedLimit(): void {
+    this.monitorLocation(); // Start monitoring user's location
   }
+
+  async monitorLocation(): Promise<void> {
+    // Periodically check user's location and update current step
+    const self = this;
+    this.locationInterval = setInterval(() => {
+
+
+      const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
+      self.userStreet(userPosition);
+      if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
+        ((window as any).homePage as HomePage).currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+      }
+    }, 3000); // Check every 5 seconds (adjust interval as needed)
+  }
+
+
+
+
+
+  async stopWatchingSpeedLimit(): Promise<void> {
+    if (this.locationInterval) clearInterval(this.locationInterval);
+  }
+
+
+  userStreet(position: Position) {
+    const map = ((window as any).mapService as MapService).getMap();
+
+    if (!position || !map.getLayer("maxspeedDataLayer")) {
+      ((window as any).mapService as MapService).userCurrentStreet = null;
+    } else {
+      let longitude = position.coords.longitude;
+      let latitude = position.coords.latitude;
+      // Convert the user's coordinates to a point
+      const coordinates = [longitude, latitude];
+      const userPoint = turf.point(coordinates);
+      const bbox = ((window as any).geoLocationService as GeoLocationService).createUserBoundingBox(position);
+      // Query the rendered line features at the user's location
+      const features = map.queryRenderedFeatures(undefined, { layers: ["maxspeedDataLayer"] })
+      if (features.length > 0) {
+        var closestFeature: MapboxGeoJSONFeature | null = null;
+        var minDistance = Number.MAX_VALUE;
+        // Iterate through all line features to find the closest one
+        features.forEach(feature => {
+          if (feature.layer.id === 'maxspeedDataLayer' && feature.geometry.type === 'LineString') {
+            //console.log("Feature:", feature);
+            const line = turf.lineString(feature.geometry.coordinates);
+            const distance = turf.pointToLineDistance(userPoint, line);
+            const pointInLine = turf.nearestPointOnLine(line, userPoint);
+            const distancePoints: number = turf.distance(pointInLine, userPoint, { units: 'kilometers' });
+
+            if (distancePoints < minDistance && distancePoints < 1) {
+              minDistance = distancePoints;
+              closestFeature = feature;
+            }
+          }
+        });
+
+        ((window as any).mapService as MapService).userCurrentStreet = closestFeature;
+      }
+    }
+  }
+
 }

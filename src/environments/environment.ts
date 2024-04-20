@@ -9,18 +9,34 @@ export const environment = {
     maxspeedsQuerySelector: '[out:json][timeout:300];nwr["maxspeed"]',
     outputQueryGeom: 'out geom;',
   },
+  mapboxUserMarkerOptions: {
+    positionOptions: {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 6000 /* 6 sec */
+    },
+    fitBoundsOptions: {
+      maxZoom: 15
+    },
+    trackUserLocation: false,
+    showAccuracyCircle: false,
+    showUserLocation: true,
+    showUserHeading: true
+  },
   mapboxMapConfig: {
     accessToken: 'pk.eyJ1IjoibGl0b3hwZXJhbG9jYSIsImEiOiJjbGc3ZW95OGQwNXRtM2V0bHM3ZTcwajVmIn0.rZXdOoZoUFuJ2K4eFyxamg',
     container: 'mapbox',
-    style: "mapbox://styles/mapbox/standard",
-    zoom: 16.2,
-    minZoom: 5,
-    center: [-56.147969, -34.88154],
-    pitch: 62,
+    style: "mapbox://styles/litoxperaloca/clun8375j04km01nwcqa93oq7",
+    zoom: 0,
+    minZoom: 0,
+    center: [0, 0],
+    pitch: 0,
     bearing: 0,
     hash: false,
     performanceMetricsCollection: false,
     attributionControl: true,
+    maxZoom: 20,
+    maxPitch: 55,
     projection: 'globe'
   },
   mapboxStylesURLs: {
@@ -117,7 +133,9 @@ export const environment = {
       inputs: true,
       profileSwitcher: false
     },
-    zoom: 16.2,
+    zoom: 15,
+    routePadding: 150,
+    congestion: true,
     flyTo: true,
     geocoder: undefined
   },

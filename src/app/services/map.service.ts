@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as turf from '@turf/turf';
-import { Point, Position } from 'geojson';
-import mapboxgl, { GeoJSONSource, LngLatLike, MapboxGeoJSONFeature } from 'mapbox-gl';
-
+import mapboxgl, { MapboxGeoJSONFeature } from 'mapbox-gl';
 //import 'mapbox-gl/dist/mapbox-gl.css';
-import { GeolocationPosition } from '@capacitor/geolocation';
+import { Position } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { GeoLocationService } from './geo-location.service';
 import { SpeedService } from './speed.service';
@@ -13,6 +11,10 @@ import { WindowService } from "./window.service";
 
 //import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 //import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+import { Place } from '@aws-amplify/geo';
+import { HomePage } from '../pages/home/home.page';
+import { CameraService } from './camera.service';
+import { TripService } from './trip.service';
 import { VoiceService } from './voice.service.spec';
 
 
@@ -34,8 +36,17 @@ export class MapService {
   private routeSourceId!: string;
   private routeLayerId!: string;
   destination!: string;
-  userCurrentStreet!: MapboxGeoJSONFeature | null;
+  destinationAddress!: string;
+  userCurrentStreet: MapboxGeoJSONFeature | null = null;
   isTripStarted: boolean = false;
+  actualRoute!: any;
+  currentStep: number = 0;
+  alreadySpoken: boolean = false;
+  sourcesAndLayers: any = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
+  isStandardMap: boolean = false;
+  isRotating = true; // Flag to control rotation
+  light: string = "dusk";
+  userMarkerInstance: mapboxgl.Marker | null = null;
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
@@ -45,7 +56,7 @@ export class MapService {
   }
 
   initMap() {
-
+    this.isRotating = true;
     //Inicializo mapa
     mapboxgl.accessToken = environment.mapboxMapConfig.accessToken;
 
@@ -58,20 +69,12 @@ export class MapService {
       pitch: environment.mapboxMapConfig.pitch,
       bearing: environment.mapboxMapConfig.bearing,
       hash: environment.mapboxMapConfig.hash,
-      attributionControl: environment.mapboxMapConfig.attributionControl
+      attributionControl: environment.mapboxMapConfig.attributionControl,
+      maxPitch: environment.mapboxMapConfig.maxPitch,
+      maxZoom: environment.mapboxMapConfig.maxZoom,
+      projection: 'globe' as any
     });
 
-
-
-    /*const geocoder = new MapboxGeocoder({
-      accessToken: environment.mapboxControlSearchConfig.accessToken,
-      mapboxgl: mapboxgl,
-      countries: environment.mapboxControlSearchConfig.countries,
-      language: environment.mapboxControlSearchConfig.language,
-      placeholder: environment.mapboxControlSearchConfig.placeholder,
-      autocomplete: environment.mapboxControlSearchConfig.autocomplete
-    });
-    map.addControl(geocoder, 'top-left');*/
 
     const MapboxDirections: any = require('@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions');
     const directions: any = new MapboxDirections(environment.mapboxControlDirectionsConfig);
@@ -82,40 +85,49 @@ export class MapService {
     );
 
     this.mapControls.directions = directions;
-    //Guardo Referencia
 
     this.mapbox = map;
-    this.userLocationMarkerPrerequisitesOk = false;
-
 
 
 
     map.on('load', () => {
       map.resize();
       this.windowService.setValueIntoProperty('map', map);
-      this.geoLocationService.startLocationObserver();
-      //map.geoLocationService.startOrientationObserver();
-    });
+      this.setDefaults();
+      this.mapControls.directions.on('route', (event: any) => {
+        //console.log(event);
+        ((window as any).mapService as MapService).actualRoute = event;
+        ((window as any).mapService as MapService).currentStep = 0;
+        ((window as any).mapService as MapService).alreadySpoken = false;
+        ((window as any).homePage as HomePage).showTrip();
+      });
 
+      this.rotateCamera(0);
+
+    });
+    const self = this;
     map.on('style.load', (event) => {
 
-      const defaultLightPreset = 'dusk';
-
-      //let activeButton = document.getElementById(queryLightPreset || defaultLightPreset);
-      //activeButton.classList.add('selected');
-      map.setConfigProperty('basemap', 'lightPreset', defaultLightPreset);
-
-      map.setConfigProperty('basemap', 'showPointOfInterestLabels', true);
-      map.setConfigProperty('basemap', 'showTransitLabels', true);
-      map.setConfigProperty('basemap', 'showRoadLabels', true);
-      map.setConfigProperty('basemap', 'showPlaceLabels', true);
-
-      this.initUserMarkerDefs();
+      self.addAdditionalSourceAndLayer(self.sourcesAndLayers);
+      if (self.isStandardMap) {
+        const defaultLightPreset = this.light;
+        self.mapbox.setConfigProperty('basemap', 'lightPreset', defaultLightPreset);
+        self.mapbox.setConfigProperty('basemap', 'showPointOfInterestLabels', true);
+        self.mapbox.setConfigProperty('basemap', 'showTransitLabels', true);
+        self.mapbox.setConfigProperty('basemap', 'showRoadLabels', true);
+        self.mapbox.setConfigProperty('basemap', 'showPlaceLabels', true);
+      }
+      self.mapbox.resize();
 
     });
   }
 
-
+  // Function to rotate the camera around the world
+  rotateCamera(timestamp: number) {
+    if (((window as any).mapService as MapService).isRotating) {
+      ((window as any).cameraService as CameraService).rotateCamera(timestamp);
+    }
+  }
 
 
   getMap(): mapboxgl.Map {
@@ -123,10 +135,15 @@ export class MapService {
   }
 
   setLightPreset(id: string) {
-    //const map = this.windowService.getValueFromProperty('map');
-    this.mapbox.setConfigProperty('basemap', 'lightPreset', id);
-    //map.updateQueryParam('lightPreset', id);
-    // Consider adding CSS selection logic here, if applicable
+    if (this.isStandardMap) {
+      this.light = id;
+      this.mapbox.setConfigProperty('basemap', 'lightPreset', id);
+    } else {
+      this.isStandardMap = true;
+      this.light = id;
+      this.sourcesAndLayers = this.getSourcesAndLayers();
+      this.mapbox.setStyle('mapbox://styles/mapbox/standard');
+    }
   }
 
   getQueryParams() {
@@ -142,248 +159,163 @@ export class MapService {
     window.history.replaceState({}, '', newUrl.toString());
   };
 
-  updateUserFeatureRotation(newRotation: number) {
-    if (this.userLocationMarkerPrerequisitesOk) {
-      const source = this.mapbox.getSource('userMarkerSource') as mapboxgl.GeoJSONSource;
-      if (source) {
-        const data: mapboxgl.MapboxGeoJSONFeature[] = this.mapbox.querySourceFeatures('userMarkerSource');
-        if (data.length > 0) {
-          // Actualiza la propiedad 'bearing' con el nuevo valor de rotación
-          let feature: mapboxgl.MapboxGeoJSONFeature = data[0];
-          if (feature.properties) {
-            feature.properties['bearing'] = newRotation;
-            data[0] = feature;
-          }
 
-          // Aplica los datos actualizados a la fuente
-          source.setData(turf.featureCollection(data));
-        }
-      }
-    }
-  }
+  updateUserMarkerPosition(newLocation: [number, number]) {
+    const firstGeolocalizationEvent: boolean = this.isRotating;
 
-  getFeaturesFromSource(sourceId: string): mapboxgl.MapboxGeoJSONFeature[] | null {
-    const map = this.mapbox;
-    if (!map.getSource(sourceId)) {
-      return null;
-    }
-    const source = map.getSource(sourceId) as mapboxgl.GeoJSONSource;
-    if (source) {
-      const data: mapboxgl.MapboxGeoJSONFeature[] = map.querySourceFeatures(sourceId);
-      return data;
-    }
-    return null; // Add a return statement to handle the case when the source is not found
-  }
-
-
-
-  getUserFeatureMarkerPosition(): Position | null {
-    const data: mapboxgl.MapboxGeoJSONFeature[] = this.mapbox.querySourceFeatures('userMarkerSource'); // Using _data directly for example purposes
-    if (!data.length) return null;
-
-    // Extract starting coordinates and bearing from the first feature
-    if (data[0].geometry.type != 'Point') return null;
-
-    var dataPoint = data[0].geometry as Point;
-    const coords = dataPoint.coordinates;
-    return coords;
-  }
-
-
-  public moveUserFeatureSymbolSmoothly(newLocation: LngLatLike): void {
-    // Si ya hay una animación en curso, ajustar o cancelar según sea necesario
-    if (this.isAnimating) {
-      // Aquí podrías ajustar la lógica según necesites, por ejemplo, cancelando la animación actual
-      // o ajustando el destino de la animación en curso. Para este ejemplo, simplemente retornaremos.
-      return;
-    }
-
-    const source = this.mapbox.getSource('userMarkerSource') as mapboxgl.GeoJSONSource;
-    if (!source) return;
-
-    const data: mapboxgl.MapboxGeoJSONFeature[] = this.mapbox.querySourceFeatures('userMarkerSource');
-    if (!data.length || data[0].geometry.type !== 'Point') return;
-
-    const startCoords = (data[0].geometry as Point).coordinates;
-    const degrees = data[0].properties?.['bearing'] || 0;
-    const endCoords = mapboxgl.LngLat.convert(newLocation);
-
-    let startTime: number | undefined;
-
-    this.isAnimating = true; // Marcamos que la animación ha comenzado
-
-    const animate = (timestamp: number): void => {
-      if (!startTime) startTime = timestamp;
-
-      const elapsedTime = timestamp - startTime;
-      const progress = Math.min(elapsedTime / 1500, 1);
-
-      const currentCoords: [number, number] = [
-        startCoords[0] + (endCoords.lng - startCoords[0]) * progress,
-        startCoords[1] + (endCoords.lat - startCoords[1]) * progress,
-      ];
-
-      source.setData({
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: currentCoords,
-          },
-          properties: {
-            id: 'userLocationFeature',
-            bearing: degrees,
-            desc: 'User location',
-          },
-        }],
-      });
-
-      this.mapbox.easeTo({
-        center: currentCoords,
-        duration: 100,
-      });
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        this.isAnimating = false; // La animación ha terminado
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }
-
-  updateUserLocationFeatureSymbol(newLocation: [number, number]) {
-    this.mapControls.directions.setOrigin(newLocation);
-    if (this.userLocationMarkerPrerequisitesOk) {
-      const source = this.mapbox.getSource('userMarkerSource');
-      if (!source || source.type != 'geojson') return;
-      // Verifica si la fuente ya tiene datos definidos
-      const data: mapboxgl.MapboxGeoJSONFeature[] = this.mapbox.querySourceFeatures('userMarkerSource');
-      let bearing: number = 0;
-      if (data && data.length > 0 && data[0].properties) {
-        bearing = data[0].properties['bearing'];
-      }
-      const UserPositionGeoJson: GeoJSON.FeatureCollection<GeoJSON.Point> = {
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: newLocation // Nueva ubicación del usuario
-          },
-          properties: {
-            id: "userLocationFeature",
-            bearing: data[0],
-            desc: "User location"
-          }
-        }]
-      };
-      (source as GeoJSONSource).setData(UserPositionGeoJson);
-      this.mapbox.flyTo({}, newLocation);
-    }
-
-
-  }
-
-
-  initUserMarkerDefs(): void {
-    this.mapbox.loadImage(
-      '/assets/ironPuk.png',
-      (error, image) => {
-        if (error) throw error;
-
-        if (image) {
-          this.mapbox.addImage('custom-user-marker', image);
-
-          //Creo map source
-          this.mapbox.addSource('userMarkerSource', {
-            'type': 'geojson',
-            'data': {
-              type: 'FeatureCollection',
-              features: []
-            }
-          });
-        }
-
-        //Añado layer con el icono a la source creada
-        this.mapbox.addLayer({
-          'id': 'userMarkerLayer',
-          'type': 'symbol',
-          'source': 'userMarkerSource',
-          //'slot': 'top',
-          'layout': {
-            'icon-image': 'custom-user-marker',
-            'icon-size': 1,
-            'icon-rotate': ['get', 'bearing']
-          }
-        });
-
-        this.userLocationMarkerPrerequisitesOk = true;
-      });
-  }
-
-
-  setMaxspeedDataSourceAndLayer(features: turf.Feature<Point, turf.Properties>[]) {
-    // Step 3: Add the data as a source to the Mapbox map
-    //console.log(features);
-    if (!this.mapbox.getSource('maxspeedDataSource')) {
-      this.mapbox.addSource('maxspeedDataSource', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: features
-        }
-      });
-
-      this.mapbox.addLayer({
-        id: 'maxspeedDataLayer',
-        type: 'line',
-        source: 'maxspeedDataSource',
-        layout: {},
-        // Remove the 'slot' property from the object literal
-        //slot: "top",
-        paint: {
-          'line-width': 0.5,
-          'line-opacity': 1,
-          'line-emissive-strength': 6,
-          // Use a visual variable for line-color based on 'maxSpeed'
-          'line-color': [
-            'interpolate',
-            ['linear'],
-            ['to-number', ['get', 'maxSpeed']],
-            20, '#fa133e',
-            30, '#fa133e',
-            45, '#fa133e',
-            60, '#faf413',
-            75, '#13faf6',
-            90, '#13fa13',
-            110, '#13fa13',
-            120, '#13fa13',
-          ]
-        }
-      }, "userMarkerLayer");
+    const marker: mapboxgl.Marker = this.getUserMarker();
+    marker.setLngLat(newLocation);
+    const bearing = this.mapbox.getBearing();
+    if (firstGeolocalizationEvent) {
+      marker.addTo(this.mapbox)
+      this.userLocationMarkerPrerequisitesOk = true;
+      this.isRotating = false;
+      ((window as any).homePage as HomePage).alreadyGeoLocated();
+      ((window as any).cameraService as CameraService).updateCameraForUserMarkerFirstGeoEvent(newLocation, bearing);
     } else {
-      (this.mapbox.getSource('maxspeedDataSource') as GeoJSONSource).setData({
-        type: 'FeatureCollection',
-        features: features
+      ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newLocation, bearing);
+    }
+  }
+
+
+  updateMarkerRotation(newRotation: number) {
+    if (newRotation && newRotation > 0) {
+      this.getUserMarker().setRotation(newRotation);
+      this.getUserMarker().getElement().classList.add('mapboxgl-user-location-show-heading');
+    } else {
+      this.getUserMarker().setRotation(0);
+    }
+  }
+
+
+  getUserMarker(): mapboxgl.Marker {
+    if (!this.userMarkerInstance) {
+      const el = document.createElement('div');
+      el.classList.add('mapboxgl-user-location');
+      const dot: HTMLDivElement = document.createElement('div');
+      dot.classList.add('mapboxgl-user-location-puk-dot');
+      el.appendChild(dot);
+      const heading: HTMLDivElement = document.createElement('div');
+      heading.classList.add('mapboxgl-user-location-heading');
+      el.appendChild(heading);
+      const puk: HTMLDivElement = document.createElement('div');
+      puk.classList.add('mapboxgl-user-puk');
+      el.appendChild(puk);
+      this.userMarkerInstance = new mapboxgl.Marker({
+        element: el,
+        rotationAlignment: 'map',
+        pitchAlignment: 'map'
       });
     }
-
+    return this.userMarkerInstance;
   }
+
 
   setMapStye(id: String): void {
+    this.isStandardMap = false;
+    this.sourcesAndLayers = this.getSourcesAndLayers();
     this.mapbox.setStyle('mapbox://styles/mapbox/' + id);
+  }
+
+  getSourcesAndLayers(): any {
+    this.sourcesAndLayers = {
+      sources: {
+        directions: null,
+        maxspeedDataSource: null,
+        //userMarkerSource: null
+        semaphoreDataSource: null,
+        stopDataSource: null,
+        speedCameraDataSource: null
+      },
+      layers: []
+    };
+    this.mapbox.getStyle().layers.forEach((layer: mapboxgl.Layer) => {
+      if (layer.source === "directions"
+        || layer.source === "maxspeedDataSource"
+        || layer.source === "semaphoreDataSource"
+        || layer.source === "speedCamerasDataSource"
+        || layer.source === "stopDataSource"
+      ) {
+        const layerLoaded: any = {
+          sourceId: layer.source,
+          layer: layer,
+          layerId: layer.id
+        };
+        this.sourcesAndLayers.layers.push(layerLoaded);
+      }
+
+    });
+    if (this.mapbox.getStyle().sources["directions"]) {
+      this.sourcesAndLayers.sources.directions = this.mapbox.getStyle().sources["directions"];
+    };
+    if (this.mapbox.getStyle().sources["maxspeedDataSource"]) {
+      this.sourcesAndLayers.sources.maxspeedDataSource = this.mapbox.getStyle().sources["maxspeedDataSource"];
+    };
+    if (this.mapbox.getStyle().sources["semaphoreDataSource"]) {
+      this.sourcesAndLayers.sources.semaphoreDataSource = this.mapbox.getStyle().sources["semaphoreDataSource"];
+    };
+    if (this.mapbox.getStyle().sources["speedCamerasDataSource"]) {
+      this.sourcesAndLayers.sources.speedCamerasDataSource = this.mapbox.getStyle().sources["speedCamerasDataSource"];
+    };
+    if (this.mapbox.getStyle().sources["stopDataSource"]) {
+      this.sourcesAndLayers.sources.stopDataSource = this.mapbox.getStyle().sources["stopDataSource"];
+    };
+    return this.sourcesAndLayers;
+  }
+
+  addAdditionalSourceAndLayer(sourcesAndLayers: any = null) {
+    if (sourcesAndLayers.sources.directions) {
+      if (!this.mapbox.getSource('directions')) this.mapbox.addSource('directions', sourcesAndLayers.sources.directions);
+    };
+    if (sourcesAndLayers.sources.maxspeedDataSource) {
+      if (!this.mapbox.getSource('maxspeedDataSource')) this.mapbox.addSource('maxspeedDataSource', sourcesAndLayers.sources.maxspeedDataSource);
+    };
+    if (sourcesAndLayers.sources.semaphoreDataSource) {
+      if (!this.mapbox.getSource('semaphoreDataSource')) this.mapbox.addSource('semaphoreDataSource', sourcesAndLayers.sources.semaphoreDataSource);
+    };
+    if (sourcesAndLayers.sources.speedCamerasDataSource) {
+      if (!this.mapbox.getSource('speedCamerasDataSource')) this.mapbox.addSource('speedCamerasDataSource', sourcesAndLayers.sources.speedCamerasDataSource);
+    };
+    if (sourcesAndLayers.sources.stopDataSource) {
+      if (!this.mapbox.getSource('stopDataSource')) this.mapbox.addSource('stopDataSource', sourcesAndLayers.sources.stopDataSource);
+    };
+    this.addImageIfNot("custom-speed-camera-marker", "ironcamera.png");
+    this.addImageIfNot("custom-semaphore-marker", "ironsemaphore.png");
+    this.addImageIfNot("custom-stop-marker", "ironstop.png");
+    this.reAddLayers(sourcesAndLayers);
+
+
+  }
+
+  reAddLayers(sourcesAndLayers: any = null): void {
+    if (sourcesAndLayers && sourcesAndLayers.layers) {
+      sourcesAndLayers.layers.forEach((layerLoaded: any) => {
+        if (!this.mapbox.getLayer(layerLoaded.layerId)) this.mapbox.addLayer(layerLoaded.layer);
+      });
+    }
+  }
+
+  addImageIfNot(imageName: string, imageFileName: string): void {
+    if (!this.mapbox.hasImage(imageName)) {
+      this.mapbox.loadImage(
+        '/assets/img/map-icons/' + imageFileName,
+        (error, image) => {
+          if (error) throw error;
+
+          if (image) {
+            if (!this.mapbox.hasImage(imageName)) this.mapbox.addImage(imageName, image);
+          }
+        });
+    }
   }
 
 
 
   /**
- * Agrega un marcador al mapa en las coordenadas especificadas.
- * @param coordinates Coordenadas donde se colocará el marcador.
- * @param options Opciones para el marcador.
- */
+  * Agrega un marcador al mapa en las coordenadas especificadas.
+  * @param coordinates Coordenadas donde se colocará el marcador.
+  * @param options Opciones para el marcador.
+  */
   addMarker(coordinates: mapboxgl.LngLatLike, options?: mapboxgl.MarkerOptions): mapboxgl.Marker {
     const marker = new mapboxgl.Marker(options)
       .setLngLat(coordinates)
@@ -391,256 +323,190 @@ export class MapService {
     return marker;
   }
 
-  /**
-   * Actualiza la posición de la cámara del mapa para centrarla en las coordenadas especificadas.
-   * @param coordinates Coordenadas hacia las cuales la cámara debe moverse.
-   */
-  updateCameraPosition(coordinates: mapboxgl.LngLatLike): void {
-    this.mapbox.flyTo({ center: coordinates });
-  }
-
-
-  followUserPosition(): void {
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition((position) => {
-        const userPosition: mapboxgl.LngLatLike = [position.coords.longitude, position.coords.latitude];
-        this.updateCameraPosition(userPosition);
-
-        // Opcional: Agregar un marcador para la posición del usuario
-        this.addMarker(userPosition, { color: "#d02922" }); // Puedes personalizar el marcador
-      }, (error) => {
-        console.error('Error al obtener la posición del usuario', error);
-      }, {
-        enableHighAccuracy: true
-      });
-    } else {
-      console.error('Geolocalización no soportada por este navegador.');
-    }
-  }
-
-  // Remove the duplicate addRoute function
-
-  routes: string = 'route'; // Add the 'routes' property
-
-  updateRoute(newRouteGeoJSON: any): void {
-    const source = this.mapbox.getSource(this.routes) as mapboxgl.GeoJSONSource;
-    if (source) {
-      source.setData(newRouteGeoJSON);
-    }
-  }
-
-  clearRoutes(): void {
-    if (this.mapbox.getLayer(this.routeLayerId)) {
-      this.mapbox.removeLayer(this.routeLayerId);
-    }
-    if (this.mapbox.getSource(this.routeSourceId)) {
-      this.mapbox.removeSource(this.routeSourceId);
-    }
-  }
-
   cancelTrip(): void {
     this.destination = "";
     this.isTripStarted = false;
     this.mapControls.directions.removeRoutes();
-    /*this.mapControls.directions.removeWaypoints();*/
     this.mapControls.directions.actions.clearDestination();
-    //this.mapControls.directions.actions.clearOrigin();
-    (document.getElementById("tripControls") as HTMLDivElement).style.display = "none";
-    (document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLDivElement).style.display = "none";
+    this.mapControls.directions.actions.clearOrigin();
+    ((window as any).mapService as MapService).actualRoute = null;
+    ((window as any).mapService as MapService).currentStep = 0;
+    ((window as any).mapService as MapService).alreadySpoken = false;
+    ((window as any).tripService as TripService).cancelTrip();
+  }
+
+  leaveMapPage() {
+    this.sourcesAndLayers = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
   }
 
   async startTrip(): Promise<void> {
-    this.voiceService.speak("Iniciando viaje a " + this.destination);
     if (!this.isTripStarted) {
       this.isTripStarted = true;
       // Get user's current location
-      const userLocation = await this.geoLocationService.getCurrentPosition();
+      const userLocation: Position = this.geoLocationService.getLastCurrentLocation();
       if (userLocation) {
         // Get route information
-        const route = this.mapControls.directons.getRoute();
-        if (route && route.routes && route.routes.length > 0) {
-          const steps = route.routes[0].legs[0].steps;
+        const route = ((window as any).mapService as MapService).actualRoute;
+        //console.log("Route:", route);
+        if (route && route.route && route.route.length > 0) {
+          const steps = route.route[0].legs[0].steps;
           // Set initial step index to 0
           let currentStepIndex = 0;
           // Speak the instruction associated with the first step
-          this.voiceService.speak(steps[currentStepIndex].maneuver.instruction);
-
-          // Start watching user's location to track completion of steps
-          this.geoLocationService.watchPosition(position => {
-            const currentStep = steps[currentStepIndex];
-            // Check if user has reached the current step
-            if (position && position.coords) {
-              if (this.hasReachedStep(position, currentStep)) {
-                // Increment step index to get the next step
-                currentStepIndex++;
-                // Check if there are more steps
-                if (currentStepIndex < steps.length) {
-                  // Get the next step
-                  const nextStep = steps[currentStepIndex];
-                  // Speak the instruction associated with the next step
-                  this.voiceService.speak(nextStep.maneuver.instruction);
-                } else {
-                  // All steps have been completed
-                  this.voiceService.speak('Llegaste a tu destino.');
-                  this.isTripStarted = false;
-                  // Stop watching user's location
-                  //this.geoLocationService.clearWatch(watchId);
-                }
-              }
-            }
-          });
-
-
-          // Set the map camera behind the user's position and follow the user
-          this.mapbox.flyTo({
-            center: [userLocation.coords.longitude, userLocation.coords.latitude],
-            zoom: 20,
-            pitch: 85,
-            bearing: steps[currentStepIndex].maneuver.bearing
-          });
+          ((window as any).tripService as TripService).startTrip(route.route[0].legs[0]);
         }
       }
     }
   }
 
-  // Method to check if the user has reached a step
-  hasReachedStep(userCoords: GeolocationPosition, step: any): boolean {
-    const stepCoords = step.geometry.coordinates;
-    const userLngLat = new mapboxgl.LngLat(userCoords.coords.longitude, userCoords.coords.latitude);
-    const stepLngLat = new mapboxgl.LngLat(stepCoords[0], stepCoords[1]);
-    const distance = userLngLat.distanceTo(stepLngLat); // Distance in meters
-    // You can adjust this threshold distance as needed
-    return distance < 10; // Assuming the user has reached the step if they are within 10 meters
+  lockCameraAtUserPosition(userLocation: any, currentStep: number) {
+    // Lock the camera at the user's position
+    const route = ((window as any).mapService as MapService).actualRoute;
+    const step = route.route[0].legs[0].steps[currentStep];
+    const bearing: number = step.maneuver.bearing_after;
+    ((window as any).cameraService as CameraService).lockCameraAtPosition(userLocation, bearing);
   }
-  async setDestination(destination: any) {
-    this.destination = destination.place_name;
-    (document.getElementById("tripControls") as HTMLDivElement).style.display = "block";
-    if (!this.mapControls.directions.getOrigin()) {
-      this.geoLocationService.getCurrentPosition().then((position) => {
-        if (position) {
-          this.mapControls.directions.setOrigin([position.coords.longitude, position.coords.latitude]);
-          this.mapControls.directions.setDestination(destination.geometry.coordinates);
-          (document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLDivElement).style.display = "block";
 
-        }
-      });
+  async setDestination(destination: Place) {
+    if (destination.label) this.destination = destination.label;
+    if (destination.street) this.destinationAddress = destination.street;
+    if (!this.mapControls.directions.getOrigin().type) {
+      const position = this.geoLocationService.getLastCurrentLocation();
+      if (position) {
+        this.mapControls.directions.setOrigin([position.coords.longitude, position.coords.latitude]);
+      }
+      if (destination.geometry && destination.geometry.point) this.mapControls.directions.setDestination(destination.geometry.point);
     } else {
-      this.mapControls.directions.setDestination(destination.geometry.coordinates);
-      (document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLDivElement).style.display = "block";
+      if (destination.geometry && destination.geometry.point) this.mapControls.directions.setDestination(destination.geometry.point);
     }
   };
 
-  /*setMaxspeedDataSourceAndLayer(features: turf.Feature<Point, turf.Properties>) {
-    // Step 3: Add the data as a source to the Mapbox map
-    this.mapbox.addSource('maxspeedDataSource', {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: features
-      }
-    });
+  setCameraPOVPosition(position: Position) {
+    ((window as any).cameraService as CameraService).setCameraPOVPosition(position);
 
-    // Step 4: Add a layer to visualize the data
-    this.mapbox.addLayer({
-      id: 'maxspeedDataLayer',
-      type: 'line',
-      source: 'maxspeedDataSource',
-      layout: {},
-      slot: "top",
-      paint: {
-        'line-width': 0.5,
-        'line-opacity': 1,
-        'line-emissive-strength': 6,
-        // Use a visual variable for line-color based on 'maxSpeed'
-        'line-color': [
-          'interpolate',
-          ['linear'],
-          ['to-number', ['get', 'maxSpeed']],
-          20, '#fa133e',
-          30, '#fa133e',
-          45, '#fa133e',
-          60, '#faf413',
-          75, '#13faf6',
-          90, '#13fa13',
-          110, '#13fa13',
-          120, '#13fa13',
-        ]
-      }
-    });*/
-
-  setCameraPOVPosition(position: GeolocationPosition) {
-    this.mapbox.flyTo({
-      center: [position.coords.longitude,
-      position.coords.latitude],
-      zoom: 20,
-      speed: 1,
-      //curve: 1,
-      easing(t: number) {
-        return t;
-      },
-      essential: true,
-      pitch: 80,
-      bearing: 65
-    });
   }
 
-  setCameraSKYPosition(position: GeolocationPosition) {
-    this.mapbox.flyTo({
-      center: [position.coords.longitude,
-      position.coords.latitude],
-      zoom: 15,
-      speed: 1,
-      //curve: 1,
-      easing(t: number) {
-        return t;
-      },
-      essential: true,
-      pitch: 0,
-      bearing: 0
-    });
+  setCameraSKYPosition(position: Position) {
+    ((window as any).cameraService as CameraService).setCameraSKYPosition(position);
+
   }
-  //userStreet(longitude: number, latitude: number) {
-  userStreet(position: GeolocationPosition) {
+  userStreet(position: Position) {
     let longitude = position.coords.longitude;
     let latitude = position.coords.latitude;
     // Convert the user's coordinates to a point
     const coordinates = [longitude, latitude];
     const userPoint = turf.point(coordinates);
     const bbox = ((window as any).geoLocationService as GeoLocationService).createUserBoundingBox(position);
-    //console.log("coordinatesbbox:", bbox);
     // Query the rendered line features at the user's location
-    if (((window as any).speedService as SpeedService).dataLoaded) {
-      //const features = ((window as any).mapService as MapService).mapbox.queryRenderedFeatures([[bbox[0][0], bbox[0][1]], [bbox[1][0], bbox[1][1]]]);
-      const features = ((window as any).mapService as MapService).mapbox.queryRenderedFeatures();
+    const features = ((window as any).mapService as MapService).mapbox.queryRenderedFeatures(undefined, { layers: ["maxspeedDataLayer"] })
+    if (features.length > 0) {
+      var closestFeature: MapboxGeoJSONFeature | null = null;
+      var minDistance = Number.MAX_VALUE;
+      // Iterate through all line features to find the closest one
+      features.forEach(feature => {
+        if (feature.layer.id === 'maxspeedDataLayer' && feature.geometry.type === 'LineString') {
+          //console.log("Feature:", feature);
+          const line = turf.lineString(feature.geometry.coordinates);
+          const distance = turf.pointToLineDistance(userPoint, line);
+          const pointInLine = turf.nearestPointOnLine(line, userPoint);
+          const distancePoints: number = turf.distance(pointInLine, userPoint, { units: 'kilometers' });
 
-      //console.log("Rendered", features);
-      if (features.length > 0) {
-        var closestFeature: MapboxGeoJSONFeature | null = null;
-        var minDistance = Number.MAX_VALUE;
-
-        // Iterate through all line features to find the closest one
-        features.forEach(feature => {
-          if (feature.layer.id === 'maxspeedDataLayer' && feature.geometry.type === 'LineString') {
-            //console.log("Feature:", feature);
-            const line = turf.lineString(feature.geometry.coordinates);
-            const distance = turf.pointToLineDistance(userPoint, line);
-            const pointInLine = turf.nearestPointOnLine(line, userPoint);
-            const distancePoints: number = turf.distance(pointInLine, userPoint, { units: 'kilometers' });
-            //console.log("line:", line);
-            //console.log("Distance:", distance);
-            //console.log("Distance2:", distancePoints);
-            if (distancePoints < minDistance) {
-              minDistance = distancePoints;
-              closestFeature = feature;
-              //console.log("Closest:", closestFeature);
-            }
+          if (distancePoints < minDistance && distancePoints < 1) {
+            minDistance = distancePoints;
+            closestFeature = feature;
           }
-        });
+        }
+      });
 
-        ((window as any).mapService as MapService).userCurrentStreet = closestFeature;
-        //console.log("street:", ((window as any).mapService as MapService).userCurrentStreet);
-      }
+      ((window as any).mapService as MapService).userCurrentStreet = closestFeature;
     }
-
   }
+
+  setDefaults() {
+    const map = this.mapbox;
+    this.addLineTileVectorLayer(map, "maxspeedDataSource", "litoxperaloca.apypi869", "maxspeedDataLayer", "export_1-12rpm8", 12, 22, "hsl(0, 90%, 45%)", 0.2, 0.2);
+    this.addSymbolTileVectorLayer(map, "ironsemaphore.png", "custom-semaphore-marker", "semaphoreDataSource", "litoxperaloca.3deav1ng", 0.40, "semaphoreDataLayer", "semaphores_uruguay-6l99vu", 14, 22);
+    this.addSymbolTileVectorLayer(map, "ironstop.png", "custom-stop-marker", "stopDataSource", "litoxperaloca.dlnykr8f", 0.50, "stopDataLayer", "stop_uruguay-6tysu4", 14, 22);
+    this.addSymbolTileVectorLayer(map, "ironcamera.png", "custom-speed-camera-marker", "speedCamerasDataSource", "litoxperaloca.c1pj6s0f", 0.60, "speedCamerasDataLayer", "speed_cameras_uruguay-9ef5og", 12, 22);
+  }
+
+  addLineTileVectorLayer(
+    map: mapboxgl.Map,
+    sourceId: string,
+    mapboxTileId: string,
+    layerId: string,
+    sourceLayerId: string,
+    minZoom: number,
+    maxZoom: number,
+    lineColor: string,
+    linWidth: number,
+    lineOpacity: number
+  ): void {
+    map.addSource(sourceId, {
+      type: 'vector',
+      url: 'mapbox://' + mapboxTileId
+    });
+    map.addLayer(
+      {
+        "id": layerId,
+        "minzoom": minZoom,
+        "maxzoom": maxZoom,
+        "type": "line",
+        "paint": {
+          "line-color": lineColor,
+          "line-width": linWidth,
+          "line-opacity": lineOpacity
+        },
+        "source": sourceId,
+        "source-layer": sourceLayerId
+      });
+  }
+
+  addSymbolTileVectorLayer(
+    map: mapboxgl.Map,
+    imageFileName: string,
+    imageName: string,
+    sourceId: string,
+    mapboxTileId: string,
+    imageSize: number,
+    layerId: string,
+    sourceLayerId: string,
+    minZoom: number,
+    maxZoom: number
+  ): void {
+    map.loadImage(
+      '/assets/img/map-icons/' + imageFileName,
+      (error, image) => {
+        if (error) throw error;
+        if (image) {
+          if (!map.hasImage(imageName)) map.addImage(imageName, image);
+          map.addSource(sourceId, {
+            type: 'vector',
+            url: 'mapbox://' + mapboxTileId
+          });
+          map.addLayer(
+            {
+              "id": layerId,
+              "minzoom": minZoom,
+              "maxzoom": maxZoom,
+              "type": "symbol",
+              'layout': {
+                'icon-image': imageName,
+                'icon-size': imageSize,
+                'icon-allow-overlap': true,
+                "icon-anchor": 'bottom',
+                'visibility': 'visible',
+                //'icon-rotate': ['get', 'bearing']
+              },
+              "filter": ["<=", ["distance-from-center"], 0.5],
+
+              "source": sourceId,
+              "source-layer": sourceLayerId
+            });
+        }
+      });
+  }
+
+
+
 }

@@ -24,3 +24,48 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
+
+/* Consolidating map control container styles */
+.mapboxgl-ctrl-top-left,
+.mapboxgl-ctrl-directions{
+  display: none !important;
+}
+
+.segment-content {
+    padding-top: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 5px;
+  }
+
+  .right{
+    float: right;
+
+  }
+
+  .left{
+    float: left;
+  }
+
+
+  .mapboxgl-user-location-puk-dot:before {
+    background-color: #3ee536;
+    border-radius: 50%;
+    height: 20px;
+    width: 20px;
+    left: 0px;
+    animation: mapboxgl-user-location-dot-pulse 3s infinite;
+    content: "";
+    position: absolute;
+}
+
+.mapboxgl-user-puk{
+    height: 40px;
+    width: 40px;
+    background: url(/assets/img/map-icons/ironpuk.png);
+    left: -10px;
+    position: absolute;
+    top: -10px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}

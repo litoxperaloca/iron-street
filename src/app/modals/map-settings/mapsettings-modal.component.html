@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">Configurando el mapa</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+
+
+  <div>
+
+    <div>
+      <h4 class="ion-padding">Estilo:</h4>
+
+      <!-- Grid para seleccionar el estilo del mapa -->
+      <ion-grid class="map-style-grid">
+        <ion-row>
+          <ion-col size="4" class="map-style-option" (click)="setMapLight('down')">
+            <ion-img src="assets/img/map-styles/standard-down.png"></ion-img>
+            <ion-label class="ion-text-center">3D - Amanecer</ion-label>
+          </ion-col>
+          <ion-col size="4" class="map-style-option" (click)="setMapLight('dusk')">
+            <ion-img src="assets/img/map-styles/standard-dusk.png"></ion-img>
+            <ion-label class="ion-text-center">3D - Atardecer</ion-label>
+          </ion-col>
+          <ion-col size="4" class="map-style-option" (click)="setMapLight('night')">
+            <ion-img src="assets/img/map-styles/standard-night.png"></ion-img>
+            <ion-label class="ion-text-center">3D - Noche</ion-label>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid class="map-style-grid">
+        <ion-row>
+          <ion-col size="4" class="map-style-option" (click)="setMapStyle('satellite-streets-v12')">
+            <ion-img src="assets/img/map-styles/satellite.png"></ion-img>
+            <ion-label class="ion-text-center">Satelital</ion-label>
+          </ion-col>
+          <ion-col size="4" class="map-style-option" (click)="setMapStyle('navigation-day-v1')">
+            <ion-img src="assets/img/map-styles/nav-day.png"></ion-img>
+            <ion-label class="ion-text-center">Nav - Día </ion-label>
+          </ion-col>
+          <ion-col size="4" class="map-style-option" (click)="setMapStyle('navigation-night-v1')">
+            <ion-img src="assets/img/map-styles/nav-night.png"></ion-img>
+            <ion-label class="ion-text-center">Nav - Noche</ion-label>
+          </ion-col>
+
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid class="map-style-grid">
+        <ion-row>
+          <ion-col size="4" class="map-style-option" (click)="setMapStyle('streets-v12')">
+            <ion-img src="assets/img/map-styles/classic.png"></ion-img>
+            <ion-label class="ion-text-center">Calles</ion-label>
+          </ion-col>
+          <ion-col size="4" class="map-style-option" (click)="setMapStyle('light-v11')">
+            <ion-img src="assets/img/map-styles/light.png"></ion-img>
+            <ion-label class="ion-text-center">Monocromo claro</ion-label>
+          </ion-col>
+          <ion-col size="4" class="map-style-option" (click)="setMapStyle('dark-v11')">
+            <ion-img src="assets/img/map-styles/dark.png"></ion-img>
+            <ion-label class="ion-text-center">Monocromo oscuro</ion-label>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+
+  </div>
+
+</ion-content>
