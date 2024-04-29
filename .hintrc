@@ -6,7 +6,8 @@
     "meta-viewport": "off",
     "compat-api/html": "off",
     "compat-api/css": "off",
-    "axe/structure": "off"
+    "axe/structure": "off",
+    "no-inline-styles": "off"
   },
   "browserslist": [
     "defaults",

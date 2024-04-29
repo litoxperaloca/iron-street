@@ -25,11 +25,148 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+@import '@ionic/angular/css/palettes/dark.system.css';
+
+
+
 /* Consolidating map control container styles */
-.mapboxgl-ctrl-top-left,
-.mapboxgl-ctrl-directions{
-  display: none !important;
+@media only screen and (max-width: 640px)
+{
+  .directions-control.directions-control {
+    /* right: 90px; */
+    padding: 0;
+    max-width: 99%;
+    position: absolute;
+    top: 10px;
+    height: 100%;
+    max-height: 100% !important;
+    /* width: revert; */
+    margin: 0;
+    left: 5px;
+    background: black;
+    border-radius: 7px;
+    /* font-size: 18pt !important; */
 }
+}
+
+.mapbox-directions-instructions-wrapper {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    /* padding: 5px; */
+}
+
+.mapbox-directions-steps {
+    /* display: flex; */
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    /* flex-direction: column; */
+    /* flex-wrap: wrap; */
+}
+
+.mapbox-directions-step {
+    /* display: contents; */
+    position: relative;
+    color: #ffffffbf;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14pt;
+    line-height: 25px;
+    font-weight: 600;
+    height: 100%;
+    width: 100%;
+    letter-spacing: .1em;
+    clear: both;
+    float: left;
+}
+/*.mapboxgl-control-container{
+      position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}*/
+
+.mapbox-directions-step-maneuver {
+    /* padding: 25px; */
+    margin-left: 35px;
+    padding: 10px;
+}
+
+.mapbox-directions-step-distance {
+    color: rgb(255 255 255);
+    position: absolute;
+    padding: 5px 10px;
+    font-size: 12pt;
+    left: 0;
+    bottom: 0px;
+}
+
+.mapboxgl-ctrl-top-left {
+    left: 5px;
+    top: 5px;
+    position: absolute;
+    right: 95px;
+    height: 125px;
+}
+
+.mapboxgl-ctrl-bottom-right {
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    width: 50%;
+    height: 40px;
+}
+
+
+.mapboxgl-ctrl-bottom-left {
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    width: 50%;
+    height: 30px;
+}
+
+.directions-control.directions-control-directions {
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+
+.mapboxgl-ctrl-directions{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100%;
+    max-width: 100% !important;
+    min-width: auto !important;
+    max-width: 300px;
+    display: none;
+}
+
+.mapbox-directions-instructions {
+    position: relative;
+    height: 100%;
+}
+
+.mapbox-directions-component.mapbox-directions-route-summary.mapbox-directions-multiple {
+    display: none;
+}
+
+.directions-control.directions-control-inputs {
+    display: none;
+}
+
+ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
+  display: contents !important;
+}
+
 
 .segment-content {
     padding-top: 25px;
@@ -49,14 +186,16 @@
 
 
   .mapboxgl-user-location-puk-dot:before {
-    background-color: #3ee536;
+    background-color: #079421;
     border-radius: 50%;
-    height: 20px;
-    width: 20px;
-    left: 0px;
-    animation: mapboxgl-user-location-dot-pulse 3s infinite;
+    height: 30px;
+    width: 30px;
+    left: -5px;
+    top: -5px;
+    animation: mapboxgl-user-location-dot-pulse 1.3s infinite;
     content: "";
     position: absolute;
+    box-shadow: 0px 0px 10px 3px #E91E63;
 }
 
 .mapboxgl-user-puk{
@@ -68,4 +207,368 @@
     top: -10px;
     background-repeat: no-repeat;
     background-size: 100% 100%;
+}
+
+.markerVision {
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    position: relative;
+}
+
+.arrowVision {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 40px solid #910b2a8a;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* margin-left: -10px; */
+    margin-top: -20px;
+    transform-origin: bottom;
+    z-index: 2;
+}
+
+.mapboxgl-user-location.mapboxgl-marker{
+  z-index: 4  ;
+}
+
+body, #container{
+  position: absolute !important;
+  bottom: 0 !important;
+  top:0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#mapbox{
+  width: 100%;
+  height: 100%;
+  /*width: 100% !important;*/
+  /*height: 100% !important;*/
+  position:relative !important;
+ /* top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;*/
+}
+
+.mapboxgl-popup-main-route .mapboxgl-popup-content{
+    background: #09a2e7 !important;
+    border-radius: 7px !important;
+    box-shadow: 2px 3px 10px 2px #000 !important;
+    padding: 10px !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    font-size: 12pt !important;
+    text-align: left !important;
+    font-weight: 600;
+    line-height: 1.3;
+}
+.mapboxgl-popup-main-route .mapboxgl-popup-content p {
+    margin: 0;
+    background: transparent;
+    color: rgb(0, 0, 0);
+}
+
+.mapboxgl-popup-main-route.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
+      border-top-color: #09a2e7 !important;
+}
+.mapboxgl-popup-main-route.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
+      border-right-color: #09a2e7 !important;
+}
+.mapboxgl-popup-main-route.mapboxgl-popup-anchor-right .mapboxgl-popup-tip{
+      border-left-color: #09a2e7 !important;
+}
+.mapboxgl-popup-main-route.mapboxgl-popup-anchor-top .mapboxgl-popup-tip{
+      border-bottom-color: #09a2e7 !important;
+}
+
+.mapboxgl-popup-main-route{
+  opacity: 0.8;
+
+}
+
+.mapboxgl-popup-alt-route{
+  opacity: 0.6;
+}
+
+.mapboxgl-popup-alt-route .mapboxgl-popup-content {
+    background: #ffc107  !important;
+    border-radius: 7px !important;
+    box-shadow: 2px 3px 10px 2px #000!important;
+    padding: 10px !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    font-size: 10pt !important;
+    text-align: left !important;
+    font-weight: 600;
+        line-height: 1.3;
+
+}
+
+.mapboxgl-popup-alt-route.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
+      border-top-color: #ffc107  !important;
+}
+.mapboxgl-popup-alt-route.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
+      border-right-color: #ffc107  !important;
+}
+.mapboxgl-popup-alt-route.mapboxgl-popup-anchor-right .mapboxgl-popup-tip{
+      border-left-color: #ffc107  !important;
+}
+.mapboxgl-popup-alt-route.mapboxgl-popup-anchor-top .mapboxgl-popup-tip{
+      border-bottom-color: #ffc107  !important;
+}
+
+.mapboxgl-popup-alt-route .mapboxgl-popup-content p {
+    margin: 0;
+    background: transparent;
+    color: rgb(0, 0, 0);
+}
+
+.destinationPopUp .mapboxgl-popup-content{
+    background: #1f1d55 !important;
+    border-radius: 7px !important;
+    box-shadow: 2px 3px 10px 2px #000!important;
+    padding: 10px !important;
+    pointer-events: auto !important;
+    position: relative !important;
+}
+
+.destinationPopUp .mapboxgl-popup-content h6 {
+    margin: 0;
+    background: transparent;
+    color: white;
+    font-size: 12pt !important;
+    text-align: center !important;
+    font-weight: 600;
+}
+
+.destinationPopUp .mapboxgl-popup-content input{
+  margin-top: 15px;
+      font-size: 10pt !important;
+
+  background-color:#5d58e0;
+}
+
+.destinationPopUp .mapboxgl-popup-content p {
+    margin: 0;
+    background: transparent;
+    color: white;
+    font-size: 10pt !important;
+    text-align: left !important;
+    font-weight: 500;
+}
+
+.destinationPopUp.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
+      border-top-color: #1f1d55 !important;
+}
+.destinationPopUp.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
+      border-right-color: #1f1d55 !important;
+}
+.destinationPopUp.mapboxgl-popup-anchor-right .mapboxgl-popup-tip{
+      border-left-color: #1f1d55 !important;
+}
+.destinationPopUp.mapboxgl-popup-anchor-top .mapboxgl-popup-tip{
+      border-bottom-color: #1f1d55 !important;
+}
+
+.destinationPopUp{
+  display: none !important;
+}
+
+.osmFeaturePopUp{
+  opacity: 0.8;
+}
+
+.osmFeaturePopUp .mapboxgl-popup-content{
+    background: #1f1d55 !important;
+    border-radius: 7px !important;
+    box-shadow: 2px 3px 10px 2px #000!important;
+    padding: 10px !important;
+    pointer-events: auto !important;
+    position: relative !important;
+}
+
+.osmFeaturePopUp .mapboxgl-popup-content h6 {
+    margin: 0;
+    background: transparent;
+    color: white;
+    font-size: 12pt !important;
+    text-align: center !important;
+    font-weight: 600;
+}
+
+.osmFeaturePopUp .mapboxgl-popup-content input{
+    margin: 5px;
+    font-size: 12pt !important;
+    background-color: #5d58e0;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.osmFeaturePopUp .mapboxgl-popup-content p {
+    margin: 0;
+    background: transparent;
+    color: white;
+    font-size: 10pt !important;
+    text-align: left !important;
+    font-weight: 500;
+}
+
+.osmFeaturePopUp.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
+      border-top-color: #1f1d55 !important;
+}
+.osmFeaturePopUp.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
+      border-right-color: #1f1d55 !important;
+}
+.osmFeaturePopUp.mapboxgl-popup-anchor-right .mapboxgl-popup-tip{
+      border-left-color: #1f1d55 !important;
+}
+.osmFeaturePopUp.mapboxgl-popup-anchor-top .mapboxgl-popup-tip{
+      border-bottom-color: #1f1d55 !important;
+}
+
+
+
+#destinationDetails{
+  display: none;
+}
+
+#startTripButtonPopUp{
+  margin-left: 15px;
+  border: 1px solid #000;
+  border-radius: 7px;
+  color: #000;
+  font-size: 12pt;
+  background-color: var(--ion-color-success);
+}
+
+#startTripButtonPopUp:hover{
+  background-color: var(--ion-color-success-tint);
+}
+
+#startTripButtonPopUp:active{
+  background-color: var(--ion-color-success-shade);
+}
+
+#startTripButtonPopUp:disabled{
+  background-color: var(--ion-color-success-tint);
+}
+
+#cancelTripButtonPopUp{
+  background-color: var(--ion-color-danger);
+    border: 1px solid #000;
+  border-radius: 7px;
+  color: #000;
+  font-size: 12pt;
+}
+#cancelTripButtonPopUp:hover{
+  background-color: var(--ion-color-danger-tint);
+}
+
+#cancelTripButtonPopUp:active{
+  background-color: var(--ion-color-danger-shade);
+}
+
+#cancelTripButtonPopUp:disabled{
+  background-color: var(--ion-color-danger-tint);
+}
+
+
+.icon-above-text span {
+  font-size: 12pt;
+  color: var(--ion-color-dark);
+  margin: 5px;
+  font-weight: 600;
+}
+.icon-above-text ion-icon {
+  font-size: 45px;
+  color: var(--ion-color-dark);
+    --ionicon-stroke-width: 45px;
+    margin-bottom: 5px;
+  }
+.icon-above-text {
+  display: flex;          /* Uses Flexbox */
+  flex-direction: column; /* Stacks flex items vertically */
+  align-items: center;    /* Centers items horizontally in the container */
+  text-align: center;     /* Ensures text inside the span is centered */
+}
+/* Grid container styling */
+.segment-content {
+  ion-grid {
+    height: 100%; // Ensures the grid takes full height of its container
+    ion-row {
+      align-items: stretch; // Aligns items vertically to stretch to fill the row height
+
+      ion-col {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center; // Centers the button vertically and horizontally
+        padding: 10px; // Adjust padding as needed
+
+        div {
+          display: flex;
+          flex-direction: column; // Stack icon and text vertically
+          justify-content: center;
+          align-items: center;
+          height: 100%; // Make button fill column height
+          text-align: center;
+
+          ion-icon {
+            font-size: 50px; // Adjust icon size
+            margin-bottom: 5px; // Space between icon and text
+            --ionicon-stroke-width: 50px; // Set the stroke width for icons
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Loader positioning */
+.searchLoader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; // Full height to center spinner vertically
+}
+
+/*FONTS*/
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('/assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf');
+
+}
+
+@font-face {
+  font-family: 'e1234';
+  src: url('/assets/fonts/e1234/e1234.regular.ttf');
+}
+
+@font-face {
+  font-family: 'PixelifySans';
+  src: url('/assets/fonts/Pixelify_Sans/static/PixelifySans-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Bazaronite';
+  src: url('/assets/fonts/Bazaronite/bazaronite.regular.ttf');
+}
+
+@font-face {
+  font-family: 'Screaming-Neon';
+  src: url('/assets/fonts/screaming-neon/screaming_neon.ttf');
+}
+
+//TODO: add all fonts inside directory /assets/fonts
+@font-face {
+  font-family: '6809-charge';
+  src: url('/assets/fonts/6809-charge/6809 Chargen.otf');
 }

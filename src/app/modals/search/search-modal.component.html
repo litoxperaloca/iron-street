@@ -15,54 +15,26 @@
       <!-- Segment Selector with Icons -->
       <ion-segment (ionChange)="segmentChanged($event)" value="buscar" class="segment-selector">
         <ion-segment-button value="buscar">
-          <ion-icon name="search-outline"></ion-icon>
-        </ion-segment-button>
-        <ion-segment-button value="cercaMio">
-          <ion-icon name="locate-outline"></ion-icon>
+          <ion-icon color="primary" name="search-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="lugares">
-          <ion-icon name="globe-outline"></ion-icon>
-        </ion-segment-button>
-        <ion-segment-button value="historial">
-          <ion-icon name="time-outline"></ion-icon>
+          <ion-icon color="success" name="globe-outline"></ion-icon>
         </ion-segment-button>
         <ion-segment-button value="favoritos">
-          <ion-icon name="heart-outline"></ion-icon>
+          <ion-icon color="warning" name="bookmarks-outline"></ion-icon>
         </ion-segment-button>
       </ion-segment>
 
       <!-- Buscar Segment with Tooltip Instructions -->
       <div *ngIf="currentSegment === 'buscar'" class="segment-content">
-        <h2>¿A dónde vamos?</h2>
-
+        <h2 color="primary">¿A dónde vamos?</h2>
           <ion-searchbar
             debounce="500"
             placeholder="Buscar dirección, lugar, etc."
             [(ngModel)]="searchTerm"
             (ionInput)="searchAWS('strContains')"
-            color="search-bar dark left">
+            color="search-bar primary left">
           </ion-searchbar>
-
-          <!-- Tooltip Trigger Button -->
-          <ion-item lines="none" id="search-instructions" class="tooltip-button">
-            <ion-button fill="clear" size="small" (click)="toggleTooltip()" class="tooltip-button">
-              <ion-icon slot="icon-only" name="help-circle-outline" class="help-icon"></ion-icon>
-            </ion-button>
-          </ion-item>
-
-        <!-- Search Instructions Tooltip -->
-        <ion-popover trigger="search-instructions" showBackdrop="false" side="bottom" alignment="start">
-          <ng-template>
-            <ion-content class="tooltip-content">
-              <p>Detalles de búsqueda:</p>
-              <ul>
-                <li>Calle + Número de puerta</li>
-                <li>Intersección</li>
-                <li>Nombre del lugar</li>
-              </ul>
-            </ion-content>
-          </ng-template>
-        </ion-popover>
 
         <!-- Suggestions and Loading Logic Remains the Same -->
         <div *ngIf="isLoading">
@@ -70,7 +42,7 @@
         </div>
         <div *ngIf="!isLoading">
           <ion-list *ngIf="suggestions.length > 0; else noSuggestions">
-            <ion-item *ngFor="let suggestion of suggestions; let i = index"
+            <ion-item *ngFor="let suggestion of suggestions;"
             (click)="setDestinationFromPlace(suggestion)"
             class="suggestion-item">
               <ion-icon [name]="getSuggestionIcon(suggestion)" slot="start"></ion-icon>
@@ -92,24 +64,27 @@
       </div>
 
       <!-- Placeholder Content for Other Segments -->
-      <div *ngIf="currentSegment === 'cercaMio'" class="segment-content">
 
-        <h2>Cerca Mío</h2>
-        <!-- Additional content for Cerca Mío -->
-      </div>
-
-      <div *ngIf="currentSegment === 'lugares'" class="segment-content">
-        <h2>Lugares</h2>
+      <div id="lugares" *ngIf="currentSegment === 'lugares'" class="segment-content">
+        <h2 color="success">Lugares cercanos...</h2>
         <!-- Additional content for Lugares -->
-      </div>
-
-      <div *ngIf="currentSegment === 'historial'" class="segment-content">
-        <h2>Historial</h2>
-        <!-- Additional content for Historial -->
+                <div class="searchLoader" *ngIf="isLoading">
+                  <ion-spinner name="crescent"></ion-spinner>
+                </div>
+        <ion-grid *ngIf="!isLoading">
+          <ion-row>
+            <ion-col size="6" *ngFor="let category of categories">
+              <div class="icon-above-text" (click)="loadPlaces(category)">
+                <ion-icon color="dark" [src]="iconUrl(category.marker)"></ion-icon>
+                <span>{{ category.name }}</span>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </div>
 
       <div *ngIf="currentSegment === 'favoritos'" class="segment-content">
-        <h2>Favoritos</h2>
+        <h2 color="warning">Favoritos</h2>
         <!-- Additional content for Favoritos -->
       </div>
     </ion-content>

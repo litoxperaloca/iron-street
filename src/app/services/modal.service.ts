@@ -13,7 +13,7 @@ export class ModalService {
 
   constructor(private modalController: ModalController) { }
 
-  async openModal(componentName: String) {
+  async openModal(componentName: String, extraParam?: any) {
 
     let modalComponent: ModalComponents = ModalComponents[componentName as keyof typeof ModalComponents];
     const componentRef = ComponentRef[modalComponent];
@@ -25,7 +25,10 @@ export class ModalService {
     this.isBottomSheetOpen = true;
     const modal = await this.modalController.create({
       component: componentRef.component,
-      componentProps: componentRef.props || {},
+      componentProps: {
+        ...componentRef.props,
+        extraParam: extraParam  // Passing the string parameter to the modal
+      } || { extraParam: extraParam },
       cssClass: componentRef.cssClass,
       breakpoints: componentRef.breakpoints || [0, 0.5, 0.75, 1],
       initialBreakpoint: componentRef.initialBreakpoint || 1,

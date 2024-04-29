@@ -1,7 +1,9 @@
 {
   "name": "IronStreet",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {
+      "enabled": true
+    }
   },
   "type": "angular",
   "id": "ef9f94d0"

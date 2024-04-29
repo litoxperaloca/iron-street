@@ -203,8 +203,8 @@ export class CameraService {
         duration: 1000,
         //minZoom: 19,
         //speed: 1.5,
-        pitch: 0,
-        bearing: 0,
+        pitch: 55,
+        bearing: mapBearing,
         essential: true,
         easing(t) {
           // console.log(t);

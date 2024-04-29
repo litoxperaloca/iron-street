@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core';
-import { Motion } from '@capacitor/motion';
+import { Motion, RotationRate } from '@capacitor/motion';
 import { Observable } from 'rxjs';
 import { HomePage } from '../pages/home/home.page';
+import { SensorService } from './sensor.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +13,83 @@ export class DeviceOrientationService {
   orientationHandler!: PluginListenerHandle;
   lastResult: DeviceOrientationEvent | null = null;
 
-  constructor() { }
+
+  private headingHandler: (event: DeviceOrientationEvent) => void;
+  private lastHeadingData: DeviceOrientationEvent | null = null;
+  private updateHeadingIntervalId: any;
+
+
+  constructor(
+    private sensorService: SensorService
+  ) {
+    this.headingHandler = (event: DeviceOrientationEvent) => {
+      this.lastHeadingData = event; // Store the latest event data
+    };
+  }
+
+
+  startListeningHeading() {
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', this.headingHandler);
+      this.startRegularUpdates();
+    } else {
+      //console.log("Device Orientation not supported");
+    }
+  }
+
+  stopListeningHeading(): void {
+    // Remove the event listener to clean up
+    window.removeEventListener('deviceorientation', this.headingHandler);
+    //console.log("Event listener removed");
+  }
+
+  private startRegularUpdates(): void {
+    this.updateHeadingIntervalId = setInterval(() => {
+      if (this.lastHeadingData) {
+        this.processOrientationData(this.lastHeadingData);
+      }
+    }, 1500); // Refresh rate of 1.5 seconds
+  }
+
+  private processOrientationData(data: DeviceOrientationEvent): void {
+    //console.log(`Processed Data at interval - Alpha: ${data.alpha}, Beta: ${data.beta}, Gamma: ${data.gamma}`);
+    let compassHeading;
+    if (data) {
+      if ((data as any).webkitCompassHeading) {
+        compassHeading = (data as any).webkitCompassHeading;
+      } else if (data.alpha !== null) {
+        compassHeading = data.alpha;
+      }
+      //console.log("Compass Heading:", compassHeading);
+      this.sensorService.updateHeadingAbs(compassHeading);
+    }
+  }
+
+
+
+
+
+  watchCompass(callback: (heading: number) => void) {
+    if ('ondeviceorientationabsolute' in window) {
+      window.addEventListener('deviceorientationabsolute', (event: DeviceOrientationEvent) => {
+        const heading = event.alpha; // This represents the direction the device is facing in degrees
+        if (heading !== null) callback(heading);
+      }, true);
+    } else if ('ondeviceorientation' in window) {
+      (window as any).addEventListener('deviceorientation', (event: DeviceOrientationEvent) => {
+        const heading = event.alpha; // alpha is for both iOS and Android
+        if (heading !== null) callback(heading);
+      }, true);
+    } else {
+      console.error('Compass not supported');
+    }
+  }
+
+  watchMotion(callback: (acceleration: DeviceMotionEventAcceleration, rotation: RotationRate) => void) {
+    Motion.addListener('accel', (event) => {
+      callback(event.acceleration, event.rotationRate);
+    });
+  }
 
   setLastResult(result: DeviceOrientationEvent): void {
     this.lastResult = result;
@@ -20,14 +97,14 @@ export class DeviceOrientationService {
 
   async listenOrientation(): Promise<void> {
     this.orientationHandler = await Motion.addListener('orientation', event => {
-      console.log('orientation', event);
+      //('orientation', event);
       ((window as any).homePage as HomePage).updateMarkerOrientation(event as any);
     });
   };
 
   async listenAcceleration(): Promise<void> {
     this.accelHandler = await Motion.addListener('accel', event => {
-      console.log('accel', event);
+      //console.log('accel', event);
       ((window as any).homePage as HomePage).updateMarkerAccel(event as any);
 
     });

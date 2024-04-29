@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "uy.com.ironplatform.ironstreet"
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "uy.com.ironplatform.ironstreet"
         minSdkVersion rootProject.ext.minSdkVersion

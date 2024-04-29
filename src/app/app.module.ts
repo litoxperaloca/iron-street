@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { Amplify } from 'aws-amplify';
 import { ManeurveModalComponent } from 'src/app/modals/maneurve/maneurve-modal.component';
 import { PermissionModalComponent } from 'src/app/modals/permission/permission-modal.component';
 import { RouteModalComponent } from 'src/app/modals/route/route-modal.component';
@@ -18,19 +20,20 @@ import { OsmService } from 'src/app/services/osm.service';
 import { SearchService } from 'src/app/services/search.service';
 import { SpeedService } from 'src/app/services/speed.service';
 import { TripService } from 'src/app/services/trip.service';
+import awsconfig from '../aws-exports';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { GeoLocationMockService } from './mocks/geo-location-mock.service';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
+import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-modal.component';
 import { AmazonLocationServiceService } from './services/amazon-location-service.service';
 import { DeviceOrientationService } from './services/device-orientation.service';
 import { MapService } from './services/map.service';
 import { ModalService } from './services/modal.service';
 import { ThemeService } from './services/theme-service.service';
 import { VoiceService } from './services/voice.service';
+import { WordpressService } from './services/wordpress-service.service';
 
-
-import { Amplify } from 'aws-amplify';
-import awsconfig from '../aws-exports';
 Amplify.configure(awsconfig);
 
 
@@ -47,6 +50,7 @@ Amplify.configure(awsconfig);
       RouteModalComponent,
       SettingsModalComponent,
       MapSettingsModalComponent,
+      PlaceInfoModalComponent
     ],
   imports: [
     BrowserModule,
@@ -54,6 +58,7 @@ Amplify.configure(awsconfig);
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
+    AmplifyAuthenticatorModule,
     ServiceWorkerModule.register('ngsw-worker.js',
       {
         enabled: !isDevMode(),
@@ -76,6 +81,9 @@ Amplify.configure(awsconfig);
       DeviceOrientationService,
       AmazonLocationServiceService,
       ThemeService,
+      WordpressService,
+      AuthenticatorService,
+      GeoLocationMockService
     ],
   bootstrap: [AppComponent],
 })

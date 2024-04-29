@@ -1,11 +1,3 @@
-<ion-header [translucent]="false">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Iron Street</ion-title>
-  </ion-toolbar>
-</ion-header>
 
 <ion-content [fullscreen]="true">
   <!--<ion-header collapse="condense">
@@ -15,56 +7,85 @@
   </ion-header>-->
 
   <div id="container">
-      <div id="mapbox" class="mapboxgl-map"></div>
+      <div id="mapbox"></div>
 
       <!--<div class="speed-indicators">
         <div id="maxSpeedDiv">{{ getMaxSpeed() }} km/h</div>
         <div id="speedometer">{{ getSpeed() }} km/h</div>
       </div>-->
-
-      <div id="mapFabIcons">
-        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-          <ion-fab-button size="small" (click)="openModal('Search')">
-            <ion-icon name="search-sharp"></ion-icon>
-          </ion-fab-button>
-          <ion-fab-button size="small" (click)="setCameraMode('POV')">
-            <ion-icon name="navigate-circle-sharp"></ion-icon>
-          </ion-fab-button>
-          <ion-fab-button size="small" (click)="setCameraMode('SKY')">
-            <ion-icon name="analytics-sharp"></ion-icon>
-          </ion-fab-button>
-          <ion-fab-button size="small" (click)="openModal('MapSettings')">
-            <ion-icon name="map-sharp"></ion-icon>
-          </ion-fab-button>
-        </ion-fab>
-      </div>
+      <div id="poste"></div>
 
       <div id="tripDetailsContainer">
-            <ion-icon name="map-sharp" (click)="cancelTrip()"></ion-icon>
-
             <h4 id="tripDestination">{{tripDestination}}</h4>
+
             <!--<h5 id="tripDestinationAddress">{{tripDestinationAddress}}</h5>-->
-            <div id="tripDuration">
-              <ion-icon name="map-sharp"></ion-icon>
-              {{tripDuration}} minutos
-            </div>
-            <ion-button  class="almost-half" (click)="startTrip()">Vamos!</ion-button>
-            <div id="tripDistance">
-              <ion-icon name="map-sharp"></ion-icon>
-              {{tripDistance}} km
+            <div class="flexEqualRow">
+                <ion-icon class="buttonIcon" color="danger" (click)="cancelTrip()" name="close-circle-outline" size="big"></ion-icon>
+                <div id="estimated">
+                  <div id="tripDuration">
+                    <ion-icon class="noteIcon" color="primary" name="time-outline"></ion-icon>
+                    <div class="noteText" color="warning">{{tripDuration}} mins.</div>
+                  </div>
+                  <div id="tripDistance">
+                    <ion-icon class="noteIcon" color="secondary" name="analytics-outline"></ion-icon>
+                    <div class="noteText" color="warning">{{tripDistance}} KMs.</div>
+                  </div>
+                </div>
+                          <ion-icon color="tertiary" class="buttonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline" size="big">
+                          </ion-icon>
+                <ion-icon class="buttonIcon" color="success" (click)="startTrip()"  name="play-circle-outline" size="big"></ion-icon>
+
             </div>
       </div>
+
+
       <div id="tripStepDetails">
           <h3 id="currentManeuver">{{currentManeuver}}</h3>
           <div id="stepIcon" class="directions-icon-{{currentManeuvreIcon}}"></div>
       </div>
 
+      <div id="newtripContainer">
+        <div class="flexMiddleRow">
+          <ion-icon color="danger" class="smallButtonIcon" (click)="stopTrip()" name="stop-circle-outline"></ion-icon>
+          <h4 id="tripDestination">{{tripDestination}}</h4>
+          <div id="estimatedHorizontal">
+                  <div id="tripDuration">
+                    <ion-icon class="noteIcon" color="primary" name="time-outline"></ion-icon>
+                    <div class="noteText" color="primary">{{eta}} mins.</div>
+                  </div>
+                  <div id="tripDistance">
+                    <ion-icon class="noteIcon" color="primary" name="analytics-outline"></ion-icon>
+                    <div class="noteText" color="primary">{{dta}} KMs.</div>
+                  </div>
+                </div>
+          <ion-icon color="tertiary" class="smallButtonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline">
+          </ion-icon>
 
+        </div>
+      </div>
 
-      <div id="tripProgress" style="display: none !important">
-        <div id="ETA">{{eta}}</div>
-        <ion-progress-bar value="0.5"></ion-progress-bar>
-        <div id="DTA">{{dta}}</div>
+      <div id="tripProgress">
+        <div class="flexMiddleRow">
+          <ion-icon color="danger" class="smallButtonIcon" (click)="stopTrip()" name="stop-circle-outline"></ion-icon>
+
+          <ion-icon color="primary" class="noteIcon" name="car-outline"></ion-icon>
+          <ion-progress-bar value="{{tripProgressIndex}}"></ion-progress-bar>
+          <ion-icon color="success" class="noteIcon" name="location-outline"></ion-icon>
+          <!--<div id="estimatedHorizontal">
+            <div id="tripDuration">
+              <ion-icon class="noteIcon" color="primary" name="time-outline"></ion-icon>
+              <div class="noteText" color="primary">{{eta}} mins.</div>
+            </div>
+            <div id="tripDistance">
+              <ion-icon class="noteIcon" color="primary" name="analytics-outline"></ion-icon>
+              <div class="noteText" color="primary">{{dta}} KMs.</div>
+            </div>
+          </div>-->
+          <ion-icon color="tertiary" class="smallButtonIcon" (click)="addAnotherStopToTrip()"
+                name="add-circle-outline">
+          </ion-icon>
+
+        </div>
       </div>
 
 
@@ -90,6 +111,87 @@
       <h4>Buscando ubicación...</h4>
       <ion-spinner name="crescent"></ion-spinner>
     </div>
+
+    <div id="mapFabIcons">
+          <ion-menu-toggle id="menuButtonToggle" auto-hide="false">
+            <ion-fab-button color="light">
+              <ion-icon color="dark" name="menu-outline"></ion-icon>
+            </ion-fab-button>
+          </ion-menu-toggle>
+        <ion-fab id="fab-map-controls" slot="fixed"  vertical="bottom" size="small" horizontal="start" >
+          <ion-fab-button color="light" (click)="setCameraMode('POV')">
+            <ion-icon color="primary"  name="navigate-outline"></ion-icon>
+          </ion-fab-button>
+
+          <ion-fab-button color="light" (click)="setCameraMode('SKY')">
+            <ion-icon color="secondary" name="compass-outline"></ion-icon>
+          </ion-fab-button>
+
+          <ion-fab-button color="light" (click)="openModal('Search')">
+            <ion-icon color="success" name="search-outline"></ion-icon>
+          </ion-fab-button>
+
+          <ion-fab-button color="light" (click)="openModal('MapSettings')">
+            <ion-icon color="tertiary" name="map-outline"></ion-icon>
+          </ion-fab-button>
+
+        </ion-fab>
+      </div>
+<!-- <ion-fab id="fab-settings" slot="fixed" vertical="bottom" size="small" horizontal="start">
+        <ion-fab-button color="light">
+          <ion-icon color="danger" size="default" name="settings-outline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-list side="end">
+          <ion-fab-button color="light">
+            <ion-icon color="danger" size="default" name="contrast-outline"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button color="light">
+            <ion-icon color="danger" size="default" name="accessibility-outline"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button color="light" *ngIf="audioOn" (click)="toggleSpeaker()">
+            <ion-icon color="danger" size="default" name="volume-mute-outline"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button color="light" *ngIf="!audioOn" (click)="toggleSpeaker()">
+            <ion-icon color="danger" size="default" name="volume-high-outline"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button color="light">
+            <ion-icon color="danger" size="default" name="options-outline"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-button color="light">
+            <ion-icon color="danger" size="default" name="help-circle-outline"></ion-icon>
+          </ion-fab-button>
+
+        </ion-fab-list>
+      </ion-fab>
+        <ion-fab id="fab-user" slot="fixed" vertical="bottom" size="small" horizontal="start">
+
+              <ion-fab-button color="light">
+                <ion-icon color="warning" size="default" name="person-outline"></ion-icon>
+              </ion-fab-button>
+              <ion-fab-list side="end"  *ngIf="!userLoggedIn">
+                <ion-fab-button color="light" size="default">
+                  <ion-icon color="warning" name="add-outline"></ion-icon>
+                </ion-fab-button>
+              </ion-fab-list>
+
+              <ion-fab-list side="top"  *ngIf="userLoggedIn">
+                <ion-fab-button color="light" size="default">
+                  <ion-icon color="warning" name="log-out-outline"></ion-icon>
+                </ion-fab-button>
+                <ion-fab-button color="light" size="default">
+                    <ion-icon color="warning" name="stats-chart-outline"></ion-icon>
+                </ion-fab-button>
+                <ion-fab-button color="light" size="default">
+                  <ion-icon color="warning" name="bookmarks-chart-outline"></ion-icon>
+                </ion-fab-button>
+              </ion-fab-list>
+
+        </ion-fab>-->
+
   </div>
+
 </ion-content>
+
+
+
 

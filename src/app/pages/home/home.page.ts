@@ -1,6 +1,8 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { Position } from '@capacitor/geolocation';
 import { MenuController } from '@ionic/angular';
+import { ThemeService } from 'src/app/services/theme-service.service';
+import { ActionSheetService } from '../../services/action-sheet.service';
 import { CameraService } from '../../services/camera.service';
 import { DeviceOrientationService } from '../../services/device-orientation.service';
 import { GeoLocationService } from '../../services/geo-location.service';
@@ -8,6 +10,7 @@ import { IntersectionService } from '../../services/intersection.service';
 import { MapService } from '../../services/map.service';
 import { ModalService } from '../../services/modal.service';
 import { OsmService } from '../../services/osm.service';
+import { SensorService } from '../../services/sensor.service';
 import { SpeedService } from '../../services/speed.service';
 import { TripService } from '../../services/trip.service';
 import { VoiceService } from '../../services/voice.service';
@@ -18,10 +21,11 @@ import { VoiceService } from '../../services/voice.service';
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage implements OnInit, OnDestroy {
+export class HomePage implements AfterViewInit, OnDestroy {
 
-  public folder!: string;
-  private activatedRoute = inject(ActivatedRoute);
+  userLoggedIn: boolean = false;
+  audioOn: boolean = true;
+
   currentMaxSpeed: number = 0;
   currentSpeed: number = 0;
   currentSpeedometerNeedleRotation: number = 60;
@@ -33,6 +37,8 @@ export class HomePage implements OnInit, OnDestroy {
   currentManeuvreIcon: string = '';
   eta: number | undefined;
   dta: number | undefined;
+  tripProgressIndex: number = 0;
+  public osmClickedId: number = 0;
 
   constructor(
     public mapService: MapService,
@@ -46,12 +52,64 @@ export class HomePage implements OnInit, OnDestroy {
     private menuController: MenuController,
     private tripService: TripService,
     private intersectionService: IntersectionService,
+    private actionSheetService: ActionSheetService,  // Add this line
+    private themeService: ThemeService,
+    private sensorService: SensorService
   ) {
-
+    this.audioOn = this.voiceService.isSpeakerOn();
   }
 
-  ngOnInit() {
-    this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
+  waitAndRenderPage() {
+    setTimeout(() => {
+      const self = this;
+      this.mapService.initMap();
+
+      this.deviceOrientationService.startListeningHeading();
+      //this.deviceOrientationService.listenAcceleration();
+      this.speedService.startWatchingSpeedLimit();
+
+      this.geoLocationService.watchPosition((position, error) => {
+        if (error) {
+          console.error('Error watching position:', error);
+          return;
+        }
+        if (!position) return;
+
+        this.sensorService.updateGeolocation(position);
+        const smoothedLat = this.sensorService.getSensorLatitude();
+        const smoothedLng = this.sensorService.getSensorLongitude();
+        const smoothedPosition: Position = {
+          coords: {
+            latitude: smoothedLat,
+            longitude: smoothedLng,
+            accuracy: position.coords.accuracy,
+            altitude: position.coords.altitude,
+            altitudeAccuracy: position.coords.altitudeAccuracy,
+            heading: position.coords.heading,
+            speed: position.coords.speed
+          },
+          timestamp: position.timestamp
+        };
+
+        ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
+        if (((window as any).mapService as MapService).isRotating) {
+          ((window as any).mapService as MapService).updateMarkerState();
+        }
+        //((window as any).mapService as MapService).updateUserPosition();
+        //((window as any).mapService as MapService).userStreet(position);
+        /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
+          self.currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+        } */
+        const speed = position.coords.speed;
+        if (speed) {
+          self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
+          //self.currentSpeedometerNeedleRotation = self.needleRotation();
+        }
+      });
+    }, 500);
+  }
+
+  ngAfterViewInit() {
     const self = this;
 
     (window as any).mapService = this.mapService;
@@ -62,33 +120,15 @@ export class HomePage implements OnInit, OnDestroy {
     (window as any).intersectionService = this.intersectionService;
     (window as any).cameraService = this.cameraService;
     (window as any).deviceOrientationService = this.deviceOrientationService;
+    (window as any).sensorService = this.sensorService;
+
     (window as any).homePage = this;
-    this.mapService.initMap();
-
-    this.deviceOrientationService.listenAcceleration();
-    this.speedService.startWatchingSpeedLimit();
-
-    this.geoLocationService.watchPosition((position, error) => {
-      if (error) {
-        console.error('Error watching position:', error);
-        return;
-      }
-      if (!position) return;
-      ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(position);
-      ((window as any).mapService as MapService).updateUserMarkerPosition([position.coords.longitude, position.coords.latitude]);
-
-      //((window as any).mapService as MapService).userStreet(position);
-      /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
-        self.currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
-      } */
-      if (position.coords.speed) {
-        self.currentSpeed = Math.round(position.coords.speed * 60 * 60 / 1000);
-        //self.currentSpeedometerNeedleRotation = self.needleRotation();
-      }
-    });
+    this.waitAndRenderPage();
   }
 
-
+  toggleDarkLightMode() {
+    this.themeService.toggleTheme();
+  }
 
   alreadyGeoLocated() {
     const geoLocating = document.getElementById("geolocating");
@@ -113,22 +153,38 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Perform clean-up tasks here
     this.geoLocationService.stopLocationObserver();
-    this.deviceOrientationService.stopOrientation();
+    this.deviceOrientationService.stopListeningHeading();
     this.speedService.stopWatchingSpeedLimit();
     this.mapService.leaveMapPage();
     this.cancelTrip();
   }
 
-  public openModal(type: String) {
+  public openModal(type: String, extraParam?: any) {
     //this.voiceService.speak(`${type} modal opening`); // Dynamic speaking based on modal type
     this.menuController.close('main-menu');
-    this.modalService.openModal(type);
+    this.modalService.openModal(type, extraParam);
   }
 
   public setCameraMode(cameraMode: 'POV' | 'SKY') {
     //this.cameraService.setCameraMode(cameraMode);
-    if (cameraMode === 'POV') this.mapService.setCameraPOVPosition(this.geoLocationService.getLastCurrentLocation());
-    if (cameraMode === 'SKY') this.mapService.setCameraSKYPosition(this.geoLocationService.getLastCurrentLocation());
+    let snapedPosition: Position = {
+      coords: {
+        latitude: this.sensorService.getLastCurrentLocationPredicted()[1],
+        longitude: this.sensorService.getLastCurrentLocationPredicted()[0],
+        accuracy: 1,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: this.mapService.getUserMarker().getRotation(),
+        speed: null
+      },
+      timestamp: Date.now()
+    };
+    const speedSNAP = this.sensorService.getSensorSpeed();
+    if (speedSNAP) {
+      snapedPosition.coords.speed = speedSNAP;
+    }
+    if (cameraMode === 'POV') this.mapService.setCameraPOVPosition(snapedPosition);
+    if (cameraMode === 'SKY') this.mapService.setCameraSKYPosition(snapedPosition);
   }
 
   public toggleSpeedControl() {
@@ -136,11 +192,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   public toggleSpeaker() {
-    const isSpeakerOn = this.voiceService.toggleSpeaker();
-    const iconName = isSpeakerOn ? "volume-high-outline" : "volume-mute-outline";
-    const message = isSpeakerOn ? "Sonido habilitado" : "Sonido apagado. Recuerde conducir siempre con ambas manos en el volante.";
+    this.audioOn = this.voiceService.toggleSpeaker();
+    const message = this.audioOn ? "Sonido habilitado" : "Sonido apagado. Recuerde conducir siempre con ambas manos en el volante.";
     this.voiceService.speak(message);
-    this.updateVolumeIcon(iconName);
   }
 
   private updateVolumeIcon(iconName: string) {
@@ -177,11 +231,13 @@ export class HomePage implements OnInit, OnDestroy {
       this.currentManeuver = "";
       this.currentManeuvreIcon = "";
     }
+    const tripProgress = document.getElementById("tripProgress");
 
-    /* const tripControls = document.getElementById("tripControls");
-     if (tripControls) {
-       tripControls.style.display = "none";
-     }*/
+    if (tripProgress) tripProgress.style.display = "none";
+    /*const poste = document.getElementById("poste");
+    if (poste) { poste.style.display = "none"; }*/
+
+
 
     this.mapService.cancelTrip();
     this.setCameraMode('SKY');
@@ -196,17 +252,20 @@ export class HomePage implements OnInit, OnDestroy {
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
     if (tripDetailsContainer) {
       tripDetailsContainer.style.display = "block";
-      this.tripDistance = Math.round(this.mapService.actualRoute.route[0].distance) / 1000;
-      this.tripDuration = Math.round(this.mapService.actualRoute.route[0].duration / 60);
+      this.tripDistance = parseFloat(Math.round(this.mapService.actualRoute.distance / 1000).toFixed(2));
+      this.tripDuration = parseFloat(Math.round(this.mapService.actualRoute.duration / 60).toFixed(2));
       this.tripDestination = this.mapService.destination;
       this.tripDestinationAddress = this.mapService.destinationAddress;
-    }
-    /*const tripControls = document.getElementById("tripControls");
-    if (tripControls) {
-      tripControls.style.display = "block";
-    }*/
-  }
+      this.eta = this.tripDuration;
+      this.dta = this.tripDistance;
 
+
+      /*const tripControls = document.getElementById("tripControls");
+      if (tripControls) {
+        tripControls.style.display = "block";
+      }*/
+    }
+  }
   updateMarkerOrientation(event: DeviceOrientationEvent) {
     ((window as any).deviceOrientationService as DeviceOrientationService).setLastResult(event);
 
@@ -218,4 +277,36 @@ export class HomePage implements OnInit, OnDestroy {
   updateMarkerAccel(event: DeviceMotionEventAcceleration) {
 
   };
+
+  addAnotherStopToTrip() {
+    this.openModal("Search", true);
+  }
+
+  stopTrip() {
+    this.actionSheetService.askQuestionAorB("Terminar el viaje ahora?", "Cerrar el viaje guiado...", "Si, cancelar viaje", "No, continuar viaje y guías").then((result) => {
+      if (result) {
+        this.cancelTrip();
+      }
+    });
+
+  }
+
+  setDestinationOSMifAbortCurrent(destinationId: number) {
+    if (this.mapService.isTripStarted) {
+      this.actionSheetService.askQuestionAorB("¿Desea terminar el viaje actual y cambiar el destino?", "Cambiando destino actual...", "Si, cambiar el destino de mi viaje", "No, continuar viaje actual sin alterar el destino").then((result) => {
+        if (result) {
+          this.cancelTrip();
+          this.mapService.setDestinationOSM(destinationId);
+        }
+      });
+    } else {
+      this.mapService.setDestinationOSM(destinationId);
+
+    }
+  }
+
+  openInfoModalOSM(destinationId: number) {
+    this.osmClickedId = destinationId;
+    this.openModal("PlaceInfo");
+  }
 }

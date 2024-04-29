@@ -50,12 +50,14 @@ export class TripService {
       if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
         this.displayInstructions(currentStep);
         this.userCurrentStep = currentStep.step;
-        this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
+        //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
+        this.mapService.setCameraPOVPosition(userPosition);
       }
       if (currentStep.step > this.userCurrentStep) {
         this.displayInstructions(currentStep);
         this.userCurrentStep = currentStep.step;
-        this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
+        //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
+        this.mapService.setCameraPOVPosition(userPosition);
       }
       const shouldReRoute: boolean = currentStep.distance > 1; // Adjust threshold as needed
 
@@ -85,18 +87,24 @@ export class TripService {
       if (step.maneuver.type === 'roundabout' || step.maneuver.type === 'rotary') {
         icon = 'roundabout';
       }
+      /*const poste = document.getElementById("poste");
+      if (poste) { poste.style.display = "block"; }*/
       tripStepDetails.style.display = "block";
+      /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
+      if (instructions) instructions.style.display = "block";*/
+      const progress = document.getElementById("tripProgress");
+      if (progress) { progress.style.display = "block"; }
       ((window as any).homePage as HomePage).currentManeuver = this.route.steps[currentStep.step].maneuver.instruction;
       ((window as any).homePage as HomePage).currentManeuvreIcon = icon;
     }
 
     const voiceInstructions = this.route.steps[currentStep.step].maneuver.instruction;
-    await this.voiceService.speak(voiceInstructions);
+    this.voiceService.speak(voiceInstructions);
   }
 
   async reroute(): Promise<void> {
     // Reroute user if they are far away from the route
-    await this.voiceService.speak("Ajustando ruta...");
+    //this.voiceService.speak("Ajustando ruta...");
     // Call your rerouting logic here
 
   }
@@ -104,10 +112,12 @@ export class TripService {
   async finishTrip(): Promise<void> {
     // Cancel the trip and stop monitoring user's location
     clearInterval(this.locationInterval);
-    await this.voiceService.speak("Ha llegado a su destino.");
+    this.voiceService.speak("Ha llegado a su destino.");
     ((window as any).homePage as HomePage).cancelTrip(); // Your MapService with cancelTrip method
     this.lastDisplayedStep = -1; // Reset last displayed step
     this.userCurrentStep = 0; // Reset user's current step
+    const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
+    if (instructions) instructions.style.display = "none";
   }
 
   async cancelTrip(): Promise<void> {
@@ -116,6 +126,8 @@ export class TripService {
     this.lastDisplayedStep = -1; // Reset last displayed step
     this.userCurrentStep = 0; // Reset user's current step
     this.route = null; // Reset route information
+    const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
+    if (instructions) instructions.style.display = "none";
   }
 
 }

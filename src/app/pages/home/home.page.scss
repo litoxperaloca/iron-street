@@ -4,7 +4,6 @@
 :root {
   --container-text-color: #8c8c8c;
   --link-text-decoration: none;
-  --mapbox-position: absolute;
   --display-none: none !important;
 }
 
@@ -16,13 +15,6 @@ ion-menu-button {
 /* Container Styles */
 #container {
   text-align: center;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 56px;
-  bottom: 0;
-  width: 100%;
-  height: calc(100% - 56px);
 }
 
 #container strong {
@@ -42,11 +34,6 @@ ion-menu-button {
 }
 
 /* Mapbox Styles */
-#mapbox {
-  width: 100%;
-  height: 100%;
-  position: var(--mapbox-position);
-}
 
 /* Common Styling Patterns */
 .home-page-toolbar, .trip-details, .trip-controls,
@@ -59,67 +46,52 @@ ion-menu-button {
   display: none;
 }
 
-.map-container, .home-page-content {
-  position: relative;
-  width: 100%;
-  height: 100%;
+
+
+
+#mapFabIcons ion-fab, ion-fab{
+    --ion-color-light: #000;
+    position: relative;
 }
 
-/* Action Buttons Styling */
-.map-action-buttons, #mapFabIcons {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    display: block;
-    z-index: 5;
-    left: 0;
-    width: 100%;
-    height: 90px;
-    background: black;
-    padding: 5px;
+#fab-map-controls,#fab-user,#fab-settings{
+    position: relative;
 }
 
-#mapFabIcons ion-fab{
-    width: 100%;
-    display: flex;
-    align-content: center;
-    justify-content: space-evenly;
-    align-items: center;
-    flex-direction: row;
-    left: 0;
-    bottom: 0;
-    height: 90px;
-    right: 0;
+ion-fab ion-icon{
+    font-size: 24px !important;
+    --ionicon-stroke-width: 40pt;
 }
 
 
 /* Speed Indicators and Geolocation Status */
 #card_left {
   position: absolute;
-  top: 20px;
+  top: 10px;
   border-radius: var(--modal-border-radius);
   box-shadow: 0 2px 4px var(--shadow-color);
-  background-color: var(--home-toolbar-background);
+  background-color: transparent;
   color: var(--home-text-color);
   z-index: 10;
 }
 /* Dark Mode Specific Styles */
 @media (prefers-color-scheme: dark) {
-  #geolocating {
-    background-color: var(--home-dark-secondary-color);
-    color: var(--home-dark-text-color);
-    display: block;
-  }
+
 }
 
-/* Additional Map Container Styles */
-.map-container {
-  position: sticky;
-  height: 100%;
-  width: 100%;
-  min-height: 100%;
-  min-width: 100%;
-}
+
+ #geolocating {
+    background-color: transparent;
+    color: white;
+    display: block;
+    position: absolute;
+    width: 100%;
+    bottom: 25px;
+    left: 0;
+    margin: auto;
+    font-size: 16pt;
+    font-weight: 600;
+  }
 
 /* Power Button Styling */
 #powerButton {
@@ -129,12 +101,18 @@ ion-menu-button {
 }
 
 /* Fab Icons Positioning */
-#mapFabIcons .fab-vertical-bottom {
-  bottom: inherit !important;
+#mapFabIcons{
+    position: absolute;
+    bottom: 160px;
+
 }
 
 #mapFabIcons ion-fab-button {
-  margin-bottom: 10px !important;
+margin-bottom: 15px !important;
+    box-shadow: 0px 0px 6px 2px #607D8B;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
 }
 
 /* Map Style Option Styling */
@@ -235,10 +213,12 @@ ion-card-header.max, ion-card-header.current {
 }
 
 ion-card-header.max {
-  background: #fff !important;
-  border: 3px solid #6c1313 !important;
-  color: #6c1313;
-  margin-bottom: 20px;
+    margin: 0;
+    float: right;
+    background: #fff !important;
+    border: 3px solid #6c1313 !important;
+    color: #6c1313;
+    box-shadow: 2px 2px 7px 1px #000000;
 
 }
 
@@ -249,18 +229,22 @@ span.smallSize{
 
 
 ion-card-header.current {
-  background: #000 !important;
-  border: 3px solid #fff !important;
-  color: #fff;
-  float: left; /* Aligns to the left */
+background: #000 !important;
+    border: 3px solid #fff !important;
+    color: #fff;
+    float: right;
+    margin-top: 5px;
+box-shadow: 2px 2px 7px 1px #000000;
 }
 
 .card_right, .card_left {
-  position: absolute;
-  top: 20px;
-  border: none;
-  box-shadow: none;
-  background: transparent !important;
+position: absolute;
+    top: 20px;
+    border-radius: var(--modal-border-radius);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    background-color: var(--home-toolbar-background);
+    color: var(--home-text-color);
+    z-index: 10;
 }
 
 .card_right {
@@ -271,20 +255,23 @@ ion-card-header.current {
 }
 
 .card_left {
-  right: 20px;
-  width: 72px;
-  height: 164px;
+right: 5px;
+    width: 75px;
+    height: 170px;
+    margin: 0;
 }
 
 .mapboxgl-user-location-puk-dot:before {
-    background-color: #3ee536;
+    background-color: #079421;
     border-radius: 50%;
-    height: 20px;
-    width: 20px;
-    left: 0px;
-    animation: mapboxgl-user-location-dot-pulse 3s infinite;
+    height: 30px;
+    width: 30px;
+    left: -5px;
+    top: -5px;
+    animation: mapboxgl-user-location-dot-pulse 1.3s infinite;
     content: "";
     position: absolute;
+    box-shadow: 0px 0px 10px 3px #E91E63;
 }
 
 .mapboxgl-user-puk{
@@ -298,39 +285,255 @@ ion-card-header.current {
     background-size: 100% 100%;
 }
 
-#tripDetailsContainer{
+#newtripContainer{
+   display: none;
+}
+
+#tripDetailsContainer {
     position: absolute;
-    bottom: 90px;
-    background: #3880ff;
-    width: 100%;
-    left: 0;
-    right: 0;
-    padding: 10px;
+    bottom: 0px;
+    background: #090b1a;
+    z-index: 5;
+    padding: 5px;
+    left: 0px;
+    right: 0px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-top:2px solid var(--ion-color-secondary);
+
+    /*box-shadow: 1px 1px 5px 1px var(--ion-color-primary)*/;
 }
 
 #tripDuration{
-    float: left;
-    font-size: larger;
-    color: lawngreen;
+    display: flex;
+    justify-content: stretch;
 }
 
 #tripDistance{
-    float: right;
-    font-size: larger;
-    color: lawngreen;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center;
 }
 
 
 #stepIcon{
     width: 30px;
     height: 30px;
-    background: #3880ff;
     border-radius: 50%;
-    color: white;
     text-align: center;
     line-height: 30px;
-    font-size: 20px;
-    float: left;
-    margin-right: 10px;
+    position: relative;
+    background-size: cover;
+    margin: 0 auto;
 }
 
+#tripStepDetails{
+    box-shadow: #00000087 1px 6px 7px 1px;
+    position: absolute;
+    left: 10px;
+    right: 95px;
+    top: 14px;
+    background: url(/assets/img/map-icons/ledscreen.png);
+    background-size: 100% 100%;
+    border: 1px solid #ffffff;
+    border-radius: 20px;
+    z-index: 3;
+    color: #ff6c3e;
+    padding: 13px;
+  display: none;
+}
+#currentManeuver{
+    font-family: e1234;
+    font-size: 18pt;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+#poste{
+    display: none;
+    position: absolute;
+    left: 0;
+    height: 54px;
+    width: 100%;
+    top: 5px;
+    background: url(/assets/img/map-icons/viga.png);
+    background-repeat: round;
+    right: 0;
+    z-index: 2;
+    opacity: .9;
+    box-shadow: 0 0 20px 5px #000;
+    background-size: contain;
+}
+
+.mapboxgl-ctrl-top-right{
+    right: 0;
+    top: 0;
+    width: 100%;
+}
+
+#tripDetailsContainer h4{
+font-size: 12pt;
+    margin: 5px;
+    font-weight: 600;
+    /* font-weight: 500; */
+    color: var(--ion-text-color);
+}
+
+.tripStepDetails h3{
+    font-size: 16px;
+    margin: 0;
+    font-weight: 500;
+}
+
+#tripProgress{
+    display: none;
+    position: absolute;
+    bottom: 0px;
+    background: #090b1a;
+    z-index: 5;
+    left: 0px;
+    right: 0px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-top:2px solid var(--ion-color-secondary);
+    height: 50px;
+}
+
+.flexEqualRow{
+  display: flex;
+  justify-content: space-around;
+  margin: auto;
+}
+
+.flexEqualRowCeroMargin{
+    font-size: 30px;
+    --ionicon-stroke-width: 40px;
+        display: flex;
+    justify-content: space-around;
+}
+
+
+.buttonIcon{
+  font-size: 35px;
+  --ionicon-stroke-width: 40px;
+  margin: auto;
+}
+
+.noteIcon{
+  font-size: 30px;
+  --ionicon-stroke-width: 40px;
+  width: 70px;
+  height: 30pt;
+
+}
+
+#tripDuration .noteIcon, #tripDistance .noteIcon{
+    display: flex;
+    width: 25px;
+    height: 25px;
+}
+
+#tripDuration .noteText, #tripDistance .noteText{
+    font-size: 12pt;
+    color: var(--ion-color-secondary);
+    /* font-weight: 500; */
+    margin-left: 5px;
+}
+
+.smallButtonIcon{
+      width: 65pt;
+    margin-bottom: 10px;
+    margin-right: 10px;
+        margin-left: 10px;
+  font-size: 40px;
+   --ionicon-stroke-width: 40px;
+}
+
+ion-progress-bar .progress{
+    background: var(--ion-color-success);
+    z-index: 2;
+}
+
+ion-progress-bar .progress-buffer-bar {
+    background: #F44336;
+    z-index: 1;
+}
+
+
+.noteText{
+    font-size: 12px;
+    color: var(--ion-color-secondary);
+    /* font-weight: 500; */
+    margin-left: 10px;
+
+}
+
+#tripDistance, #tripDuration{
+    display: inline-flex;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#estimated{
+  display: flex;
+  justify-content: space-around;
+  margin: auto;
+}
+
+.estimatedHorizontal{
+  display: flex;
+  justify-content: space-around;
+}
+
+
+.flexMiddleRow{
+    display: flex;
+    padding: 2px;
+    margin: 5px;
+}
+
+ion-progress-bar{
+  margin-top: 14px;
+}
+
+
+ion-toolbar ion-button, ion-toolbar ion-buttons, ion-toolbar button{
+    height: 80px;
+
+}
+
+ion-toolbar ion-icon{
+
+    font-size: 28px;
+    height: 50px;
+    width: 43px;
+}
+
+ion-toolbar{
+      height: 80px;
+}
+
+#buttonbar{
+    justify-content: space-evenly;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: transparent;
+    z-index: 5;
+    /* padding: 5px; */
+    display: flex;
+}
+
+
+
+#buttonbar ion-button, #buttonbar ion-button ion-icon{
+  border-radius: 50% !important;
+}
+
+#menuButtonToggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}

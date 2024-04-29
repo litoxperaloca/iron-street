@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Geolocation, Position } from '@capacitor/geolocation';
+import { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import * as turf from '@turf/turf';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { HomePage } from '../pages/home/home.page';
 import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service';
 import { OsmService } from './osm.service';
+import { SensorService } from './sensor.service';
 import { WindowService } from './window.service';
 
 
@@ -22,7 +24,8 @@ export class SpeedService {
   constructor(private osmService: OsmService,
     private mapService: MapService,
     private geoLocationService: GeoLocationService,
-    private windowService: WindowService) {
+    private windowService: WindowService,
+    private sensorService: SensorService) {
 
   }
 
@@ -87,7 +90,7 @@ export class SpeedService {
       if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
         ((window as any).homePage as HomePage).currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
       }
-    }, 3000); // Check every 5 seconds (adjust interval as needed)
+    }, 1100); // Check every 5 seconds (adjust interval as needed)
   }
 
 
@@ -100,6 +103,7 @@ export class SpeedService {
 
 
   userStreet(position: Position) {
+    const self = this;
     const map = ((window as any).mapService as MapService).getMap();
 
     if (!position || !map.getLayer("maxspeedDataLayer")) {
@@ -133,6 +137,11 @@ export class SpeedService {
         });
 
         ((window as any).mapService as MapService).userCurrentStreet = closestFeature;
+        const cF: MapboxGeoJSONFeature | null = ((window as any).mapService as MapService).userCurrentStreet;
+        if (cF != null && cF.geometry && cF.geometry.type == 'LineString' && cF.geometry.coordinates && cF.geometry.coordinates.length > 0) {
+          const nearestPoint: NearestPointOnLine = turf.nearestPointOnLine(turf.lineString(cF.geometry.coordinates), userPoint);
+          ((window as any).sensorService as SensorService).updateSnapToRoadPosition(nearestPoint.geometry.coordinates, cF, nearestPoint)
+        }
       }
     }
   }

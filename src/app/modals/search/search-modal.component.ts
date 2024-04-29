@@ -4,8 +4,10 @@ import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { InfiniteScrollCustomEvent, ModalController, NavParams } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 import { AmazonLocationServiceService } from '../../services/amazon-location-service.service';
+import { GeoLocationService } from '../../services/geo-location.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
 import { ModalService } from '../../services/modal.service';
+import { OsmService } from '../../services/osm.service';
 
 @Component({
   selector: 'app-search-modal',
@@ -16,8 +18,11 @@ export class SearchModalComponent {
   currentSegment: string = 'buscar'; // Default to the first tab
   searchTerm: string = '';
   suggestions: any[] = [];
+  places: Place[] = [];
   isLoading: boolean = false;
   showTooltip: boolean = false;
+  extraParam: boolean = false;
+  categories: { name: string, icon: string, type: string, marker: string, labelPropertyIndex: string }[] = environment.ironUiConfig.categories;
   /*
     @ViewChild('dawn', { static: false }) dawnElement!: ElementRef;
     @ViewChild('day', { static: false }) dayElement!: ElementRef;
@@ -36,8 +41,16 @@ export class SearchModalComponent {
     private navParams: NavParams,
     private modalService: ModalService,
     private mapService: MapService,
-    private amazonLocationServiceService: AmazonLocationServiceService
-  ) { }
+    private amazonLocationServiceService: AmazonLocationServiceService,
+    private osmService: OsmService,
+    private geoLocationService: GeoLocationService
+  ) {
+    if (this.navParams.get('isFinalDestination')) {
+      this.extraParam = this.navParams.get('extraParam'); // Accessing the passed parameter
+
+    }
+
+  }
 
 
 
@@ -71,6 +84,7 @@ export class SearchModalComponent {
 
   async searchAWS(searchMpde: string) {
     if (this.searchTerm.length >= 4) {
+      this.isLoading = true;
       /*const url = `https://search-places-2kzj2k5lq4v5x7y7qz7z4v7j7m.us-east-1.es.amazonaws.com/places/_search`;
       const params = {
         q: this.searchTerm,
@@ -86,18 +100,50 @@ export class SearchModalComponent {
         await this.amazonLocationServiceService.searchByText(this.searchTerm).then((response: Place[] | undefined) => {
           console.log(response);
           if (response) this.suggestions = response;
+          this.isLoading = false;
         });
 
       } else {
         await this.amazonLocationServiceService.suggestPlace(this.searchTerm).then((response: SearchForSuggestionsResults) => {
           console.log(response);
           this.suggestions = response;
+          this.isLoading = false;
         });
       }
     } else {
       this.suggestions = [];
+      this.isLoading = false;
     }
 
+  }
+
+  iconUrl(icon: string): string {
+    return `assets/img/map-icons/${icon}.svg`;
+  }
+
+  async loadPlaces(category: { name: string, icon: string, type: string, marker: string, labelPropertyIndex: string }) {
+    const userLocation = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Ensure you have a method to get the current location
+    if (!userLocation) {
+      console.error('User location is not available');
+      return;
+    }
+    const bbox = this.geoLocationService.createBoundingBox(userLocation.coords, 5); // Adjust the distance as needed
+    this.isLoading = true;
+    try {
+      this.osmService.getNearPlacesData(bbox, category.type).then((response: HttpResponse) => {
+        const data = response.data;
+        console.log(data);
+        this.places = data.features;
+        this.isLoading = false;
+        this.mapService.addPlacesPoints(data.elements, category);
+        this.dismiss();
+      });
+    } catch (error) {
+      console.error('Failed to load places:', error);
+      this.places = [];
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   getSuggestionIcon(suggestion: any): string {
@@ -136,7 +182,12 @@ export class SearchModalComponent {
   }
 
   setDestinationFromPlace(destination: Place) {
-    if (destination) this.mapService.setDestination(destination);
+    if (this.extraParam) {
+      if (destination) this.mapService.addWaypoint(destination);
+    } else {
+      if (destination) this.mapService.setDestination(destination);
+
+    }
     this.dismiss();
 
   }

@@ -3,6 +3,7 @@ import { Geolocation, Position } from '@capacitor/geolocation';
 import * as turf from '@turf/turf';
 import { Point } from 'geojson';
 import { environment } from 'src/environments/environment';
+import { GeoLocationMockService } from '../mocks/geo-location-mock.service';
 import { MapService } from './map.service';
 import { SpeedService } from './speed.service';
 @Injectable({
@@ -23,7 +24,7 @@ export class GeoLocationService {
     this.lastCurrentLocation = position;
   }
 
-  constructor(private mapService: MapService, private speedService: SpeedService) { }
+  constructor(private geoLocationMockService: GeoLocationMockService, private mapService: MapService, private speedService: SpeedService) { }
 
   getLastValidCurrentPosition(): Position {
     return this.currentPosition;
@@ -36,12 +37,18 @@ export class GeoLocationService {
         await Geolocation.requestPermissions();
       }
       const options = {
-        maximumAge: 4000,
+        maximumAge: 1100,
         timeout: 10000,
         enableHighAccuracy: true,
       };
       const coordinates = await Geolocation.getCurrentPosition(options);
-      return coordinates;
+      if (environment.mocking) {
+        const coords: Position = this.geoLocationMockService.getNextPosition();
+        return coords;
+      } else {
+        return coordinates;
+      }
+
     } catch (e) {
       console.error('Error getting location', e);
       return null;
@@ -51,7 +58,7 @@ export class GeoLocationService {
   async startLocationObserver() {
     let self = this;
     const options = {
-      maximumAge: 4000,
+      maximumAge: 1100,
       timeout: 10000,
       enableHighAccuracy: true,
     };
@@ -72,7 +79,7 @@ export class GeoLocationService {
   // Nuevo método para observar cambios en la posición
   async watchPosition(callback: (position: Position | null, error?: any) => void) {
     const options = {
-      maximumAge: 4000,
+      maximumAge: 1100,
       timeout: 10000,
       enableHighAccuracy: true,
     };
@@ -81,7 +88,15 @@ export class GeoLocationService {
         callback(null, error);
         return;
       }
-      callback(position);
+      let coords: Position = this.geoLocationMockService.getNextPosition();
+
+      if (environment.mocking) {
+        callback(coords);
+
+      } else {
+        callback(position);
+
+      }
     });
 
     return this.watchID;

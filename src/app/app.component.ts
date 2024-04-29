@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
+import { AuthenticatorService } from '@aws-amplify/ui-angular';
 import { ThemeService } from './services/theme-service.service';
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -8,17 +10,20 @@ import { ThemeService } from './services/theme-service.service';
 export class AppComponent {
 
   public appPages = [
-    { title: 'Mapa', url: '/home/map', icon: 'map' },
-    { title: 'Registrarse / Login', url: '/signin', icon: 'paper-plane' },
-    { title: 'Favoritos', url: '/folder/favorites', icon: 'heart' },
-    { title: 'Historial', url: '/folder/history', icon: 'archive' },
-    { title: 'Contacto', url: '/folder/contact', icon: 'trash' },
-    { title: 'Preguntas frecuentes', url: '/folder/faq', icon: 'trash' },
-    { title: 'Política de privacidad', url: '/folder/privacy', icon: 'trash' },
-    { title: 'Términos y condiciones', url: '/folder/tos', icon: 'warning' },
-    { title: 'Sobre Iron Street', url: '/folder/about', icon: 'warning' },
-
+    { title: 'Mapa, viajes, rutas...', url: '/home', icon: 'map' },
+    { title: 'Registrarse / Login', url: '/auth', icon: 'person' },
+    { title: 'Suscribite y ganá', url: '/subscribe', icon: 'ticket' },
+    { title: 'Novedades', url: '/blog', icon: 'newspaper' },
+    { title: 'Configuración', url: '/conf', icon: 'options' },
+    { title: 'Premios y recompensas', url: '/rewards', icon: 'trophy' },
+    { title: 'Sobre Iron Street', url: '/about', icon: 'information' },
+    { title: 'Sobre tránsito', url: '/driving', icon: 'shield-checkmark' },
+    { title: 'Asistencia y tutoriales', url: '/help', icon: 'help' },
+    { title: 'Política de privacidad', url: '/privacy', icon: 'document-text' },
+    { title: 'Términos y condiciones', url: '/tos', icon: 'document-text' },
+    { title: 'Contacto', url: '/contact', icon: 'chatbubble-ellipses' },
+    /*{ title: 'TEST: COMO ANTES', url: '/test', icon: 'warning' },*/
   ];
-  public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
-  constructor(private themeService: ThemeService) { this.themeService.applyTheme(); }
+
+  constructor(public authenticator: AuthenticatorService, private themeService: ThemeService) { this.themeService.applyTheme(); }
 }

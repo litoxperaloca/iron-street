@@ -11,7 +11,7 @@ ion-menu {
   ion-note {
     display: inline-block;
     font-size: 16px;
-    color: var(--ion-color-medium-shade);
+    color: var(--ion-color-dark);
     line-height: 24px;
     margin-bottom: 20px; /* Default margin-bottom for both platforms */
   }
@@ -34,11 +34,12 @@ ion-menu {
 
     ion-icon {
       font-size: 24px; /* Default font-size for iOS, consider if adjustment needed for MD */
-      color: #616e7e; /* Default icon color, overridden for iOS below */
+      color: var(--ion-color-dark); /* Default icon color, overridden for iOS below */
     }
 
     ion-label {
-      font-weight: 500;
+    font-weight: 600;
+    font-size: 13pt;
     }
   }
 }
@@ -64,13 +65,14 @@ ion-menu.md {
       font-size: 22px;
       font-weight: 600;
       min-height: 20px;
+      color: var(--ion-color-primary);
     }
   }
 
   ion-list#labels-list ion-list-header {
     font-size: 16px;
     margin-bottom: 18px;
-    color: #757575;
+   color: var(--ion-color-primary);
     min-height: 26px;
   }
 }
@@ -88,7 +90,7 @@ ion-menu.ios {
     --padding-start: 16px; /* iOS specific padding */
     --padding-end: 16px;
     ion-icon {
-      color: #73849a; /* iOS specific icon color */
+      color: var(--ion-color-dark); /* iOS specific icon color */
     }
   }
 
