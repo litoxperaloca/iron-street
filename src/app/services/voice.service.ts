@@ -11,19 +11,14 @@ export class VoiceService {
 
   async speak(text: string): Promise<void> {
     if (!this.speakerStatus) return;
-
-    try {
-      await TextToSpeech.speak({
-        text,
-        lang: 'es-ES', // Define el idioma aquí o usa una variable si necesitas cambiarlo
-        rate: 1.1, // Define la velocidad de la voz
-        pitch: 1.1, // Define el tono de la voz
-        volume: 1.0, // Define el volumen
-        category: 'ambient', // Define la categoría, 'ambient' es útil para apps de navegación
-      });
-    } catch (error) {
-      console.error('Error al intentar usar TextToSpeech:', error);
-    }
+    await TextToSpeech.speak({
+      text,
+      lang: 'es-ES', // Define el idioma aquí o usa una variable si necesitas cambiarlo
+      //rate: 1.1, // Define la velocidad de la voz
+      //pitch: 1.1, // Define el tono de la voz
+      // volume: 1.0, // Define el volumen
+      category: 'playback', // Define la categoría, 'ambient' es útil para apps de navegación
+    });
   }
 
   toggleSpeaker(): boolean {

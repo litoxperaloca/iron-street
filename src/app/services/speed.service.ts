@@ -86,11 +86,32 @@ export class SpeedService {
 
 
       const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
-      self.userStreet(userPosition);
-      if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
-        ((window as any).homePage as HomePage).currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+      if (userPosition == self.lastPosition) {
+        //console.log("No hay cambio de posición");
+      } else {
+        self.lastPosition = userPosition;
+        self.userStreet(userPosition);
+        if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
+          ((window as any).homePage as HomePage).currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+        }
       }
     }, 1100); // Check every 5 seconds (adjust interval as needed)
+  }
+
+  locationUpdate(): void {
+    // Periodically check user's location and update current step
+    const self = this;
+    const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
+    if (userPosition == self.lastPosition) {
+      //console.log("No hay cambio de posición");
+      return;
+    }
+    self.lastPosition = userPosition;
+    self.userStreet(userPosition);
+    if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
+      ((window as any).homePage as HomePage).currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+    }
+
   }
 
 

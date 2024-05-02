@@ -37,9 +37,7 @@
           </ion-searchbar>
 
         <!-- Suggestions and Loading Logic Remains the Same -->
-        <div *ngIf="isLoading">
-          <ion-spinner name="crescent"></ion-spinner>
-        </div>
+
         <div *ngIf="!isLoading">
           <ion-list *ngIf="suggestions.length > 0; else noSuggestions">
             <ion-item *ngFor="let suggestion of suggestions;"
@@ -68,9 +66,7 @@
       <div id="lugares" *ngIf="currentSegment === 'lugares'" class="segment-content">
         <h2 color="success">Lugares cercanos...</h2>
         <!-- Additional content for Lugares -->
-                <div class="searchLoader" *ngIf="isLoading">
-                  <ion-spinner name="crescent"></ion-spinner>
-                </div>
+
         <ion-grid *ngIf="!isLoading">
           <ion-row>
             <ion-col size="6" *ngFor="let category of categories">
@@ -86,5 +82,9 @@
       <div *ngIf="currentSegment === 'favoritos'" class="segment-content">
         <h2 color="warning">Favoritos</h2>
         <!-- Additional content for Favoritos -->
+      </div>
+
+      <div *ngIf="segmentIsLoading[currentSegment]">
+        <ion-spinner name="crescent" class="centeredSpinner"></ion-spinner>
       </div>
     </ion-content>

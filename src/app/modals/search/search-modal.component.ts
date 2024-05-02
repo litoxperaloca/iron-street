@@ -20,6 +20,9 @@ export class SearchModalComponent {
   suggestions: any[] = [];
   places: Place[] = [];
   isLoading: boolean = false;
+
+  segmentIsLoading: any = { 'buscar': false, 'lugares': false, 'favoritos': false, 'recientes': false, 'historial': false };
+
   showTooltip: boolean = false;
   extraParam: boolean = false;
   categories: { name: string, icon: string, type: string, marker: string, labelPropertyIndex: string }[] = environment.ironUiConfig.categories;
@@ -85,6 +88,8 @@ export class SearchModalComponent {
   async searchAWS(searchMpde: string) {
     if (this.searchTerm.length >= 4) {
       this.isLoading = true;
+      this.segmentIsLoading['buscar'] = true;
+
       /*const url = `https://search-places-2kzj2k5lq4v5x7y7qz7z4v7j7m.us-east-1.es.amazonaws.com/places/_search`;
       const params = {
         q: this.searchTerm,
@@ -101,6 +106,8 @@ export class SearchModalComponent {
           console.log(response);
           if (response) this.suggestions = response;
           this.isLoading = false;
+          this.segmentIsLoading['buscar'] = false;
+
         });
 
       } else {
@@ -129,13 +136,17 @@ export class SearchModalComponent {
     }
     const bbox = this.geoLocationService.createBoundingBox(userLocation.coords, 5); // Adjust the distance as needed
     this.isLoading = true;
+    this.segmentIsLoading['lugares'] = true;
+
     try {
       this.osmService.getNearPlacesData(bbox, category.type).then((response: HttpResponse) => {
         const data = response.data;
         console.log(data);
         this.places = data.features;
-        this.isLoading = false;
         this.mapService.addPlacesPoints(data.elements, category);
+        this.isLoading = false;
+        this.segmentIsLoading['lugares'] = false;
+
         this.dismiss();
       });
     } catch (error) {
@@ -143,6 +154,8 @@ export class SearchModalComponent {
       this.places = [];
     } finally {
       this.isLoading = false;
+      this.segmentIsLoading['lugares'] = false;
+
     }
   }
 

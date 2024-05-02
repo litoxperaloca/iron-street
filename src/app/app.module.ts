@@ -26,11 +26,13 @@ import { AppComponent } from './app.component';
 import { GeoLocationMockService } from './mocks/geo-location-mock.service';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
 import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-modal.component';
+import { AlertService } from './services/alert.service';
 import { AmazonLocationServiceService } from './services/amazon-location-service.service';
 import { DeviceOrientationService } from './services/device-orientation.service';
 import { MapService } from './services/map.service';
 import { ModalService } from './services/modal.service';
 import { ThemeService } from './services/theme-service.service';
+import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
 
@@ -83,7 +85,9 @@ Amplify.configure(awsconfig);
       ThemeService,
       WordpressService,
       AuthenticatorService,
-      GeoLocationMockService
+      GeoLocationMockService,
+      TripSimulatorService,
+      AlertService
     ],
   bootstrap: [AppComponent],
 })

@@ -14,7 +14,7 @@
         <div id="speedometer">{{ getSpeed() }} km/h</div>
       </div>-->
       <div id="poste"></div>
-
+      <div id="simulation" *ngIf="simulation">SIMULANDO VIAJE</div>
       <div id="tripDetailsContainer">
             <h4 id="tripDestination">{{tripDestination}}</h4>
 
@@ -23,15 +23,15 @@
                 <ion-icon class="buttonIcon" color="danger" (click)="cancelTrip()" name="close-circle-outline" size="big"></ion-icon>
                 <div id="estimated">
                   <div id="tripDuration">
-                    <ion-icon class="noteIcon" color="primary" name="time-outline"></ion-icon>
                     <div class="noteText" color="warning">{{tripDuration}} mins.</div>
                   </div>
                   <div id="tripDistance">
-                    <ion-icon class="noteIcon" color="secondary" name="analytics-outline"></ion-icon>
                     <div class="noteText" color="warning">{{tripDistance}} KMs.</div>
                   </div>
                 </div>
-                          <ion-icon color="tertiary" class="buttonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline" size="big">
+               <ion-icon class="buttonIcon" color="warning" (click)="simulateTrip()" name="videocam-outline" size="big"></ion-icon>
+
+                <ion-icon color="tertiary" class="buttonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline" size="big">
                           </ion-icon>
                 <ion-icon class="buttonIcon" color="success" (click)="startTrip()"  name="play-circle-outline" size="big"></ion-icon>
 

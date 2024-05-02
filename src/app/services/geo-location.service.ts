@@ -14,6 +14,7 @@ export class GeoLocationService {
   private currentPosition: any = null;
   private lastCurrentLocation: any;
   private lastBboxCalculatedForDataIncome: any = null;
+  public mocking: boolean = false;
 
   getLastCurrentLocation(): Position {
     return this.lastCurrentLocation;
@@ -42,9 +43,14 @@ export class GeoLocationService {
         enableHighAccuracy: true,
       };
       const coordinates = await Geolocation.getCurrentPosition(options);
-      if (environment.mocking) {
-        const coords: Position = this.geoLocationMockService.getNextPosition();
-        return coords;
+      if (environment.mocking && this.mocking) {
+        const coords: Position = await this.geoLocationMockService.getNextPosition();
+        if (coords.coords.latitude === 0 && coords.coords.longitude === 0) {
+          //console.log('Termino la simulacion');
+          return coordinates;
+        } else {
+          return coords;
+        }
       } else {
         return coordinates;
       }
@@ -79,19 +85,24 @@ export class GeoLocationService {
   // Nuevo método para observar cambios en la posición
   async watchPosition(callback: (position: Position | null, error?: any) => void) {
     const options = {
-      maximumAge: 1100,
-      timeout: 10000,
+      maximumAge: 3000,
+      timeout: 6000,
       enableHighAccuracy: true,
     };
-    this.watchID = await Geolocation.watchPosition(options, (position, error) => {
+    this.watchID = await Geolocation.watchPosition(options, async (position, error) => {
       if (error) {
         callback(null, error);
         return;
       }
-      let coords: Position = this.geoLocationMockService.getNextPosition();
+      if (environment.mocking && this.mocking) {
+        let coords: Position = await this.geoLocationMockService.getNextPosition();
+        if (coords.coords.latitude === 0 && coords.coords.longitude === 0) {
+          callback(position);
+          //console.log("Termino la simulacion")
+        } else {
+          callback(coords);
 
-      if (environment.mocking) {
-        callback(coords);
+        }
 
       } else {
         callback(position);

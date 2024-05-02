@@ -1,7 +1,9 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
 import { MenuController } from '@ionic/angular';
+import { GeoLocationMockService } from 'src/app/mocks/geo-location-mock.service';
 import { ThemeService } from 'src/app/services/theme-service.service';
+import { TripSimulatorService } from 'src/app/services/trip-simulator.service';
 import { ActionSheetService } from '../../services/action-sheet.service';
 import { CameraService } from '../../services/camera.service';
 import { DeviceOrientationService } from '../../services/device-orientation.service';
@@ -39,6 +41,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   dta: number | undefined;
   tripProgressIndex: number = 0;
   public osmClickedId: number = 0;
+  simulation: boolean = false;
+  shouldEndSimulation: boolean = false;
 
   constructor(
     public mapService: MapService,
@@ -54,7 +58,9 @@ export class HomePage implements AfterViewInit, OnDestroy {
     private intersectionService: IntersectionService,
     private actionSheetService: ActionSheetService,  // Add this line
     private themeService: ThemeService,
-    private sensorService: SensorService
+    private sensorService: SensorService,
+    private tripSimulatorService: TripSimulatorService,
+    private geoLocationMockService: GeoLocationMockService,
   ) {
     this.audioOn = this.voiceService.isSpeakerOn();
   }
@@ -66,9 +72,10 @@ export class HomePage implements AfterViewInit, OnDestroy {
 
       this.deviceOrientationService.startListeningHeading();
       //this.deviceOrientationService.listenAcceleration();
-      this.speedService.startWatchingSpeedLimit();
+      //this.speedService.startWatchingSpeedLimit();
 
       this.geoLocationService.watchPosition((position, error) => {
+        console.log("ENTERED WATCH POSITION:", position);
         if (error) {
           console.error('Error watching position:', error);
           return;
@@ -94,6 +101,9 @@ export class HomePage implements AfterViewInit, OnDestroy {
         ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
         if (((window as any).mapService as MapService).isRotating) {
           ((window as any).mapService as MapService).updateMarkerState();
+        } else {
+          if (this.mapService.isTripStarted) { this.tripService.locationUpdate(false); }
+          this.speedService.locationUpdate();
         }
         //((window as any).mapService as MapService).updateUserPosition();
         //((window as any).mapService as MapService).userStreet(position);
@@ -104,6 +114,12 @@ export class HomePage implements AfterViewInit, OnDestroy {
         if (speed) {
           self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
           //self.currentSpeedometerNeedleRotation = self.needleRotation();
+        } else {
+          self.currentSpeed = 0;
+        }
+        if (self.shouldEndSimulation) {
+          self.cancelTripSimulation();
+          self.shouldEndSimulation = false;
         }
       });
     }, 500);
@@ -121,6 +137,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
     (window as any).cameraService = this.cameraService;
     (window as any).deviceOrientationService = this.deviceOrientationService;
     (window as any).sensorService = this.sensorService;
+    (window as any).tripSimulatorService = this.tripSimulatorService;
+    (window as any).geoLocationMockService = this.geoLocationMockService;
 
     (window as any).homePage = this;
     this.waitAndRenderPage();
@@ -153,8 +171,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     // Perform clean-up tasks here
     this.geoLocationService.stopLocationObserver();
-    this.deviceOrientationService.stopListeningHeading();
-    this.speedService.stopWatchingSpeedLimit();
+    //this.deviceOrientationService.stopListeningHeading();
+    //this.speedService.stopWatchingSpeedLimit();
     this.mapService.leaveMapPage();
     this.cancelTrip();
   }
@@ -204,6 +222,10 @@ export class HomePage implements AfterViewInit, OnDestroy {
     }
   }
 
+  public simulateTrip() {
+    this.simulation = true;
+    this.tripSimulatorService.simulateGuidedTrip();
+  }
 
   public startTrip() {
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
@@ -238,8 +260,39 @@ export class HomePage implements AfterViewInit, OnDestroy {
     if (poste) { poste.style.display = "none"; }*/
 
 
-
+    if (this.geoLocationService.mocking) {
+      this.geoLocationService.mocking = false;
+    }
     this.mapService.cancelTrip();
+    this.setCameraMode('SKY');
+  }
+
+  public cancelTripSimulation() {
+    this.simulation = false;
+    const tripDetailsContainer = document.getElementById("tripDetailsContainer");
+    if (tripDetailsContainer) {
+      tripDetailsContainer.style.display = "block";
+      //this.tripDistance = 0;
+      //this.tripDuration = 0;
+      //this.tripDestination = "";
+    }
+    const tripStepDetails = document.getElementById("tripStepDetails");
+    if (tripStepDetails) {
+      tripStepDetails.style.display = "none";
+      this.currentManeuver = "";
+      this.currentManeuvreIcon = "";
+    }
+    const tripProgress = document.getElementById("tripProgress");
+
+    if (tripProgress) tripProgress.style.display = "none";
+    /*const poste = document.getElementById("poste");
+    if (poste) { poste.style.display = "none"; }*/
+
+
+    if (this.geoLocationService.mocking) {
+      this.geoLocationService.mocking = false;
+    }
+    this.mapService.cancelTripSimulation();
     this.setCameraMode('SKY');
   }
 
@@ -283,11 +336,19 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   stopTrip() {
-    this.actionSheetService.askQuestionAorB("Terminar el viaje ahora?", "Cerrar el viaje guiado...", "Si, cancelar viaje", "No, continuar viaje y guías").then((result) => {
-      if (result) {
-        this.cancelTrip();
-      }
-    });
+    if (this.geoLocationService.mocking) {
+      this.actionSheetService.askQuestionAorB("¿Desea finalizar la simulación?", "Cerrando el viaje simulado...", "Si, cancelar viaje simulado", "No, continuar viaje simulado y guías").then((result) => {
+        if (result) {
+          this.shouldEndSimulation = true;
+        }
+      });
+    } else {
+      this.actionSheetService.askQuestionAorB("Terminar el viaje ahora?", "Cerrar el viaje guiado...", "Si, cancelar viaje", "No, continuar viaje y guías").then((result) => {
+        if (result) {
+          this.cancelTrip();
+        }
+      });
+    }
 
   }
 

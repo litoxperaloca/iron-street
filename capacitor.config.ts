@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
     allowNavigation: [
       'mapbox.com',
       '*.mapbox.com',
-      '*.mapboxcdn.com'
+      '*.mapboxcdn.com',
     ],
     cleartext: false,  // Enforce HTTPS, disallow HTTP to improve security
     androidScheme: 'https'
@@ -20,7 +20,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 3000,
       launchAutoHide: true,
-      backgroundColor: "#ffffffff",
+      backgroundColor: "#000000ff",
       androidSplashResourceName: "splash",
       iosSplashResourceName: "splash",
       splashFullScreen: true,

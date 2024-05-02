@@ -3,6 +3,9 @@ import { Geolocation, Position } from '@capacitor/geolocation';
 import * as turf from '@turf/turf';
 import { Point } from 'geojson';
 import { environment } from 'src/environments/environment';
+import { HomePage } from '../pages/home/home.page';
+import { AlertService } from '../services/alert.service';
+import { GeoLocationService } from '../services/geo-location.service';
 import { MapService } from '../services/map.service';
 import { SpeedService } from '../services/speed.service';
 
@@ -171,18 +174,43 @@ export class GeoLocationMockService {
     this.lastCurrentLocation = position;
   }
 
-  constructor(
-    private mapService: MapService,
-    private speedService: SpeedService) {
+  setCoordinates(coordinates: number[][]) {
+    this.coordinates = coordinates;
   }
 
-  getNextPosition() {
-    if (this.index >= this.coordinates.length) {
+  constructor(
+    private mapService: MapService,
+    private speedService: SpeedService,
+    private alertService: AlertService) {
+  }
+
+  async getNextPosition() {
+    if (this.index >= this.coordinates.length || ((window as any).homePage as HomePage).shouldEndSimulation) {
       this.index = 0; // Reset or stop navigation
+      environment.mocking = false;
+      ((window as any).geoLocationService as GeoLocationService).mocking = false;
+      if (!((window as any).homePage as HomePage).shouldEndSimulation) {
+        ((window as any).homePage as HomePage).shouldEndSimulation = true;
+        await this.alertService.presentAlert("Fin de la simulación", "Se utilizará la ubicación real nuevamente", "Se ha llegado al final de la simulación", ["OK"]);
+      }
+      const nullPosition: Position = {
+        coords: {
+          latitude: 0,
+          longitude: 0,
+          accuracy: 0, // Simulated accuracy
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: 0
+        },
+        timestamp: 0
+      };
+      return nullPosition;
     }
+    if (this.index > 0) setTimeout(() => { }, 1000); // Simulate delay between positions
     const currentCoord = this.coordinates[this.index];
     const time = Date.now();
-    const position = {
+    const position: Position = {
       coords: {
         latitude: currentCoord[1],
         longitude: currentCoord[0],

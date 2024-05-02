@@ -35,7 +35,8 @@
               "src/manifest.webmanifest"
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": []
+            "scripts": [],
+            "optimization": true
           },
           "configurations": {
             "production": {

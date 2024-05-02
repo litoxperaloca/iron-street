@@ -570,13 +570,17 @@ export class MapService {
   }
 
 
-  updateMarkerRotation(newRotation: number) {
-    if (newRotation && newRotation > 0) {
-      this.getUserVisionMarker().setRotation(newRotation);
-      //this.getUserMarker().getElement().classList.add('mapboxgl-user-location-show-heading');
-    } else {
-      this.getUserVisionMarker().setRotation(0);
+  updateMarkerRotation(alpha: number) {
+    const heading: number = this.getUserMarker().getRotation();
+    const arrow = document.getElementById('arrowVision');
+    let newRotation: number = alpha - heading;
+    if (newRotation < 0) {
+      newRotation += 360;
     }
+    if (arrow) {
+      //arrow.style.transform = 'rotateZ(' + newRotation + 'deg)';
+    }
+
   }
 
   updateMarkerState(): void {
@@ -598,6 +602,7 @@ export class MapService {
       const headingInit: number = this.calculateInitialHeading(new mapboxgl.LngLat(newLocation[0], newLocation[1]));    //   this.userLocationMarkerPrerequisitesOk = true;
       if (headingInit) {
         marker.setRotation(headingInit);
+        markerVision.setRotation(headingInit);
       }
       this.isRotating = false;
       this.setupInteractionListeners();
@@ -607,6 +612,7 @@ export class MapService {
     } else {
       if (heading) {
         marker.setRotation(heading);
+        markerVision.setRotation(heading);
       }
       if (this.trackingUser) {
         this.mapEventIsFromTracking = true;
@@ -708,6 +714,7 @@ export class MapService {
 
       const arrow = document.createElement('div');
       arrow.className = 'arrowVision';
+      arrow.id = "arrowVision";
       el.appendChild(arrow);
       this.userVisionMarkerInstance = new mapboxgl.Marker({
         element: el,
@@ -853,6 +860,28 @@ export class MapService {
     ((window as any).mapService as MapService).currentStep = 0;
     ((window as any).mapService as MapService).alreadySpoken = false;
     ((window as any).tripService as TripService).cancelTrip();
+    if (environment.mocking) {
+      environment.mocking = false;
+    }
+  }
+
+  cancelTripSimulation(): void {
+    //this.destination = "";
+
+    this.isTripStarted = false;
+    //this.mapControls.directions.removeRoutes();
+    //this.mapControls.directions.actions.clearDestination();
+    //this.mapControls.directions.actions.clearOrigin();
+    //this.cleanRoutePopups();
+    //this.popUpDestination?.remove();
+
+    //((window as any).mapService as MapService).actualRoute = null;
+    ((window as any).mapService as MapService).currentStep = 0;
+    ((window as any).mapService as MapService).alreadySpoken = false;
+    ((window as any).tripService as TripService).cancelTrip();
+    if (environment.mocking) {
+      environment.mocking = false;
+    }
   }
 
   leaveMapPage() {
@@ -1280,6 +1309,7 @@ export class MapService {
           userMarker.setRotation(currentRotation);  // Assuming you have a method to set rotation
 
           userMarkerVision.setLngLat([currentLng, currentLat]);
+          userMarkerVision.setRotation(currentRotation);
           if (this.trackingUser) {
             this.mapEventIsFromTracking = true;
             ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
@@ -1292,7 +1322,8 @@ export class MapService {
             userMarker.setLngLat([this.animationTarget.lng, this.animationTarget.lat]);
             userMarker.setRotation(newHeading);
             userMarkerVision.setLngLat([this.animationTarget.lng, this.animationTarget.lat]);
-            userMarkerVision.setRotation(rotationVision);
+            userMarkerVision.setRotation(newHeading);
+            this.updateMarkerRotation(rotationVision);
             this.isAnimating = false; // Reset animation flag
             if (this.trackingUser) {
               this.mapEventIsFromTracking = true;
@@ -1317,9 +1348,14 @@ export class MapService {
         this.isRotating = false;
         this.setupInteractionListeners();
         ((window as any).homePage as HomePage).alreadyGeoLocated();
-        this.getUserVisionMarker().setLngLat(newCoordinates).setRotation(rotationVision).addTo(map);
+        //this.getUserVisionMarker().setLngLat(newCoordinates).setRotation(rotationVision).addTo(map);
+        this.getUserVisionMarker().setLngLat(newCoordinates).addTo(map);
+        this.updateMarkerRotation(0);
+
       } else {
-        this.getUserVisionMarker().setLngLat(newCoordinates).setRotation(0).addTo(map);
+        //this.getUserVisionMarker().setLngLat(newCoordinates).setRotation(0).addTo(map);
+        this.getUserVisionMarker().setLngLat(newCoordinates).addTo(map);
+        this.updateMarkerRotation(0);
 
       }
       if (this.trackingUser) {

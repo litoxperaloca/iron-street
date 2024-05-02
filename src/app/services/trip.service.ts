@@ -15,17 +15,72 @@ export class TripService {
   private route: any; // Store the route information
   private lastDisplayedStep: number = -1; // Store the last displayed step
 
+  private locationInterval: any; // Store the interval ID for location monitoring
+  private lastUserPosition!: Position; // Store the last known user position
+  // Import the navigation.js module
   constructor(
     private voiceService: VoiceService,
     private mapService: MapService,
     private geoLocationService: GeoLocationService) { }
-  private locationInterval: any; // Store the interval ID for location monitoring
+
+
+
+  locationUpdate(tripIsStarting: boolean): void {
+    const Navigation: any = require('navigation.js')({
+      units: 'kilometres',
+      maxReRouteDistance: 1,
+      maxSnapToLocation: 0.2,
+      warnUserTime: 7
+    });
+    // Periodically check user's location and update current step
+    const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
+    if (!tripIsStarting && userPosition == this.lastUserPosition) {
+      //console.log("No hay cambio de posición");
+      return;
+    }
+    this.lastUserPosition = userPosition;
+    const userLocation: Navigation.UserLocation = {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [userPosition.coords.longitude, userPosition.coords.latitude]
+      }
+    };
+    const currentStep: CurrentStep = Navigation.getCurrentStep(userLocation, this.route, this.userCurrentStep);
+    console.log("Current step:", currentStep);
+    console.log("User position:", userPosition);
+    console.log("step:", this.route.steps[currentStep.step]);
+    if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
+      this.displayInstructions(currentStep);
+      this.userCurrentStep = currentStep.step;
+      //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
+      this.mapService.setCameraPOVPosition(userPosition);
+      console.log("First step: ", currentStep.step);
+    }
+    if (currentStep.step > this.userCurrentStep) {
+      this.displayInstructions(currentStep);
+      this.userCurrentStep = currentStep.step;
+      //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
+      this.mapService.setCameraPOVPosition(userPosition);
+      console.log("Next step: ", currentStep.step);
+    }
+    const shouldReRoute: boolean = currentStep.distance > 1; // Adjust threshold as needed
+
+    // Display instructions for current step if needed
+    if (shouldReRoute) this.reroute(); // Reroute if user is far away from the route
+
+    const stepCompleted = currentStep.distance <= 0.01; // Adjust threshold as needed
+    if (stepCompleted && currentStep.step >= this.route.steps.length - 1) {
+      this.finishTrip();
+    }
+  }
 
   startTrip(route: any): void {
     this.route = route; // Store the route information
     this.lastDisplayedStep = -1; // Initialize last displayed step
     this.userCurrentStep = 0; // Initialize user's current step
-    this.monitorLocation(); // Start monitoring user's location
+    //this.monitorLocation(); // Start monitoring user's location
+    this.locationUpdate(true);
   }
 
   async monitorLocation(): Promise<void> {
@@ -36,8 +91,7 @@ export class TripService {
         maxReRouteDistance: 1,
         maxSnapToLocation: 0.2,
         warnUserTime: 7
-      }); // Import the navigation.js module
-
+      });
       const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
       const userLocation: Navigation.UserLocation = {
         type: 'Feature',
@@ -47,17 +101,22 @@ export class TripService {
         }
       };
       const currentStep: CurrentStep = Navigation.getCurrentStep(userLocation, this.route, this.userCurrentStep);
+      console.log("Current step:", currentStep);
+      console.log("User position:", userPosition);
+      console.log("step:", this.route.steps[currentStep.step]);
       if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
         this.displayInstructions(currentStep);
         this.userCurrentStep = currentStep.step;
         //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
         this.mapService.setCameraPOVPosition(userPosition);
+        console.log("First step: ", currentStep.step);
       }
       if (currentStep.step > this.userCurrentStep) {
         this.displayInstructions(currentStep);
         this.userCurrentStep = currentStep.step;
         //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
         this.mapService.setCameraPOVPosition(userPosition);
+        console.log("Next step: ", currentStep.step);
       }
       const shouldReRoute: boolean = currentStep.distance > 1; // Adjust threshold as needed
 
@@ -69,7 +128,7 @@ export class TripService {
         this.finishTrip();
       }
 
-    }, 1000); // Check every 5 seconds (adjust interval as needed)
+    }, 2000); // Check every 5 seconds (adjust interval as needed)
   }
 
   async displayInstructions(currentStep: CurrentStep): Promise<void> {
