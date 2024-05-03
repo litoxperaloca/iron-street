@@ -1,6 +1,6 @@
 {
   "appId":"uy.com.ironplatform.ironstreet",
-  "appName": "IronStreet",
+  "appName": "iron-street",
   "webDir": "www",
   "server": {
     "allowNavigation": [
