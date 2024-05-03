@@ -3,14 +3,7 @@
         {
             "appId": "ef9f94d0",
             "root": "src/app",
-            "dependencyInstallCommand": "npm install  --legacy-peer-deps",
-            "webBuildCommand": "ng build  --configuration=production",
-            "iosBuildCommand": "ionic cap build ios",
-            "androidBuildCommand": "ionic cap build android",
-            "webOutputPath": "www",
-            "iosPath": "ios/App",
-            "androidPath": "android/app"
-
+            "dependencyInstallCommand": "npm install  --legacy-peer-deps"
         }
     ]
 }
