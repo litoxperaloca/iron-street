@@ -9,7 +9,7 @@
             "androidBuildCommand": "ionic cap build android",
             "webOutputPath": "www",
             "iosPath": "ios/App",
-            "androidPath": "android/app",
+            "androidPath": "android/app"
 
         }
     ]
