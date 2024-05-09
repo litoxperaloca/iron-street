@@ -34,7 +34,7 @@ export class MapService {
 
   private mapbox!: mapboxgl.Map;
   private userLocationMarkerPrerequisitesOk: boolean = false;
-  private isAnimating: boolean = false; // Indicador de si una animación está en curso
+  isAnimating: boolean = false; // Indicador de si una animación está en curso
   private animationTarget: mapboxgl.LngLat | null = null; // Stores the target for ongoing animation
   mapControls: any = { directions: null };
   private routeSourceId!: string;
@@ -221,7 +221,7 @@ export class MapService {
           ((window as any).homePage as HomePage).tripDuration = parseFloat(durationMain.toFixed(2));
           ((window as any).mapService as MapService).popUpDestination = popup;
           const directionsBounds = ((window as any).mapService as MapService).calculateBounds([((window as any).mapService as MapService).coordinatesMainRoute, ((window as any).mapService as MapService).coordinatesAltRoute]);
-          map.fitBounds(directionsBounds, { padding: 20 });
+          map.fitBounds(directionsBounds, { padding: 10, zoom: 14 });
           const center = directionsBounds.getCenter();
           const targetPoint: [number, number] = feature.geometry.coordinates; // Arbitrary point for bearing
           const bearing = this.calculateBearing(center, targetPoint);
@@ -1289,12 +1289,13 @@ export class MapService {
           turf.point([newPosition.lng, newPosition.lat]));
 
 
-      const animationDuration = 1000; // Duration in milliseconds
+      const animationDuration = 800; // Duration in milliseconds
       const startTime = performance.now();
       this.isAnimating = true;
       this.animationTarget = newPosition;
 
       const animateMarker = (currentTime: number) => {
+
         if (!this.isAnimating) return; // Exit if animation was prematurely stopped
 
         const elapsedTime = currentTime - startTime;
@@ -1313,7 +1314,7 @@ export class MapService {
           if (this.trackingUser) {
             this.mapEventIsFromTracking = true;
             ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
-            setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+            setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
           }
           requestAnimationFrame(animateMarker);
         } else {
@@ -1324,11 +1325,12 @@ export class MapService {
             userMarkerVision.setLngLat([this.animationTarget.lng, this.animationTarget.lat]);
             userMarkerVision.setRotation(newHeading);
             this.updateMarkerRotation(rotationVision);
+
             this.isAnimating = false; // Reset animation flag
             if (this.trackingUser) {
               this.mapEventIsFromTracking = true;
               ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([this.animationTarget.lng, this.animationTarget.lat], newHeading);
-              setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+              setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
             }
           }
         }
@@ -1361,7 +1363,7 @@ export class MapService {
       if (this.trackingUser) {
         this.mapEventIsFromTracking = true;
         ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
-        setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+        setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
       }
     }
 

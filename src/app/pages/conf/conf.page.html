@@ -11,21 +11,75 @@
   <div class="searchLoader" *ngIf="isLoading">
     <ion-spinner name="crescent"></ion-spinner>
   </div>
-  <ion-grid *ngIf="!isLoading">
-    <ion-row>
-      <ion-col size="6">
-        <div class="icon-above-text">
-          <ion-icon color="dark" name="contrast-outline"></ion-icon>
-          <span>Claro/Oscuro</span>
-        </div>
-      </ion-col>
+  <div *ngIf="!isLoading">
 
-      <ion-col size="6">
         <div class="icon-above-text">
-          <ion-icon color="dark" name="contrast-outline"></ion-icon>
+          <ion-icon color="darh" name="contrast-outline"></ion-icon>
           <span>Apariencia</span>
         </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+
+        <ion-item>
+          <ion-label>Toggle DemoModo oscuro</ion-label>
+          <ion-toggle [(ngModel)]="isDarkMode" (ionChange)="toggleTheme()"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Contraste</ion-label>
+          <ion-toggle [(ngModel)]="highContrast" (ionChange)="toggleHighContrast()"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Tamaño de letra</ion-label>
+          <ion-select [(ngModel)]="fontSize" (ionChange)="changeFontSize()">
+            <ion-select-option value="small">Pequeño</ion-select-option>
+            <ion-select-option value="medium">Mediano</ion-select-option>
+            <ion-select-option value="large">Grande</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Color de fondo</ion-label>
+          <ion-select [(ngModel)]="backgroundColor" (ionChange)="changeBackgroundColor()">
+            <ion-select-option value="white">Blanco</ion-select-option>
+            <ion-select-option value="gray">Gris</ion-select-option>
+            <ion-select-option value="black">Negro</ion-select-option>
+          </ion-select>lguu
+        </ion-item>
+
+
+
+  </div>
+
+  <div *ngIf="!isLoading">
+
+    <div class="icon-above-text">
+      <ion-icon color="light" name="voice-outline"></ion-icon>
+      <span>Voz de la App</span>
+    </div>
+
+    <ion-item>
+      <ion-label>Voz</ion-label>
+      <ion-select [(ngModel)]="voiceId" (ionChange)="selectVoiceById()">
+        <ion-select-option *ngFor="let voice in voiceService.getVoices(); let i=index;" value="{{i}}">{{voice.name}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Lenguage</ion-label>
+      <ion-select [(ngModel)]="backgroundColor" (ionChange)="selectVouceLang()">
+        <ion-select-option value="es-ES">es-ES</ion-select-option>
+        <ion-select-option value="en-US">en-US</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Velocidad</ion-label>
+      <ion-toggle [(ngModel)]="rate" (ionChange)="toggleTheme()"></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Tono</ion-label>
+      <ion-toggle [(ngModel)]="pitch" (ionChange)="toggleHighContrast()"></ion-toggle>
+    </ion-item>
+  </div>
 </ion-content>

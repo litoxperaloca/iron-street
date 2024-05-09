@@ -6,6 +6,13 @@ import { Injectable } from '@angular/core';
 export class ThemeService {
   // Set dark mode by default
   private theme: 'dark' | 'light' = 'dark';
+  //APPEARENCE CONFIG
+  isDarkMode: boolean = true;
+  isLightMode: boolean = false;
+  isAutoMode: boolean = false;
+  highContrast: boolean = false;
+  fontSize: 'small' | 'medium' | 'large' = 'medium';
+  backgroundColor: string = "#000000";
 
   constructor() {
     //this.applyTheme();
@@ -26,5 +33,14 @@ export class ThemeService {
       document.body.classList.remove('dark-mode');
 
     }
+  }
+
+  toggleHighContrast(highContrastEnabled: boolean): void {
+  }
+
+  changeFontSize(fontSize: string): void {
+  }
+
+  changeBackgroundColor(backgroundColor: string): void {
   }
 }

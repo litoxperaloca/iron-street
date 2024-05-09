@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { Position } from '@capacitor/geolocation';
-import { MenuController } from '@ionic/angular';
+import { MenuController, ToastController } from '@ionic/angular'; // Add this line
 import { GeoLocationMockService } from 'src/app/mocks/geo-location-mock.service';
 import { ThemeService } from 'src/app/services/theme-service.service';
 import { TripSimulatorService } from 'src/app/services/trip-simulator.service';
@@ -13,10 +14,11 @@ import { MapService } from '../../services/map.service';
 import { ModalService } from '../../services/modal.service';
 import { OsmService } from '../../services/osm.service';
 import { SensorService } from '../../services/sensor.service';
+import { SpeechRecognitionService } from '../../services/speech-recognition.service';
 import { SpeedService } from '../../services/speed.service';
+import { ToastService } from '../../services/toast.service';
 import { TripService } from '../../services/trip.service';
 import { VoiceService } from '../../services/voice.service';
-
 
 @Component({
   selector: 'app-home',
@@ -24,7 +26,8 @@ import { VoiceService } from '../../services/voice.service';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage implements AfterViewInit, OnDestroy {
-
+  speechRecogEnabled: boolean = false;
+  private watchId: any;
   userLoggedIn: boolean = false;
   audioOn: boolean = true;
 
@@ -37,16 +40,22 @@ export class HomePage implements AfterViewInit, OnDestroy {
   tripDestinationAddress: string = '';
   currentManeuver: string = '';
   currentManeuvreIcon: string = '';
+  nextManeuver: string = '';
+  nextManeuvreIcon: string = '';
   eta: number | undefined;
   dta: number | undefined;
   tripProgressIndex: number = 0;
   public osmClickedId: number = 0;
   simulation: boolean = false;
   shouldEndSimulation: boolean = false;
+  private locationInterval: any; // Store the interval ID for location monitoring
+  getMock: boolean = true;
+  isNative: boolean = false;
 
   constructor(
     public mapService: MapService,
     private geoLocationService: GeoLocationService,
+    private geoLocationMockService: GeoLocationMockService,
     private speedService: SpeedService,
     private modalService: ModalService,
     private osmService: OsmService,
@@ -56,73 +65,153 @@ export class HomePage implements AfterViewInit, OnDestroy {
     private menuController: MenuController,
     private tripService: TripService,
     private intersectionService: IntersectionService,
-    private actionSheetService: ActionSheetService,  // Add this line
+    private actionSheetService: ActionSheetService,
     private themeService: ThemeService,
     private sensorService: SensorService,
     private tripSimulatorService: TripSimulatorService,
-    private geoLocationMockService: GeoLocationMockService,
+    private toastController: ToastController, // Fix the typo here
+    private ToastService: ToastService,
+    private speechRecognitionService: SpeechRecognitionService
   ) {
+    // Existing constructor code...
+    this.isNative = Capacitor.isNativePlatform()
     this.audioOn = this.voiceService.isSpeakerOn();
+  }
+
+
+
+  // Existing code...
+
+  toggleSpeechRecognition() {
+    this.speechRecognitionService.toggleSpeechRecognition();
   }
 
   waitAndRenderPage() {
     setTimeout(() => {
-      const self = this;
       this.mapService.initMap();
-
-      this.deviceOrientationService.startListeningHeading();
+      this.geolock();
+      //this.deviceOrientationService.startListeningHeading();
       //this.deviceOrientationService.listenAcceleration();
       //this.speedService.startWatchingSpeedLimit();
 
-      this.geoLocationService.watchPosition((position, error) => {
-        console.log("ENTERED WATCH POSITION:", position);
-        if (error) {
-          console.error('Error watching position:', error);
-          return;
-        }
-        if (!position) return;
 
-        this.sensorService.updateGeolocation(position);
-        const smoothedLat = this.sensorService.getSensorLatitude();
-        const smoothedLng = this.sensorService.getSensorLongitude();
-        const smoothedPosition: Position = {
-          coords: {
-            latitude: smoothedLat,
-            longitude: smoothedLng,
-            accuracy: position.coords.accuracy,
-            altitude: position.coords.altitude,
-            altitudeAccuracy: position.coords.altitudeAccuracy,
-            heading: position.coords.heading,
-            speed: position.coords.speed
-          },
-          timestamp: position.timestamp
-        };
-
-        ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
-        if (((window as any).mapService as MapService).isRotating) {
-          ((window as any).mapService as MapService).updateMarkerState();
-        } else {
-          if (this.mapService.isTripStarted) { this.tripService.locationUpdate(false); }
-          this.speedService.locationUpdate();
-        }
-        //((window as any).mapService as MapService).updateUserPosition();
-        //((window as any).mapService as MapService).userStreet(position);
-        /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
-          self.currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
-        } */
-        const speed = position.coords.speed;
-        if (speed) {
-          self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-          //self.currentSpeedometerNeedleRotation = self.needleRotation();
-        } else {
-          self.currentSpeed = 0;
-        }
-        if (self.shouldEndSimulation) {
-          self.cancelTripSimulation();
-          self.shouldEndSimulation = false;
-        }
-      });
     }, 500);
+  }
+
+
+  geolockMock() {
+    const self = this;
+    this.geoLocationService.stopWatchingPosition();
+    this.locationInterval = setInterval(() => {
+
+      if (self.shouldEndSimulation) {
+        self.cancelTripSimulation();
+        self.shouldEndSimulation = false;
+      }
+      if (this.mapService.isAnimating) {
+        return;
+      }
+
+      //this.geoLocationService.watchPosition((position, error) => {
+      this.geoLocationMockService.getNextPosition().then
+        (position => {
+          if (!position) return;
+
+          this.sensorService.updateGeolocation(position);
+          const smoothedLat = this.sensorService.getSensorLatitude();
+          const smoothedLng = this.sensorService.getSensorLongitude();
+          const smoothedPosition: Position = {
+            coords: {
+              latitude: smoothedLat,
+              longitude: smoothedLng,
+              accuracy: position.coords.accuracy,
+              altitude: position.coords.altitude,
+              altitudeAccuracy: position.coords.altitudeAccuracy,
+              heading: position.coords.heading,
+              speed: position.coords.speed
+            },
+            timestamp: position.timestamp
+          };
+
+          ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
+          if (((window as any).mapService as MapService).isRotating) {
+            ((window as any).mapService as MapService).updateMarkerState();
+          } else {
+            if (this.mapService.isTripStarted) { this.tripService.locationUpdate(false); }
+            this.speedService.locationUpdate();
+          }
+          //((window as any).mapService as MapService).updateUserPosition();
+          //((window as any).mapService as MapService).userStreet(position);
+          /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
+            self.currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+          } */
+          const speed = position.coords.speed;
+          if (speed) {
+            self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
+            //self.currentSpeedometerNeedleRotation = self.needleRotation();
+          } else {
+            self.currentSpeed = 0;
+          }
+
+        });
+
+
+      //});
+    }, 1000); // Check every 5 seconds (adjust interval as needed)
+
+  }
+
+  geolock() {
+    const self = this;
+
+    this.geoLocationService.watchPosition((position, error) => {
+      //console.log("ENTERED WATCH POSITION:", position);
+      if (error) {
+        console.error('Error watching position:', error);
+        return;
+      }
+      if (!position) return;
+
+      this.sensorService.updateGeolocation(position);
+      const smoothedLat = this.sensorService.getSensorLatitude();
+      const smoothedLng = this.sensorService.getSensorLongitude();
+      const smoothedPosition: Position = {
+        coords: {
+          latitude: smoothedLat,
+          longitude: smoothedLng,
+          accuracy: position.coords.accuracy,
+          altitude: position.coords.altitude,
+          altitudeAccuracy: position.coords.altitudeAccuracy,
+          heading: position.coords.heading,
+          speed: position.coords.speed
+        },
+        timestamp: position.timestamp
+      };
+
+      ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
+      if (((window as any).mapService as MapService).isRotating) {
+        ((window as any).mapService as MapService).updateMarkerState();
+      } else {
+        if (this.mapService.isTripStarted) { this.tripService.locationUpdate(false); }
+        this.speedService.locationUpdate();
+      }
+      //((window as any).mapService as MapService).updateUserPosition();
+      //((window as any).mapService as MapService).userStreet(position);
+      /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
+        self.currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
+      } */
+      const speed = position.coords.speed;
+      if (speed) {
+        self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
+        //self.currentSpeedometerNeedleRotation = self.needleRotation();
+      } else {
+        self.currentSpeed = 0;
+      }
+      if (self.shouldEndSimulation) {
+        self.cancelTripSimulation();
+        self.shouldEndSimulation = false;
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -139,6 +228,11 @@ export class HomePage implements AfterViewInit, OnDestroy {
     (window as any).sensorService = this.sensorService;
     (window as any).tripSimulatorService = this.tripSimulatorService;
     (window as any).geoLocationMockService = this.geoLocationMockService;
+    (window as any).voiceService = this.voiceService;
+    (window as any).themeService = this.themeService;
+    (window as any).actionSheetService = this.actionSheetService;
+    (window as any).toastService = this.ToastService;
+    (window as any).speechRecognitionService = this.speechRecognitionService;
 
     (window as any).homePage = this;
     this.waitAndRenderPage();
@@ -224,6 +318,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
 
   public simulateTrip() {
     this.simulation = true;
+    this.geolockMock();
     this.tripSimulatorService.simulateGuidedTrip();
   }
 
@@ -253,6 +348,14 @@ export class HomePage implements AfterViewInit, OnDestroy {
       this.currentManeuver = "";
       this.currentManeuvreIcon = "";
     }
+
+    const tripNexStepDetails = document.getElementById("tripNexStepDetails");
+    if (tripNexStepDetails) {
+      tripNexStepDetails.style.display = "none";
+      this.nextManeuver = "";
+      this.nextManeuvreIcon = "";
+    }
+
     const tripProgress = document.getElementById("tripProgress");
 
     if (tripProgress) tripProgress.style.display = "none";
@@ -268,6 +371,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   public cancelTripSimulation() {
+    if (this.locationInterval) clearInterval(this.locationInterval);
+    this.geolock();
     this.simulation = false;
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
     if (tripDetailsContainer) {
@@ -282,6 +387,15 @@ export class HomePage implements AfterViewInit, OnDestroy {
       this.currentManeuver = "";
       this.currentManeuvreIcon = "";
     }
+
+
+    const tripNexStepDetails = document.getElementById("tripNexStepDetails");
+    if (tripNexStepDetails) {
+      tripNexStepDetails.style.display = "none";
+      this.nextManeuver = "";
+      this.nextManeuvreIcon = "";
+    }
+
     const tripProgress = document.getElementById("tripProgress");
 
     if (tripProgress) tripProgress.style.display = "none";

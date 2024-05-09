@@ -47,22 +47,17 @@ export class TripService {
       }
     };
     const currentStep: CurrentStep = Navigation.getCurrentStep(userLocation, this.route, this.userCurrentStep);
-    console.log("Current step:", currentStep);
-    console.log("User position:", userPosition);
-    console.log("step:", this.route.steps[currentStep.step]);
     if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
       this.displayInstructions(currentStep);
       this.userCurrentStep = currentStep.step;
       //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
       this.mapService.setCameraPOVPosition(userPosition);
-      console.log("First step: ", currentStep.step);
     }
     if (currentStep.step > this.userCurrentStep) {
       this.displayInstructions(currentStep);
       this.userCurrentStep = currentStep.step;
       //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
       this.mapService.setCameraPOVPosition(userPosition);
-      console.log("Next step: ", currentStep.step);
     }
     const shouldReRoute: boolean = currentStep.distance > 1; // Adjust threshold as needed
 
@@ -101,22 +96,17 @@ export class TripService {
         }
       };
       const currentStep: CurrentStep = Navigation.getCurrentStep(userLocation, this.route, this.userCurrentStep);
-      console.log("Current step:", currentStep);
-      console.log("User position:", userPosition);
-      console.log("step:", this.route.steps[currentStep.step]);
       if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
         this.displayInstructions(currentStep);
         this.userCurrentStep = currentStep.step;
         //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
         this.mapService.setCameraPOVPosition(userPosition);
-        console.log("First step: ", currentStep.step);
       }
       if (currentStep.step > this.userCurrentStep) {
         this.displayInstructions(currentStep);
         this.userCurrentStep = currentStep.step;
         //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
         this.mapService.setCameraPOVPosition(userPosition);
-        console.log("Next step: ", currentStep.step);
       }
       const shouldReRoute: boolean = currentStep.distance > 1; // Adjust threshold as needed
 
@@ -134,18 +124,11 @@ export class TripService {
   async displayInstructions(currentStep: CurrentStep): Promise<void> {
     // Display instructions based on current step
     const step: any = this.route.steps[currentStep.step];
+
     const tripStepDetails = document.getElementById("tripStepDetails");
     if (tripStepDetails) {
       this.lastDisplayedStep = currentStep.step;
-      let icon: string = step.maneuver.modifier ? step.maneuver.modifier.replace(/\s+/g, '-').toLowerCase() : step.maneuver.type.replace(/\s+/g, '-').toLowerCase();
-
-      if (['arrive', 'depart', 'waypoint'].includes(step.maneuver.type)) {
-        icon = step.maneuver.type;
-      }
-
-      if (step.maneuver.type === 'roundabout' || step.maneuver.type === 'rotary') {
-        icon = 'roundabout';
-      }
+      const icon: string = this.maneurveIcon(step);
       /*const poste = document.getElementById("poste");
       if (poste) { poste.style.display = "block"; }*/
       tripStepDetails.style.display = "block";
@@ -155,10 +138,64 @@ export class TripService {
       if (progress) { progress.style.display = "block"; }
       ((window as any).homePage as HomePage).currentManeuver = this.route.steps[currentStep.step].maneuver.instruction;
       ((window as any).homePage as HomePage).currentManeuvreIcon = icon;
+      const voiceInstructions = this.route.steps[currentStep.step].maneuver.instruction;
+      await this.voiceService.speak(voiceInstructions);
     }
 
-    const voiceInstructions = this.route.steps[currentStep.step].maneuver.instruction;
-    this.voiceService.speak(voiceInstructions);
+
+    let nextStep: any = null;
+    let stepNext: any = null;
+    let iconNext: string;
+    let tripStepDetailsNext: HTMLElement | null = document.getElementById("tripStepDetails");
+    if (this.route.steps.length > currentStep.step) {
+      const nextStepIndex = currentStep.step + 1;
+      nextStep = this.route.steps[nextStepIndex];
+      stepNext = this.route.steps[nextStep.step];
+      if (stepNext && stepNext.maneuver) {
+        iconNext = this.maneurveIcon(stepNext);
+        ((window as any).homePage as HomePage).nextManeuver = this.route.steps[nextStep.step].maneuver.instruction;
+        ((window as any).homePage as HomePage).nextManeuvreIcon = iconNext;
+
+        if (tripStepDetails) setTimeout(() => {
+          tripStepDetails.style.display = "none";
+        }, 2500); // Adjust delay as needed
+
+        if (tripStepDetailsNext) {
+          setTimeout(async () => {
+            tripStepDetailsNext.style.display = "block";
+            const voiceInstructionsNext = this.route.steps[nextStep.step].maneuver.instruction;
+            await this.voiceService.speak(voiceInstructionsNext);
+            tripStepDetailsNext.style.display = "none";
+          }, 2500); // Adjust delay as needed
+        }
+
+      } else {
+        setTimeout(() => {
+          if (tripStepDetails) tripStepDetails.style.display = "none";
+        }, 2500); // Adjust delay as needed
+      }
+
+
+    } else {
+      setTimeout(() => {
+        if (tripStepDetails) tripStepDetails.style.display = "none";
+      }, 2500); // Adjust delay as needed
+
+    }
+  }
+
+  maneurveIcon(step: any): string {
+    console.log(step);
+    let icon: string = step.maneuver.modifier ? step.maneuver.modifier.replace(/\s+/g, '-').toLowerCase() : step.maneuver.type.replace(/\s+/g, '-').toLowerCase();
+
+    if (['arrive', 'depart', 'waypoint'].includes(step.maneuver.type)) {
+      icon = step.maneuver.type;
+    }
+
+    if (step.maneuver.type === 'roundabout' || step.maneuver.type === 'rotary') {
+      icon = 'roundabout';
+    }
+    return icon;
   }
 
   async reroute(): Promise<void> {

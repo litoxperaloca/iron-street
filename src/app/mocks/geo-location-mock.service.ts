@@ -191,7 +191,9 @@ export class GeoLocationMockService {
       ((window as any).geoLocationService as GeoLocationService).mocking = false;
       if (!((window as any).homePage as HomePage).shouldEndSimulation) {
         ((window as any).homePage as HomePage).shouldEndSimulation = true;
-        await this.alertService.presentAlert("Fin de la simulación", "Se utilizará la ubicación real nuevamente", "Se ha llegado al final de la simulación", ["OK"]);
+        this.alertService.presentAlert("Fin de la simulación", "Se utilizará la ubicación real nuevamente", "Se ha llegado al final de la simulación", ["OK"]);
+        ((window as any).homePage as HomePage).cancelTripSimulation();
+
       }
       const nullPosition: Position = {
         coords: {
@@ -218,7 +220,8 @@ export class GeoLocationMockService {
         altitude: null,
         altitudeAccuracy: null,
         heading: null,
-        speed: this.getMockedSpeed(time)
+        //speed: this.getMockedSpeed(time)
+        speed: 42 / 60 / 60 * 1000 // 42 km/h a m/s
       },
       timestamp: time
     };

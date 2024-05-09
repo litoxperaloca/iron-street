@@ -34,6 +34,13 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+        <service
+          android:name="com.getcapacitor.community.tts.TextToSpeechService"
+          android:stopWithTask="false"
+        />
+        <service
+          android:name="com.getcapacitor.community.speechrecognition.SpeechRecognitionService"
+        />
     </application>
 
 

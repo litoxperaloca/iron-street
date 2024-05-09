@@ -196,3 +196,19 @@ ion-icon{
     font-size: xx-large;
   margin: 0;
 }
+
+
+
+.centeredSpinner {
+      position: relative;
+    /* top: calc(50% - 30px); */
+    z-index: 40;
+    width: 80px;
+    /* left: calc(50% - 30px); */
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    height: 80px;
+    color: var(--ion-color-secondary);
+  }
+

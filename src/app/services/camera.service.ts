@@ -231,7 +231,7 @@ export class CameraService {
       }
       map.easeTo({
         animate: true,
-        duration: 1000,
+        duration: 500,
         center: position,
         //zoom: 16,
         //speed: 1.5,

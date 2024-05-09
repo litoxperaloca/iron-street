@@ -45,7 +45,7 @@ const config: CapacitorConfig = {
         "en-US": "com.apple.ttsbundle.Samantha-compact",
         "es-ES": "com.apple.ttsbundle.Monica-compact"
       },
-      defaultVoice: "en-US"  // Default voice setting for better cross-device compatibility
+      defaultVoice: "es-ES"  // Default voice setting for better cross-device compatibility
     }
   }
 };

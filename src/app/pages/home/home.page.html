@@ -14,7 +14,6 @@
         <div id="speedometer">{{ getSpeed() }} km/h</div>
       </div>-->
       <div id="poste"></div>
-      <div id="simulation" *ngIf="simulation">SIMULANDO VIAJE</div>
       <div id="tripDetailsContainer">
             <h4 id="tripDestination">{{tripDestination}}</h4>
 
@@ -43,6 +42,10 @@
           <h3 id="currentManeuver">{{currentManeuver}}</h3>
           <div id="stepIcon" class="directions-icon-{{currentManeuvreIcon}}"></div>
       </div>
+      <div id="tripNexStepDetails">
+        <h3 id="nextManeuver">{{nextManeuver}}</h3>
+        <div id="stepIconNext" class="directions-icon-{{nextManeuvreIcon}}"></div>
+      </div>
 
       <div id="newtripContainer">
         <div class="flexMiddleRow">
@@ -64,7 +67,10 @@
         </div>
       </div>
 
-      <div id="tripProgress">
+      <div id="tripProgress" [ngClass]="{'simulating': simulation===true}">
+        <div *ngIf="simulation" class="flexMiddleRow motionFont">
+          <p>Simulando viaje...</p>
+        </div>
         <div class="flexMiddleRow">
           <ion-icon color="danger" class="smallButtonIcon" (click)="stopTrip()" name="stop-circle-outline"></ion-icon>
 
@@ -119,6 +125,12 @@
             </ion-fab-button>
           </ion-menu-toggle>
         <ion-fab id="fab-map-controls" slot="fixed"  vertical="bottom" size="small" horizontal="start" >
+          <!-- Speech Recognition FAB -->
+
+<ion-fab-button *ngIf="isNative" color="light" (click)="toggleSpeechRecognition()">
+  <ion-icon color="danger" name="mic-outline"></ion-icon>
+</ion-fab-button>
+
           <ion-fab-button color="light" (click)="setCameraMode('POV')">
             <ion-icon color="primary"  name="navigate-outline"></ion-icon>
           </ion-fab-button>

@@ -316,7 +316,7 @@ right: 5px;
 }
 
 
-#stepIcon{
+#stepIcon, #nextIcon{
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -327,7 +327,7 @@ right: 5px;
     margin: 0 auto;
 }
 
-#tripStepDetails{
+#tripStepDetails, #tripNexStepDetails{
     box-shadow: #00000087 1px 6px 7px 1px;
     position: absolute;
     left: 10px;
@@ -342,7 +342,7 @@ right: 5px;
     padding: 13px;
   display: none;
 }
-#currentManeuver{
+#currentManeuver, #nextManeuver{
     font-family: e1234;
     font-size: 18pt;
     font-weight: 600;
@@ -381,10 +381,14 @@ font-size: 12pt;
     color: var(--ion-text-color);
 }
 
-.tripStepDetails h3{
+.tripStepDetails h3, .tripNexStepDetails h3{
     font-size: 16px;
     margin: 0;
     font-weight: 500;
+}
+
+#tripProgress.simulating{
+    height: 90px !important;
 }
 
 #tripProgress{
@@ -537,3 +541,31 @@ ion-toolbar{
     top: 10px;
     left: 10px;
 }
+
+.motionFont p{
+  font-weight: 600;
+  text-align: center;
+  font-size: 20px !important;
+  font-family: Hack, sans-serif;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #000, #fff, #000);
+  letter-spacing: 5px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-repeat: no-repeat;
+  background-size: 80%;
+  animation: shine 5s linear infinite;
+  position: relative;
+  margin: 1px auto !important;
+}
+
+@keyframes shine {
+  0% {
+    background-position-x: -500%;
+  }
+  100% {
+    background-position-x: 500%;
+  }
+}
+

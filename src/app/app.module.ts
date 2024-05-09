@@ -31,6 +31,7 @@ import { AmazonLocationServiceService } from './services/amazon-location-service
 import { DeviceOrientationService } from './services/device-orientation.service';
 import { MapService } from './services/map.service';
 import { ModalService } from './services/modal.service';
+import { SpeechRecognitionService } from './services/speech-recognition.service';
 import { ThemeService } from './services/theme-service.service';
 import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
@@ -87,7 +88,8 @@ Amplify.configure(awsconfig);
       AuthenticatorService,
       GeoLocationMockService,
       TripSimulatorService,
-      AlertService
+      AlertService,
+      SpeechRecognitionService
     ],
   bootstrap: [AppComponent],
 })

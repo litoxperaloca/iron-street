@@ -21,7 +21,8 @@ export class SearchModalComponent {
   places: Place[] = [];
   isLoading: boolean = false;
 
-  segmentIsLoading: any = { 'buscar': false, 'lugares': false, 'favoritos': false, 'recientes': false, 'historial': false };
+  segmentIsLoading: any = [];
+
 
   showTooltip: boolean = false;
   extraParam: boolean = false;
@@ -52,7 +53,10 @@ export class SearchModalComponent {
       this.extraParam = this.navParams.get('extraParam'); // Accessing the passed parameter
 
     }
-
+    this.segmentIsLoading['buscar'] = false;
+    this.segmentIsLoading['favoritos'] = false;
+    this.segmentIsLoading['lugares'] = false;
+    this.segmentIsLoading['historial'] = false;
   }
 
 
@@ -88,7 +92,7 @@ export class SearchModalComponent {
   async searchAWS(searchMpde: string) {
     if (this.searchTerm.length >= 4) {
       this.isLoading = true;
-      this.segmentIsLoading['buscar'] = true;
+      this.segmentIsLoading[this.currentSegment] = true;
 
       /*const url = `https://search-places-2kzj2k5lq4v5x7y7qz7z4v7j7m.us-east-1.es.amazonaws.com/places/_search`;
       const params = {
@@ -103,23 +107,19 @@ export class SearchModalComponent {
       )*/
       if (searchMpde == "strContains") {
         await this.amazonLocationServiceService.searchByText(this.searchTerm).then((response: Place[] | undefined) => {
-          console.log(response);
           if (response) this.suggestions = response;
-          this.isLoading = false;
-          this.segmentIsLoading['buscar'] = false;
+          this.segmentIsLoading[this.currentSegment] = false;
 
         });
 
       } else {
         await this.amazonLocationServiceService.suggestPlace(this.searchTerm).then((response: SearchForSuggestionsResults) => {
-          console.log(response);
           this.suggestions = response;
-          this.isLoading = false;
+          this.segmentIsLoading[this.currentSegment] = false;
         });
       }
     } else {
       this.suggestions = [];
-      this.isLoading = false;
     }
 
   }
@@ -135,17 +135,14 @@ export class SearchModalComponent {
       return;
     }
     const bbox = this.geoLocationService.createBoundingBox(userLocation.coords, 5); // Adjust the distance as needed
-    this.isLoading = true;
-    this.segmentIsLoading['lugares'] = true;
+    this.segmentIsLoading[this.currentSegment] = true;
 
     try {
       this.osmService.getNearPlacesData(bbox, category.type).then((response: HttpResponse) => {
         const data = response.data;
-        console.log(data);
         this.places = data.features;
         this.mapService.addPlacesPoints(data.elements, category);
-        this.isLoading = false;
-        this.segmentIsLoading['lugares'] = false;
+        this.segmentIsLoading[this.currentSegment] = false;
 
         this.dismiss();
       });
@@ -153,8 +150,7 @@ export class SearchModalComponent {
       console.error('Failed to load places:', error);
       this.places = [];
     } finally {
-      this.isLoading = false;
-      this.segmentIsLoading['lugares'] = false;
+      this.segmentIsLoading[this.currentSegment] = false;
 
     }
   }
