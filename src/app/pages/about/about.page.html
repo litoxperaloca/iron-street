@@ -3,14 +3,211 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Sobre Iron Street</ion-title>
+    <ion-title>IRON STREET | Prototipo v0.3</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- partial:index.partial.html -->
+  <div class="cont s--inactive">
+    <!-- cont inner start -->
+    <div class="cont__inner">
 
-  <div id="container">
+      <!-- el start -->
+      <div class="el" id="a">
+        <div class="el__overflow" data-index="a">
+          <div id="ainner" class="el__inner" data-index="a">
+            <div id="abg" class="el__bg" data-index="a"></div>
+            <div class="el__preview-cont" data-index="a">
+              <div class="el__heading" data-index="a">
+                <ion-icon class="el__heading-icon" data-index="a" name="navigate-outline" size="big" color="primary"></ion-icon>
+              </div>
+            </div>
+            <div class="el__content" data-index="a">
+              <div class="el__text">
+                <ion-icon class="el__heading-icon" data-index="a" name="navigate-outline" size="big" color="primary"></ion-icon>
+                <h4>Modos de viaje</h4>
+                <ul>
+                  <li>"Viaje guiado", rutas posibles, paradas intermedias, instrucciones de voz.</li>
+                  <li>"Conducción libre".</li>
+                  <li>Simulación de viaje</li>
+                </ul>
+                <h4>Puntos de vista</h4>
+                <ul>
+                  <li>Ver el mapa centrado en tu posición y ubicando la cámara destrás de ti.</li>
+                  <li>Ver el mapa desde arriba.</li>
+                  <li>Gestos para desplazar, rotar, zoom y alineación 3D.</li>
+                </ul>
 
+              </div>
+              <div class="el__close-btn"></div>
+            </div>
+          </div>
+        </div>
+        <div class="el__index">
+          <div class="el__index-back">I</div>
+          <div class="el__index-front">
+            <div class="el__index-overlay" data-index="I">I</div>
+          </div>
+        </div>
+      </div>
+      <!-- el end -->
+      <!-- el start -->
+      <div class="el" id="b">
+        <div class="el__overflow" data-index="b">
+          <div class="el__inner" data-index="b">
+            <div class="el__bg" data-index="b"></div>
+            <div class="el__preview-cont" data-index="b">
+              <div class="el__heading" data-index="b">
+                <ion-icon class="el__heading-icon" data-index="b" name="search-outline" size="big" color="secondary"></ion-icon>
+              </div>
+            </div>
+            <div class="el__content" data-index="b">
+              <div class="el__text">
+                                <ion-icon class="el__heading-icon" data-index="a" name="search-outline" size="big" color="secondary"></ion-icon>
+                                <h4>Explora tu entorno</h4>
+                                <p>Puedes buscar destinos para tus viajes de las siguientes maneras:</p>
+                                <ul>
+                                  <li>"Calle + Nro. de puerta".</li>
+                                  <li>"Calle + Calle".</li>
+                                  <li>"Nombre del lugar"</li>
+                                  <li>Seleccionar una categoría</li>
+                                  <li>Seleccionando un punto en el mapa (manten presionado).</li>
+                                </ul>
+              </div>
+              <div class="el__close-btn"></div>
+            </div>
+          </div>
+        </div>
+        <div class="el__index">
+          <div class="el__index-back">R</div>
+          <div class="el__index-front">
+            <div class="el__index-overlay" data-index="R">R</div>
+          </div>
+        </div>
+      </div>
+      <!-- el end -->
+      <!-- el start -->
+      <div class="el" id="c">
+        <div class="el__overflow" data-index="c">
+          <div class="el__inner" data-index="c">
+            <div class="el__bg" data-index="c"></div>
+            <div class="el__preview-cont" data-index="c">
+              <div class="el__heading" data-index="c">
+                <ion-icon class="el__heading-icon" data-index="c" name="settings-outline" size="big" color="tertiary"></ion-icon>
+              </div>
+            </div>
+            <div class="el__content" data-index="c">
+              <div class="el__text" data-index="c">
+                <ion-icon class="el__heading-icon" data-index="a" name="settings-outline" size="big" color="tertiary"></ion-icon>
+                <h4>Preferencias</h4>
+                <p>Utiliza los ajustes del mapa y navegación para customizar la interfaz.</p>
+                <ul>
+                  <li>12 diseños del mapa, 3D y 2D, día / tarde / noche.</li>
+                  <li>Template "Claro" / "Oscuro" y ajustes de accesibilidad.</li>
+                  <li>Salida de voz configurable</li>
+                </ul>
+              </div>
+              <div class="el__close-btn"></div>
+            </div>
+          </div>
+        </div>
+        <div class="el__index">
+          <div class="el__index-back">O</div>
+          <div class="el__index-front">
+            <div class="el__index-overlay" data-index="O">O</div>
+          </div>
+        </div>
+      </div>
+      <!-- el end -->
+      <!-- el start -->
+      <div class="el" id="d">
+        <div class="el__overflow" data-index="d">
+          <div class="el__inner" data-index="d">
+            <div class="el__bg" data-index="d"></div>
+            <div class="el__preview-cont" data-index="d">
+              <div class="el__heading" data-index="d">
+                <ion-icon class="el__heading-icon" data-index="d" name="warning-outline" size="big" color="danger"></ion-icon>
+              </div>
+            </div>
+            <div class="el__content" data-index="d">
+              <div class="el__text" data-index="d">
+                <ion-icon class="el__heading-icon" data-index="a" name="warning-outline" size="big" color="danger"></ion-icon>
+                <h4>Alertas en tiempo real</h4>
+                <p>Recibe alertas de voz en tiempo real para asistirte cuando conduces. Las alertas son una ayuda importante para que puedas lograr la meta mensual de 0 faltas y obtener el premio.</p>
+                <ul>
+                  <li>Velocidad máxima permitida</li>
+                  <li>Señales de "pare"</li>
+                  <li>Cámaras de control de velocidad</li>
+                </ul>
+
+              </div>
+              <div class="el__close-btn"></div>
+            </div>
+          </div>
+        </div>
+        <div class="el__index">
+          <div class="el__index-back">N</div>
+          <div class="el__index-front">
+            <div class="el__index-overlay" data-index="N">N</div>
+          </div>
+        </div>
+      </div>
+      <!-- el end -->
+      <!-- el start -->
+      <div class="el" id="e">
+        <div class="el__overflow" data-index="e">
+          <div class="el__inner" data-index="e">
+            <div class="el__bg" data-index="e"></div>
+            <div class="el__preview-cont" data-index="e">
+              <div class="el__heading" data-index="e">
+                <ion-icon class="el__heading-icon" data-index="e" name="trophy-outline" size="big" color="success"></ion-icon>
+              </div>
+            </div>
+            <div class="el__content" data-index="e">
+              <div class="el__text" data-index="e">
+                  <ion-icon class="el__heading-icon" data-index="a" name="trophy-outline" size="big" color="success"></ion-icon>
+                  <h4>Premio mensual</h4>
+                  <p>Todos los meses se genera con parte de los ingresos de las suscripciones,  un pozo acumulado en $USD.</p>
+                  <p>Al culminar el mes se reparte en partes iguales entre todos aquellos suscriptores que cumplan los requisitos establecidos:</p>
+                  <ul>
+                    <li>Al menos 1000 km recorridos durante el mes</li>
+                    <li>0 falta registrada en la app durente el mes</li>
+                    <li>Licencia de conducir habilitada</li>
+                  </ul>
+
+              </div>
+              <div class="el__close-btn"></div>
+            </div>
+          </div>
+        </div>
+        <div id="smallOverlayIndex" class="el__index">
+          <div class="el__index-back">Street</div>
+          <div class="el__index-front">
+            <div class="el__index-overlay" data-index="Street">Street</div>
+          </div>
+        </div>
+      </div>
+      <!-- el end -->
+      <!-- el end -->
+    </div>
+    <!-- cont inner end -->
   </div>
-
+  <!-- partial -->
 </ion-content>
+<ion-footer [translucent]="false">
+<ion-toolbar>
+  <ion-buttons slot="start">
+    <ion-button color="success" size="large" (click)="prototypeTest()">
+      <ion-icon slot="start" name="car"></ion-icon>
+      Comenzar
+    </ion-button>
+  </ion-buttons>
+  <ion-buttons slot="end">
+    <ion-button color="secondary" size="large" (click)="feedback()">
+      Opiniones
+      <ion-icon slot="end" name="chatbubble"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>
+</ion-footer>

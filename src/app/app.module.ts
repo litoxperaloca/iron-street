@@ -26,6 +26,7 @@ import { AppComponent } from './app.component';
 import { GeoLocationMockService } from './mocks/geo-location-mock.service';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
 import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-modal.component';
+import { SearchReverseModalComponent } from './modals/search-reverse-modal/search-reverse-modal.component';
 import { AlertService } from './services/alert.service';
 import { AmazonLocationServiceService } from './services/amazon-location-service.service';
 import { DeviceOrientationService } from './services/device-orientation.service';
@@ -49,6 +50,7 @@ Amplify.configure(awsconfig);
       SpeedModalComponent,
       TripProgressModalComponent,
       SearchModalComponent,
+      SearchReverseModalComponent,
       ManeurveModalComponent,
       RouteModalComponent,
       SettingsModalComponent,

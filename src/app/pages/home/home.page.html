@@ -32,7 +32,7 @@
 
                 <ion-icon color="tertiary" class="buttonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline" size="big">
                           </ion-icon>
-                <ion-icon class="buttonIcon" color="success" (click)="startTrip()"  name="play-circle-outline" size="big"></ion-icon>
+                <ion-icon class="buttonIcon" color="success" (click)="startTrip()"  name="navigate-circle-outline" size="big"></ion-icon>
 
             </div>
       </div>
@@ -127,9 +127,9 @@
         <ion-fab id="fab-map-controls" slot="fixed"  vertical="bottom" size="small" horizontal="start" >
           <!-- Speech Recognition FAB -->
 
-<ion-fab-button *ngIf="isNative" color="light" (click)="toggleSpeechRecognition()">
-  <ion-icon color="danger" name="mic-outline"></ion-icon>
-</ion-fab-button>
+          <ion-fab-button *ngIf="isNative" color="light" (click)="toggleSpeechRecognition()">
+            <ion-icon color="danger" name="mic-outline"></ion-icon>
+          </ion-fab-button>
 
           <ion-fab-button color="light" (click)="setCameraMode('POV')">
             <ion-icon color="primary"  name="navigate-outline"></ion-icon>

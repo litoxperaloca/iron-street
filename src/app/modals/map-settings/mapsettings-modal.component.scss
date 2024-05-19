@@ -91,3 +91,38 @@
     }
   }
 }
+
+
+ion-img{
+     margin-bottom: 10px;
+    box-shadow: 0 0 4px 2px #1db5d6d4;
+    border-radius: 7px;
+}
+
+ion-grid{
+    padding: 5px;
+    /* display: flex; */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 5px;
+}
+
+ion-label{
+  display: block;
+}
+
+h6{
+  font-weight: 600;
+  margin: 10px;
+}
+
+h4{
+    color: var(--ion-color-secondary)
+}
+
+ion-icon{
+    font-size: 30pt;
+    margin: 0 auto;
+    /* position: relative; */
+    display: flex;
+}

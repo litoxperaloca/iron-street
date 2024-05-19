@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">Nueva ubicación</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="segment-content">
+
+    <h4 *ngIf="isLoading">Buscando información disponible:</h4>
+
+
+    <div *ngIf="!isLoading">
+      <h4>Información encontrada:</h4>
+
+       <div *ngIf="place">
+        <h6 *ngIf="place.label">{{place.label}}</h6>
+        <!--<span *ngIf="place.street">
+          {{place.street}}
+        </span>
+        <span *ngIf="place.addressNumber">
+           {{place.addressNumber}}
+          </span>
+          <br/>
+        <span *ngIf="place.neighborhood">
+          {{place.neighborhood}}
+        </span>
+        <span *ngIf="place.municipality">
+          , {{place.municipality}}
+        </span>
+        <br/>
+        <span *ngIf="place.country">
+           {{place.country}}
+        </span>
+        <br/>
+        <span *ngIf="place.postalCode">
+          C.P: {{place.postalCode}}
+        </span>-->
+        <span>Coordenadas:</span>
+        <ul>
+          <li>Longitud: {{coordinates[0]}}</li>
+          <li>Latitud: {{coordinates[1]}}</li>
+        </ul>
+        <div class="flexEqualRow">
+          <ion-icon *ngIf="place!=undefined" (click)="dismiss()" name="close-circle-outline" size="big" color="danger">
+          </ion-icon>
+          <ion-icon *ngIf="place!=undefined" (click)="setDestinationFromPlace(place)" name="navigate-circle-outline" size="big"
+            color="success"> </ion-icon>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <!-- Placeholder Content for Other Segments -->
+
+  <div *ngIf="isLoading">
+    <ion-spinner name="crescent" class="centeredSpinner"></ion-spinner>
+  </div>
+
+</ion-content>

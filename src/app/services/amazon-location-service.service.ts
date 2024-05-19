@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Geo, Place, SearchForSuggestionsResults } from "@aws-amplify/geo";
+import { Coordinates, Geo, Place, SearchForSuggestionsResults } from "@aws-amplify/geo";
 
 @Injectable({
   providedIn: 'root'
@@ -51,5 +51,9 @@ export class AmazonLocationServiceService {
 
   async searchByText(searchTerm: string): Promise<Place[] | undefined> {
     return Geo.searchByText(searchTerm, this.searchByTextOptions);
+  }
+
+  async searchByCoordinates(coordinates: Coordinates): Promise<Place | undefined> {
+    return Geo.searchByCoordinates(coordinates, this.searchByTextOptions);
   }
 }

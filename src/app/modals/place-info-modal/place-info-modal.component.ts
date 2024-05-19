@@ -61,7 +61,7 @@ export class PlaceInfoModalComponent {
             }
           }
 
-          console.log(prop);
+          //console.log(prop);
         }
       }
 

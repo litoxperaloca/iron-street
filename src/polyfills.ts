@@ -41,6 +41,8 @@
  *  (window as any).__Zone_enable_cross_context_check = true;
  *
  */
+(window as any).__Zone_disable_requestAnimationFrame = true; // disable patch requestAnimationFrame
+
 
 import './zone-flags';
 
@@ -49,10 +51,10 @@ import './zone-flags';
  */
 import 'zone.js'; // Included with Angular CLI.
 
-(window as any).global = window;
+/*(window as any).global = window;
 (window as any).process = {
-  env: { DEBUG: undefined, NODE_ENV: "production" },
-};
+  env: { DEBUG: undefined, NODE_ENV: "production" }
+};*/
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */

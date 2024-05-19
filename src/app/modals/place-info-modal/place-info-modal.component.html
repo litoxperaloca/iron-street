@@ -19,21 +19,17 @@
       <ion-card *ngIf="osmFeature && osmFeature.properties">
         <ion-card-header>
           <ion-card-title *ngIf="osmPlace && osmPlace.label">{{osmPlace.label}}</ion-card-title>
-          <ion-card-subtitle>Tipo: {{ osmFeature.properties['amenity'] }}</ion-card-subtitle>
+          <ion-card-subtitle *ngIf="osmFeature.properties['amenity']">Tipo: {{ osmFeature.properties['amenity'] }}</ion-card-subtitle>
           <ion-card-subtitle>Categoría: {{ osmFeature.properties['category'].name }}</ion-card-subtitle>
           <div id="modalBarButton">
-            <ion-button (click)="dismiss()" color="danger" shape="round">
-              <ion-icon slot="icon-only" color="dark" name="close-outline"></ion-icon>
-            </ion-button>
-            <ion-button *ngIf="placeDataIncludeWebsite" (click)="openOutsideLink(featureWebsite)" color="primary" shape="round">
-              <ion-icon slot="icon-only" color="dark" name="globe-outline"></ion-icon>
-            </ion-button>
-            <ion-button *ngIf="placeDataIncludePhone" (click)="callNumber(featurePhone1)" color="secondary" shape="round">
-              <ion-icon slot="icon-only" color="dark" name="call-outline"></ion-icon>
-            </ion-button>
-            <ion-button (click)="setDestinationOSMifAbortCurrent(osmFeatureIdSelected)" color="success" shape="round">
-              <ion-icon slot="icon-only" color="dark" name="git-compare-outline"></ion-icon>
-            </ion-button>
+          <ion-icon  (click)="dismiss()" name="close-circle-outline" size="big" color="danger">
+            </ion-icon>
+          <ion-icon *ngIf="placeDataIncludeWebsite" (click)="openOutsideLink(featureWebsite)" name="globe-outline" size="big" color="primary">
+          </ion-icon>
+          <ion-icon *ngIf="placeDataIncludePhone" (click)="callNumber(featurePhone1)" name="call-outline" size="big" color="secondary">
+          </ion-icon>
+          <ion-icon (click)="setDestinationOSMifAbortCurrent(osmFeatureIdSelected)" name="navigate-outline" size="big" color="success">
+          </ion-icon>
           </div>
         </ion-card-header>
         <ion-card-content>

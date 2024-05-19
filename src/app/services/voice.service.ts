@@ -142,7 +142,7 @@ export class VoiceService {
       }).then(async () => {
         this.isSpeaking = false; // Reset speaking flag
         await this.processQueue(); // Continue processing the queue
-        console.log('Speech completed successfully');
+        //('Speech completed successfully');
       }).catch(async (error) => {
         console.error('Failed to speak:', error);
         this.isSpeaking = false; // Reset speaking flag

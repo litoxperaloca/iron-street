@@ -1,0 +1,232 @@
+// Importing variables for theme consistency
+@import 'src/theme/variables.scss';
+
+.search-modal {
+  ion-header {
+    --background: var(--background-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  ion-toolbar {
+    --background: var(--background-color);
+    --color: var(--text-color);
+  }
+
+  ion-title {
+    font-weight: bold;
+  }
+
+  ion-content {
+    --background: var(--background-color);
+    --color: var(--text-color);
+    padding: 15px;
+  }
+
+  // Search input styling
+  .search-input {
+    background-color: var(--accent-color-light);
+    border-radius: var(--modal-border-radius);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 10px 15px;
+    margin-bottom: 20px;
+
+    &::placeholder {
+      color: var(--accent-color-dark);
+    }
+  }
+
+  // Search results list
+  .search-results {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    .result-item {
+      background-color: var(--accent-color-light);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px;
+      color: var(--text-color);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: var(--accent-color);
+        color: var(--background-color);
+      }
+    }
+  }
+
+  // No results found message
+  .no-results {
+    text-align: center;
+    color: var(--text-color);
+    padding: 20px;
+  }
+}
+
+// Responsive adjustments for the search modal
+@media (min-width: 768px) {
+  .search-modal {
+    ion-content {
+      padding: 20px;
+    }
+
+    .search-input {
+      margin-bottom: 25px;
+    }
+
+    .search-results .result-item {
+      padding: 15px;
+    }
+  }
+}
+ion-header ion-toolbar{
+    padding: 20px !important;
+}
+
+ion-segment-button {
+    min-width: auto !important;
+}
+
+
+
+ion-fab.md.fab-horizontal-end.fab-vertical-bottom.hydrated{
+    bottom: 0px;
+    left: 0px;
+    height: 90px;
+}
+
+
+searchbar-input-container{
+  background: #565555;
+}
+
+.list-md {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background: var(--ion-item-background, var(--ion-background-color, #fff));
+}
+
+
+ion-item.suggestion-item{
+      width: 100%;
+    color: white;
+}
+ion-icon{
+    color: white;
+}
+
+.item.sc-ion-label-md-h, .item .sc-ion-label-md-h {
+    --color: initial;
+    display: block;
+    color: var(--color);
+    font-family: var(--ion-font-family, inherit);
+    font-size: inherit;
+    text-overflow: ellipsis;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.item ion-label h3 {
+
+    font-size: 16pt !important;
+    font-weight: normal !important;
+    line-height: normal !important;
+}
+
+#lugares ion-col{
+    height: 104x;
+    display: flex;
+    justify-content: space-around;
+}
+
+.button-inner, #lugares ion-button.button-inner {
+    display: flex;
+    position: relative;
+    flex-flow: column;
+    /* flex-shrink: 2; */
+    align-items: center;
+    justify-content: space-between;
+    /* justify-self: auto; */
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    line-height: 1.4;
+}
+
+
+#lugares ion-button {
+        /* display: flex; */
+    width: 90%;
+    height: 100%;
+    /* font-size: medium; */
+    color: var(--ion-color-light-contrast);
+    line-height: 2.2;
+      display: -ms-flexbox;
+    display: flex;
+    font-size: 10pt !important;
+    line-height: 1.6 !important;
+    position: relative;
+    -ms-flex-flow: row nowrap;
+    flex-flow: row nowrap;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: space-between !important;
+    line-height: 1.6 !important;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#lugares ion-button ion-icon {
+    font-size: xx-large;
+  margin: 0;
+}
+
+
+
+.centeredSpinner {
+      position: absolute;
+    /* top: calc(50% - 30px); */
+    z-index: 40;
+    width: 80px;
+    /* left: calc(50% - 30px); */
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    height: 80px;
+    color: var(--ion-color-secondary);
+  }
+
+h4{
+  color: var(--ion-color-secondary);
+}
+
+h6{
+  font-weight: 600;
+}
+
+.flexEqualRow{
+  display: flex;
+  justify-content: space-evenly;
+  margin: auto;
+  margin-top: 20px;
+}
+
+.flexEqualRow ion-icon{
+  font-size: xx-large;
+}

@@ -15,27 +15,31 @@
   <div>
 
     <div>
-      <h4 class="ion-padding">Estilo:</h4>
+          <ion-icon name="map-outline" size="big" color="tertiary">
+          </ion-icon>
+          <h4 class="ion-padding">Selecciona un estilo para el mapa:</h4>
 
       <!-- Grid para seleccionar el estilo del mapa -->
+      <h6>3D:</h6>
       <ion-grid class="map-style-grid">
         <ion-row>
           <ion-col size="4" class="map-style-option" (click)="setMapLight('down')">
-            <ion-img src="assets/img/map-styles/standard-down.png"></ion-img>
+            <ion-img src="assets/img/map-styles/standard-down-full.png"></ion-img>
             <ion-label class="ion-text-center">3D - Amanecer</ion-label>
           </ion-col>
           <ion-col size="4" class="map-style-option" (click)="setMapLight('dusk')">
-            <ion-img src="assets/img/map-styles/standard-dusk.png"></ion-img>
+            <ion-img src="assets/img/map-styles/standard-dusk-full.png"></ion-img>
             <ion-label class="ion-text-center">3D - Atardecer</ion-label>
           </ion-col>
           <ion-col size="4" class="map-style-option" (click)="setMapLight('night')">
-            <ion-img src="assets/img/map-styles/standard-night.png"></ion-img>
+            <ion-img src="assets/img/map-styles/standard-night-full.png"></ion-img>
             <ion-label class="ion-text-center">3D - Noche</ion-label>
           </ion-col>
         </ion-row>
       </ion-grid>
 
-      <ion-grid class="map-style-grid">
+      <h6>2D:</h6>
+      <ion-grid class="map-style-grid secondGrid">
         <ion-row>
           <ion-col size="4" class="map-style-option" (click)="setMapStyle('satellite-streets-v12')">
             <ion-img src="assets/img/map-styles/satellite.png"></ion-img>
@@ -43,21 +47,22 @@
           </ion-col>
           <ion-col size="4" class="map-style-option" (click)="setMapStyle('navigation-day-v1')">
             <ion-img src="assets/img/map-styles/nav-day.png"></ion-img>
-            <ion-label class="ion-text-center">Nav - Día </ion-label>
+            <ion-label class="ion-text-center">2D Claro </ion-label>
           </ion-col>
           <ion-col size="4" class="map-style-option" (click)="setMapStyle('navigation-night-v1')">
             <ion-img src="assets/img/map-styles/nav-night.png"></ion-img>
-            <ion-label class="ion-text-center">Nav - Noche</ion-label>
+            <ion-label class="ion-text-center">2D Oscuro</ion-label>
           </ion-col>
 
         </ion-row>
       </ion-grid>
 
+      <h6>Accesibilidad:</h6>
       <ion-grid class="map-style-grid">
         <ion-row>
           <ion-col size="4" class="map-style-option" (click)="setMapStyle('streets-v12')">
             <ion-img src="assets/img/map-styles/classic.png"></ion-img>
-            <ion-label class="ion-text-center">Calles</ion-label>
+            <ion-label class="ion-text-center">Clásico</ion-label>
           </ion-col>
           <ion-col size="4" class="map-style-option" (click)="setMapStyle('light-v11')">
             <ion-img src="assets/img/map-styles/light.png"></ion-img>
@@ -69,6 +74,23 @@
           </ion-col>
         </ion-row>
       </ion-grid>
+        <h6>Experimentales 3D:</h6>
+            <ion-grid class="map-style-grid secondGrid">
+              <ion-row>
+                <ion-col size="4" class="map-style-option" (click)="setFullMapStyle('mapbox://styles/litoxperaloca/clddmyslc002x01ry4jkrnuvx')">
+                  <ion-img src="assets/img/map-styles/rednight.png"></ion-img>
+                  <ion-label class="ion-text-center">Red Night</ion-label>
+                </ion-col>
+                <ion-col size="4" class="map-style-option" (click)="setFullMapStyle('mapbox://styles/litoxperaloca/clg6s2tmm00bg01mqol1454ui')">
+                  <ion-img src="assets/img/map-styles/cyberpunk.png"></ion-img>
+                  <ion-label class="ion-text-center">Purple City</ion-label>
+                </ion-col>
+                <ion-col size="4" class="map-style-option" (click)="setFullMapStyle('mapbox://styles/litoxperaloca/clun8375j04km01nwcqa93oq7')">
+                  <ion-img src="assets/img/map-styles/darkgreen.png"></ion-img>
+                  <ion-label class="ion-text-center">Dark and Green</ion-label>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
     </div>
 
 

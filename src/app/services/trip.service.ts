@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
+import * as turf from '@turf/turf';
 import * as Navigation from 'navigation.js';
 import { CurrentStep } from 'navigation.js';
 import { HomePage } from '../pages/home/home.page';
@@ -26,6 +27,7 @@ export class TripService {
 
 
   locationUpdate(tripIsStarting: boolean): void {
+
     const Navigation: any = require('navigation.js')({
       units: 'kilometres',
       maxReRouteDistance: 1,
@@ -46,6 +48,13 @@ export class TripService {
         coordinates: [userPosition.coords.longitude, userPosition.coords.latitude]
       }
     };
+    let totalTripDistance: number = this.route.distance;
+    let currentDistance: number = 0;
+    if (this.mapService.destinationPlace.geometry) {
+      currentDistance = turf.distance([userPosition.coords.longitude, userPosition.coords.latitude], this.mapService.destinationPlace.geometry.point, { units: "meters" });
+
+    }
+    ((window as any).homePage as HomePage).tripProgressIndex = 1 - currentDistance / totalTripDistance;
     const currentStep: CurrentStep = Navigation.getCurrentStep(userLocation, this.route, this.userCurrentStep);
     if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
       this.displayInstructions(currentStep);
@@ -64,13 +73,15 @@ export class TripService {
     // Display instructions for current step if needed
     if (shouldReRoute) this.reroute(); // Reroute if user is far away from the route
 
-    const stepCompleted = currentStep.distance <= 0.01; // Adjust threshold as needed
+    const stepCompleted = currentStep.distance <= 0.07; // Adjust threshold as needed
     if (stepCompleted && currentStep.step >= this.route.steps.length - 1) {
       this.finishTrip();
     }
   }
 
   startTrip(route: any): void {
+    ((window as any).homePage as HomePage).tripProgressIndex = 0;
+
     this.route = route; // Store the route information
     this.lastDisplayedStep = -1; // Initialize last displayed step
     this.userCurrentStep = 0; // Initialize user's current step
@@ -147,7 +158,7 @@ export class TripService {
     let stepNext: any = null;
     let iconNext: string;
     let tripStepDetailsNext: HTMLElement | null = document.getElementById("tripStepDetails");
-    if (this.route.steps.length > currentStep.step) {
+    if (this.route && this.route.steps && this.route.steps.length > currentStep.step) {
       const nextStepIndex = currentStep.step + 1;
       nextStep = this.route.steps[nextStepIndex];
       stepNext = this.route.steps[nextStep.step];
@@ -177,7 +188,9 @@ export class TripService {
 
 
     } else {
+      await this.finishTrip();
       setTimeout(() => {
+
         if (tripStepDetails) tripStepDetails.style.display = "none";
       }, 2500); // Adjust delay as needed
 
@@ -185,7 +198,7 @@ export class TripService {
   }
 
   maneurveIcon(step: any): string {
-    console.log(step);
+    //console.log(step);
     let icon: string = step.maneuver.modifier ? step.maneuver.modifier.replace(/\s+/g, '-').toLowerCase() : step.maneuver.type.replace(/\s+/g, '-').toLowerCase();
 
     if (['arrive', 'depart', 'waypoint'].includes(step.maneuver.type)) {

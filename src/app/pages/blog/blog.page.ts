@@ -30,7 +30,7 @@ export class BlogPage implements OnInit {
 
   async loadBlogPosts() {
     this.wordpressService.getPosts(this.categoryDefinitonId).then((posts) => {
-      console.log('Posts:', posts);
+      //console.log('Posts:', posts);
       this.blogPosts = posts;
       this.blogPosts.forEach((post) => {
 

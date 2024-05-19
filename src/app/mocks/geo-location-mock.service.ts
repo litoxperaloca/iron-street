@@ -187,7 +187,7 @@ export class GeoLocationMockService {
   async getNextPosition() {
     if (this.index >= this.coordinates.length || ((window as any).homePage as HomePage).shouldEndSimulation) {
       this.index = 0; // Reset or stop navigation
-      environment.mocking = false;
+      //environment.mocking = false;
       ((window as any).geoLocationService as GeoLocationService).mocking = false;
       if (!((window as any).homePage as HomePage).shouldEndSimulation) {
         ((window as any).homePage as HomePage).shouldEndSimulation = true;

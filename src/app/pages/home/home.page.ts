@@ -48,7 +48,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
   public osmClickedId: number = 0;
   simulation: boolean = false;
   shouldEndSimulation: boolean = false;
-  private locationInterval: any; // Store the interval ID for location monitoring
+  locationInterval: any; // Store the interval ID for location monitoring
   getMock: boolean = true;
   isNative: boolean = false;
 
@@ -269,6 +269,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
     //this.speedService.stopWatchingSpeedLimit();
     this.mapService.leaveMapPage();
     this.cancelTrip();
+    this.cancelTripSimulation();
+
   }
 
   public openModal(type: String, extraParam?: any) {
@@ -483,5 +485,16 @@ export class HomePage implements AfterViewInit, OnDestroy {
   openInfoModalOSM(destinationId: number) {
     this.osmClickedId = destinationId;
     this.openModal("PlaceInfo");
+  }
+
+  searchPlaceByCoords() {
+    this.openModal("SearchReverse");
+    this.mapService.closeCustomPopup()
+
+  }
+
+  setDestinationFromCoords() {
+    this.mapService.closeCustomPopup()
+    this.mapService.setDestinationFromCoords();
   }
 }

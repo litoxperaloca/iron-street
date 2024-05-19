@@ -35,8 +35,13 @@ export class MapSettingsModalComponent {
     this.dismiss();
   }
 
-  setMapStyle(id: String) {
+  setMapStyle(id: string) {
     this.mapService.setMapStye(id);
+    this.dismiss();
+  }
+
+  setFullMapStyle(url: string) {
+    this.mapService.setFullMapStyle(url);
     this.dismiss();
   }
 

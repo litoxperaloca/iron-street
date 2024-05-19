@@ -58,7 +58,7 @@ export class SpeechRecognitionService {
           maxResults: 1,
 
         }).then((result) => {
-          console.log('Speech Recognition Result:', result);
+          //console.log('Speech Recognition Result:', result);
           //this.presentToast(`Speech recognition result: ${result}`);
           // Do something with the result
           // ...

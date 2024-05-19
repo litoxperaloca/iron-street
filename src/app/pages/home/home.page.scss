@@ -411,6 +411,10 @@ font-size: 12pt;
   margin: auto;
 }
 
+.flexEqualRow ion-icon{
+  font-size: xx-large;
+}
+
 .flexEqualRowCeroMargin{
     font-size: 30px;
     --ionicon-stroke-width: 40px;
@@ -426,10 +430,10 @@ font-size: 12pt;
 }
 
 .noteIcon{
-  font-size: 30px;
-  --ionicon-stroke-width: 40px;
-  width: 70px;
-  height: 30pt;
+  font-size: 20px;
+  --ionicon-stroke-width: 30px;
+  width: 50px;
+  height: 20pt;
 
 }
 

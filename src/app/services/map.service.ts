@@ -66,6 +66,10 @@ export class MapService {
   osmFeatures: mapboxgl.MapboxGeoJSONFeature[] = [];
   osmPlaces: Place[] = [];
   private lastPosition: mapboxgl.LngLat | null = null;
+  mapPressedMarkerInstance: mapboxgl.Marker | null = null;
+  popUpMapPressed: mapboxgl.Popup | null = null;
+  longPressTimer: any;
+  firstTouchDone: boolean = false;
 
 
   constructor(private windowService: WindowService,
@@ -228,6 +232,8 @@ export class MapService {
           map.rotateTo(bearing);
         }
       });
+
+      this.addLongPressHandler();
       map.on('click', 'directions-destination-point', function (e: any) {
         // Ensure there's data from which to derive a popup
         if (e.features.length > 0) {
@@ -239,7 +245,10 @@ export class MapService {
       });
       this.rotateCamera(0);
 
+
+
     });
+
     const self = this;
     map.on('style.load', (event) => {
 
@@ -255,6 +264,64 @@ export class MapService {
       self.mapbox.resize();
 
     });
+  }
+
+  addLongPressHandler() {
+
+    this.mapbox.on('touchstart', (e) => {
+      //console.log(e);
+      if (this.mapbox.isEasing() || this.mapbox.isMoving()
+        || this.mapbox.isRotating() || this.mapbox.isZooming()) {
+        if (this.longPressTimer) {
+          clearTimeout(this.longPressTimer);
+        }
+        return;
+      } else {
+        if (this.firstTouchDone) {
+          if (this.longPressTimer) {
+            clearTimeout(this.longPressTimer);
+          }
+        } else {
+          this.firstTouchDone = true;
+          this.longPressTimer = setTimeout(() => {
+            if (this.popUpMapPressed) {
+              this.popUpMapPressed.remove();
+            }
+            const coordinates = e.lngLat;
+            this.addMarkerWithPopup(coordinates);
+          }, 2000); // 1000ms for a long press
+        }
+
+      }
+
+    });
+
+    this.mapbox.on('touchend', (e) => {
+      // console.log(e);
+
+      clearTimeout(this.longPressTimer)
+      this.longPressTimer = null;
+      this.firstTouchDone = false;
+
+    });
+  }
+
+  addMarkerWithPopup(coordinates: mapboxgl.LngLat) {
+    /*if (this.popUpMapPressed) {
+      this.popUpMapPressed.remove();
+    }*/
+    if (this.mapPressedMarkerInstance) {
+      this.mapPressedMarkerInstance.remove();
+    }
+    let popup = this.createMapPressedPopup([coordinates.lng, coordinates.lat]);
+    //popup.addClassName('destinationPopUp');
+    //this.popUpMapPressed = popup;
+    let marker = new mapboxgl.Marker()
+      .setLngLat(coordinates)
+      .setPopup(popup) // sets a popup on this marker
+      .addTo(this.mapbox);
+    popup.addTo(this.mapbox);
+    this.mapPressedMarkerInstance = marker;
   }
 
   calculateBounds(lines: number[][][]): mapboxgl.LngLatBounds {
@@ -304,7 +371,41 @@ export class MapService {
     if (this.coordinatesAltRoute) this.coordinatesAltRoute = [];
     if (this.coordinatesMainRoute) this.coordinatesMainRoute = [];
     //this.popups = [];
+    if (this.popUpMapPressed) this.popUpMapPressed.remove();
 
+  }
+
+  createMapPressedPopup(coordinates: [number, number]): mapboxgl.Popup {
+    if (this.popUpMapPressed) this.popUpMapPressed.remove();
+
+    let html = '<h6>¿Qué buscas aquí?</h6>';
+    html += '<div class="flexEqualRow">';
+    html += '<ion-icon onclick="window.mapService.closeCustomPopup()" name = "close-circle-outline" size="big" color="danger" > </ion-icon>';
+    html += '<ion-icon onclick="window.homePage.searchPlaceByCoords()" name = "information-circle-outline" size="big" color="secondary" > </ion-icon>';
+    html += '<ion-icon onclick="window.homePage.setDestinationFromCoords()" name = "navigate-circle-outline" size="big" color="success" > </ion-icon>';
+
+    html += '</div>';
+    /* html += '<p>Coordenadas: ' + '</p>';
+     html += '<ul>';
+     html += '<li>Latitud: ' + coordinates[1] + '</li>';
+     html += '<li>Longitud: ' + coordinates[0] + '</li>';
+     html += '</ul>';
+     html += '<h6>¿Estás buscando información sobre este lugar o es el destino de tu próximo viaje?</h6>';
+     html += '<div id="destinationActions">';
+     html += '<input type="button" id="cancelTripButtonPopUp" value="Cancelar" onclick="window.homePage.cancelMapPressed()"></input>';
+     html += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta hacia aquí" onclick="window.homePage.searchMapPressed()"></input>';
+     html += '</div>';*/
+
+    //html += '<input id="destinationViewMoreButton" type="button" value="Ver más" onclick="document.getElementById(\'destinationDetails\').style.display=\'block\'; document.getElementById(\'destinationViewMoreButton\').style.display=\'none;\'"></input>';
+    const popup = new mapboxgl.Popup({
+      closeOnClick: true,
+      //offset: 20
+    }).setLngLat(coordinates)
+      .setHTML(html);
+    popup.addClassName('mapPressedPopUp');
+    this.popUpMapPressed = popup;
+    // Crea un popup y lo añade al mapa en el punto medio
+    return popup;
   }
 
   createDestinationPopup(coordinates: [number, number]): mapboxgl.Popup {
@@ -322,8 +423,11 @@ export class MapService {
     html += '<input type="button" value="Ver menos" onclick="document.getElementById(\'destinationDetails\').style.display=\'none\'; document.getElementById(\'destinationViewMoreButton\').style.display=\'block;\'"></input>';
     html += '</div>';
     html += '<div id="destinationActions">';
-    html += '<input type="button" id="cancelTripButtonPopUp" value="Cancelar" onclick="window.homePage.cancelTrip()"></input>';
-    html += '<input type="button" id="startTripButtonPopUp" value="Iniciar viaje" onclick="window.homePage.startTrip()"></input>';
+    html += '<ion-icon onclick="window.homePage.cancelTrip()" name ="close-circle-outline" size="big" color="danger" > </ion-icon>';
+    html += '<ion-icon onclick="window.homePage.startTrip()" name = "navigate-circle-outline" size="big" color="success" > </ion-icon>';
+
+    //html += '<input type="button" id="cancelTripButtonPopUp" value="Cancelar" onclick="window.homePage.cancelTrip()"></input>';
+    //html += '<input type="button" id="startTripButtonPopUp" value="Iniciar viaje" onclick="window.homePage.startTrip()"></input>';
     html += '</div>';
     //html += '<input id="destinationViewMoreButton" type="button" value="Ver más" onclick="document.getElementById(\'destinationDetails\').style.display=\'block\'; document.getElementById(\'destinationViewMoreButton\').style.display=\'none;\'"></input>';
     const popup = new mapboxgl.Popup({
@@ -725,6 +829,11 @@ export class MapService {
     return this.userVisionMarkerInstance;
   }
 
+  setFullMapStyle(url: string): void {
+    this.isStandardMap = false;
+    this.sourcesAndLayers = this.getSourcesAndLayers();
+    this.mapbox.setStyle(url);
+  }
 
   setMapStye(id: String): void {
     this.isStandardMap = false;
@@ -946,6 +1055,26 @@ export class MapService {
       if (destination.geometry && destination.geometry.point) this.mapControls.directions.setDestination(destination.geometry.point);
     }
   };
+
+  setDestinationFromCoords() {
+    if (this.popUpMapPressed && this.popUpMapPressed.getLngLat()) {
+      let latlon: [number, number] = [this.popUpMapPressed.getLngLat().lng, this.popUpMapPressed.getLngLat().lat];
+      this.mapControls.directions.actions.setRouteIndex(0);
+      this.cleanRoutePopups();
+      this.destination = "(" + latlon[0].toFixed(4) + "," + latlon[1].toFixed(4) + ")";
+      if (!this.mapControls.directions.getOrigin().type) {
+        const position = this.geoLocationService.getLastCurrentLocation();
+        if (position) {
+          this.mapControls.directions.setOrigin([position.coords.longitude, position.coords.latitude]);
+        }
+        this.mapControls.directions.setDestination(latlon);
+      } else {
+        this.mapControls.directions.setDestination(latlon);
+      }
+    }
+
+  };
+
   setDestinationOSM(destinationId: number) {
     this.mapControls.directions.actions.setRouteIndex(0);
     this.closeOSMpopup(destinationId);
@@ -1142,12 +1271,24 @@ export class MapService {
               "minzoom": minZoom,
               "maxzoom": maxZoom,
               "type": "symbol",
+              'paint': {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 0.5,
+                'text-halo-blur': 0.7,
+                'text-opacity': 1
+              },
               'layout': {
                 'icon-image': imageName,
                 'icon-size': imageSize,
                 //'icon-allow-overlap': true,
                 "icon-anchor": 'bottom',
                 'visibility': 'visible',
+                'text-field': ['get', labelPropertyIndex],
+                'text-justify': 'center',
+                'text-offset': [0, 0.3],
+                'text-anchor': 'top'
+
                 //'icon-rotate': ['get', 'bearing']
               },
               //"filter": ["<=", ["distance-from-center"], 0.5],
@@ -1189,16 +1330,23 @@ export class MapService {
                 return `<p>${key}: ${properties[key]}</p>`;
               }).join('');
               let innerHtml = topHTML + '<div id="destinationDetails">' + description + '</div>';
-              innerHtml += '<br><input type="button" id="cancelTripButtonPopUp" value="Cerrar" onclick="window.mapService.closeOSMpopup(\'' + feature.id + '\')"></input>';
+              //innerHtml += '<br><input type="button" id="cancelTripButtonPopUp" value="Cerrar" ></input>';
+              innerHtml += '<div class="flexEqualRow"><ion-icon onclick="window.mapService.closeOSMpopup(\'' + feature.id + '\')" name="close-circle-outline" size="big" color="danger" > </ion-icon>';
+
               const self = ((window as any).mapService as MapService);
-              innerHtml += '<input type="button" id="infoButtonPopUp" value="INFO" onclick="window.homePage.openInfoModalOSM(\'' + feature.id + '\')"></input>';
+              //innerHtml += '<input type="button" id="infoButtonPopUp" value="INFO" onclick="window.homePage.openInfoModalOSM(\'' + feature.id + '\')"></input>';
+              innerHtml += '<ion-icon  onclick="window.homePage.openInfoModalOSM(\'' + feature.id + '\')" name="information-circle-outline" size="big" color="secondary" > </ion-icon>';
 
               if (!self.isTripStarted) {
-                innerHtml += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta" onclick="window.mapService.setDestinationOSM(\'' + feature.id + '\')"></input>';
+                //innerHtml += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta" onclick="window.mapService.setDestinationOSM(\'' + feature.id + '\')"></input>';
+                innerHtml += '<ion-icon  onclick="window.mapService.setDestinationOSM(\'' + feature.id + '\')" name="navigate-circle-outline" size="big" color="success" > </ion-icon>';
+
               } else {
-                innerHtml += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta nueva" onclick="window.homePage.setDestinationOSMifAbortCurrent(\'' + feature.id + '\')"></input>';
+                //innerHtml += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta nueva" onclick="window.homePage.setDestinationOSMifAbortCurrent(\'' + feature.id + '\')"></input>';
+                innerHtml += '<ion-icon  onclick="window.homePage.setDestinationOSMifAbortCurrent(\'' + feature.id + '\')" name="navigate-circle-outline" size="big" color="success" > </ion-icon>';
 
               }
+              innerHtml += '</div>';
 
 
               const featurePopup = new mapboxgl.Popup({ closeOnClick: true, offset: 0, closeButton: true })
@@ -1222,6 +1370,10 @@ export class MapService {
   closeOSMpopup(id: number) {
     const popUp: mapboxgl.Popup = this.popups[id];
     popUp.remove();
+  }
+
+  closeCustomPopup() {
+    if (this.popUpMapPressed) this.popUpMapPressed.remove();
   }
 
   convertOsmToJson(osmData: any[]): any {
