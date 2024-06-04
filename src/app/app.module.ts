@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { NgModule, isDevMode } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -6,6 +6,8 @@ import { RouteReuseStrategy } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Amplify } from 'aws-amplify';
 import { ManeurveModalComponent } from 'src/app/modals/maneurve/maneurve-modal.component';
 import { PermissionModalComponent } from 'src/app/modals/permission/permission-modal.component';
@@ -24,23 +26,31 @@ import awsconfig from '../aws-exports';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { GeoLocationMockService } from './mocks/geo-location-mock.service';
+import { BookmarkModalComponent } from './modals/bookmark-modal/bookmark-modal.component';
+import { ConfModalComponent } from './modals/conf-modal/conf-modal.component';
+import { LocationModalComponent } from './modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
+import { OsmModalComponent } from './modals/osm-modal/osm-modal.component';
 import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from './modals/search-reverse-modal/search-reverse-modal.component';
 import { AlertService } from './services/alert.service';
 import { AmazonLocationServiceService } from './services/amazon-location-service.service';
+import { BookmarksService } from './services/bookmarks.service';
 import { DeviceOrientationService } from './services/device-orientation.service';
 import { MapService } from './services/map.service';
 import { ModalService } from './services/modal.service';
+import { PreferencesService } from './services/preferences.service';
 import { SpeechRecognitionService } from './services/speech-recognition.service';
 import { ThemeService } from './services/theme-service.service';
 import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
-
 Amplify.configure(awsconfig);
 
-
+// Función para crear un loader de traducción
+export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
+  return new TranslateHttpLoader(http, '../../assets/i18n/', '.json');
+}
 
 @NgModule({
   declarations:
@@ -55,7 +65,11 @@ Amplify.configure(awsconfig);
       RouteModalComponent,
       SettingsModalComponent,
       MapSettingsModalComponent,
-      PlaceInfoModalComponent
+      PlaceInfoModalComponent,
+      BookmarkModalComponent,
+      OsmModalComponent,
+      LocationModalComponent,
+      ConfModalComponent
     ],
   imports: [
     BrowserModule,
@@ -70,7 +84,17 @@ Amplify.configure(awsconfig);
         // Register the ServiceWorker as soon as the application is stable
         // or after 30 seconds (whichever comes first).
         registrationStrategy: 'registerWhenStable:30000'
-      })],
+      }),
+    HttpClientModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    })
+  ],
+
   providers:
     [
       { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -91,7 +115,10 @@ Amplify.configure(awsconfig);
       GeoLocationMockService,
       TripSimulatorService,
       AlertService,
-      SpeechRecognitionService
+      SpeechRecognitionService,
+      BookmarksService,
+      PreferencesService,
+      TranslateService
     ],
   bootstrap: [AppComponent],
 })

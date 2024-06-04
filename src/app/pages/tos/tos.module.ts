@@ -1,11 +1,12 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
 import { TosPageRoutingModule } from './tos-routing.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { TosPage } from './tos.page';
 
 @NgModule({
@@ -13,8 +14,9 @@ import { TosPage } from './tos.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    TosPageRoutingModule
+    TosPageRoutingModule,
+    TranslateModule
   ],
   declarations: [TosPage]
 })
-export class TosPageModule {}
+export class TosPageModule { }

@@ -1,11 +1,12 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
 import { HelpPageRoutingModule } from './help-routing.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { HelpPage } from './help.page';
 
 @NgModule({
@@ -13,8 +14,9 @@ import { HelpPage } from './help.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    HelpPageRoutingModule
+    HelpPageRoutingModule,
+    TranslateModule
   ],
   declarations: [HelpPage]
 })
-export class HelpPageModule {}
+export class HelpPageModule { }

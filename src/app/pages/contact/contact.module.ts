@@ -1,11 +1,12 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
 import { ContactPageRoutingModule } from './contact-routing.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { ContactPage } from './contact.page';
 
 @NgModule({
@@ -13,8 +14,9 @@ import { ContactPage } from './contact.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    ContactPageRoutingModule
+    ContactPageRoutingModule,
+    TranslateModule
   ],
   declarations: [ContactPage]
 })
-export class ContactPageModule {}
+export class ContactPageModule { }

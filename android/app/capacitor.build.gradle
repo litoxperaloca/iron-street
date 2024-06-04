@@ -30,6 +30,7 @@ dependencies {
     implementation project(':capacitor-share')
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
+    implementation project(':capacitor-storage')
     implementation project(':capacitor-toast')
 
 }

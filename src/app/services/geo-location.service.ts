@@ -1,20 +1,105 @@
 import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import * as turf from '@turf/turf';
 import { Point } from 'geojson';
 import { environment } from 'src/environments/environment';
 import { GeoLocationMockService } from '../mocks/geo-location-mock.service';
+import { HomePage } from '../pages/home/home.page';
+import { AlertService } from './alert.service';
 import { MapService } from './map.service';
 import { SpeedService } from './speed.service';
+
 @Injectable({
   providedIn: 'root',
 })
 export class GeoLocationService {
-  private watchID!: string | null;
   private currentPosition: any = null;
   private lastCurrentLocation: any;
   private lastBboxCalculatedForDataIncome: any = null;
   public mocking: boolean = false;
+
+  private intervalId: any;
+
+  async requestPermissions() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const permissions = await Geolocation.requestPermissions();
+        if (permissions.location === 'granted') {
+          return true;
+        } else {
+          throw new Error('Location permission not granted');
+        }
+      } catch (error) {
+        console.error('Error requesting location permissions', error);
+        throw error;
+      }
+    } else {
+      // Web does not need explicit permissions
+      return true;
+    }
+  }
+
+  async getCurrentPos() {
+    const options = {
+      maximumAge: 3000,
+      timeout: 3000,
+      enableHighAccuracy: true,
+    };
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const coordinates = await Geolocation.getCurrentPosition(options);
+        return coordinates;
+      } catch (e) {
+        console.error('Error getting location', e);
+        throw e;
+      }
+    } else {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(resolve, reject, options);
+        } else {
+          reject(new Error('Geolocation not supported'));
+        }
+      });
+    }
+  }
+
+  watchPosition(callback: (position: any) => void) {
+    const options = {
+      maximumAge: 3000,
+      timeout: 3000,
+      enableHighAccuracy: true,
+    };
+    if (Capacitor.isNativePlatform()) {
+      const wait = Geolocation.watchPosition(options, (position, err) => {
+        if (err) {
+          console.error('Error watching position', err);
+          return;
+        }
+        callback(position);
+      });
+      return wait;
+    } else {
+      if (navigator.geolocation) {
+        const watchId = navigator.geolocation.watchPosition(callback, console.error, options);
+        return watchId;
+      } else {
+        console.error('Geolocation not supported');
+        return;
+      }
+    }
+  }
+
+  clearWatch(watchId: string | number) {
+    if (Capacitor.isNativePlatform()) {
+      Geolocation.clearWatch({ id: watchId as string });
+    } else {
+      if (navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId as number);
+      }
+    }
+  }
 
   getLastCurrentLocation(): Position {
     return this.lastCurrentLocation;
@@ -25,7 +110,12 @@ export class GeoLocationService {
     this.lastCurrentLocation = position;
   }
 
-  constructor(private geoLocationMockService: GeoLocationMockService, private mapService: MapService, private speedService: SpeedService) { }
+  constructor(
+    private geoLocationMockService: GeoLocationMockService,
+    private mapService: MapService,
+    private speedService: SpeedService,
+    private alertService: AlertService
+  ) { }
 
   getLastValidCurrentPosition(): Position {
     return this.currentPosition;
@@ -35,23 +125,33 @@ export class GeoLocationService {
     try {
       const permissions = await Geolocation.checkPermissions();
       if (permissions.location !== 'granted') {
-        await Geolocation.requestPermissions();
+        let perm = await Geolocation.requestPermissions();
+        if (perm.location !== 'granted') {
+          await this.alertService.presentAlert("Error: falta habilitar permiso para acceder a tu ubicación.", "Ubicación desactivada o permiso deshabilitado.", "Para poder utilizar esta app, permite que Iron Street acceda a tu ubicación. Dependiendo de tu dispositivo, es posible que debas abrir nuevamente la app después de habiliar el permiso.", ["OK (habilitarlo a continuación)"]);
+          perm = await Geolocation.requestPermissions();
+          if (perm.location !== 'granted') {
+            return null;
+          }
+        }
       }
       const options = {
-        maximumAge: 1100,
-        timeout: 10000,
+        maximumAge: 3000,
+        timeout: 3000,
         enableHighAccuracy: true,
       };
-      const coordinates = await Geolocation.getCurrentPosition(options);
       if (environment.mocking && this.mocking) {
         const coords: Position = await this.geoLocationMockService.getNextPosition();
         if (coords.coords.latitude === 0 && coords.coords.longitude === 0) {
           //console.log('Termino la simulacion');
+          ((window as any).homePage as HomePage).cancelTripSimulation();
+          const coordinates = await Geolocation.getCurrentPosition(options);
           return coordinates;
         } else {
           return coords;
         }
       } else {
+        const coordinates = await Geolocation.getCurrentPosition(options);
+
         return coordinates;
       }
 
@@ -60,66 +160,6 @@ export class GeoLocationService {
       return null;
     }
   }
-
-  async startLocationObserver() {
-    let self = this;
-    const options = {
-      maximumAge: 1100,
-      timeout: 10000,
-      enableHighAccuracy: true,
-    };
-    this.watchID = await Geolocation.watchPosition(options, (position, err) => {
-      if (err) {
-        console.error('Error watching position:', err);
-        return;
-      }
-      //console.log('Location observer started');
-    });
-  }
-
-  stopLocationObserver() {
-    if (this.watchID != null) Geolocation.clearWatch({ id: this.watchID });
-
-  }
-
-  // Nuevo método para observar cambios en la posición
-  async watchPosition(callback: (position: Position | null, error?: any) => void) {
-    const options = {
-      maximumAge: 3000,
-      timeout: 6000,
-      enableHighAccuracy: true,
-    };
-    this.watchID = await Geolocation.watchPosition(options, async (position, error) => {
-      if (error) {
-        callback(null, error);
-        return;
-      }
-      if (environment.mocking && this.mocking) {
-        let coords: Position = await this.geoLocationMockService.getNextPosition();
-        if (coords.coords.latitude === 0 && coords.coords.longitude === 0) {
-          callback(position);
-          //console.log("Termino la simulacion")
-        } else {
-          callback(coords);
-
-        }
-
-      } else {
-        callback(position);
-
-      }
-    });
-
-    return this.watchID;
-  }
-
-  // Método para detener la observación
-  stopWatchingPosition() {
-    if (this.watchID != null) Geolocation.clearWatch({ id: this.watchID });
-  }
-
-
-
 
   calculateDistanceToNearestBboxEdge(userLocation: Point, bbox: [[number, number], [number, number]]) {
     const [[minLongitude, minLatitude], [maxLongitude, maxLatitude]] = bbox;

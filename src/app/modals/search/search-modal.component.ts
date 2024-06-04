@@ -4,11 +4,11 @@ import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { InfiniteScrollCustomEvent, ModalController, NavParams } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 import { AmazonLocationServiceService } from '../../services/amazon-location-service.service';
+import { BookmarksService } from '../../services/bookmarks.service';
 import { GeoLocationService } from '../../services/geo-location.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
 import { ModalService } from '../../services/modal.service';
 import { OsmService } from '../../services/osm.service';
-
 @Component({
   selector: 'app-search-modal',
   templateUrl: './search-modal.component.html',
@@ -20,7 +20,7 @@ export class SearchModalComponent {
   suggestions: any[] = [];
   places: Place[] = [];
   isLoading: boolean = false;
-
+  groupedPlaces: { [country: string]: { [municipality: string]: any[] } } = {};
   segmentIsLoading: any = [];
 
 
@@ -47,7 +47,8 @@ export class SearchModalComponent {
     private mapService: MapService,
     private amazonLocationServiceService: AmazonLocationServiceService,
     private osmService: OsmService,
-    private geoLocationService: GeoLocationService
+    private geoLocationService: GeoLocationService,
+    private bookmarksService: BookmarksService
   ) {
     if (this.navParams.get('isFinalDestination')) {
       this.extraParam = this.navParams.get('extraParam'); // Accessing the passed parameter
@@ -106,9 +107,20 @@ export class SearchModalComponent {
       }
       )*/
       if (searchMpde == "strContains") {
+        this.groupedPlaces = {};
         await this.amazonLocationServiceService.searchByText(this.searchTerm).then((response: Place[] | undefined) => {
           if (response) this.suggestions = response;
+          this.suggestions.forEach(place => {
+            if (!this.groupedPlaces[place.country]) {
+              this.groupedPlaces[place.country] = {};
+            }
+            if (!this.groupedPlaces[place.country][place.municipality]) {
+              this.groupedPlaces[place.country][place.municipality] = [];
+            }
+            this.groupedPlaces[place.country][place.municipality].push(place)
+          });
           this.segmentIsLoading[this.currentSegment] = false;
+          console.log(this.groupedPlaces);
 
         });
 
@@ -123,7 +135,13 @@ export class SearchModalComponent {
     }
 
   }
+  getCountryKeys() {
+    return Object.keys(this.groupedPlaces);
+  }
 
+  getMunicipalityKeys(country: string) {
+    return Object.keys(this.groupedPlaces[country]);
+  }
   iconUrl(icon: string): string {
     return `assets/img/map-icons/${icon}.svg`;
   }
@@ -208,5 +226,77 @@ export class SearchModalComponent {
         this.dismiss();
       });
     }
+  }
+
+  homeMarker: Place | null = null;
+  workMarker: Place | null = null;
+  favoriteMarkers: Place[] = [];
+
+  markerName = '';
+  markerLat: number | null = null;
+  markerLng: number | null = null;
+
+  async ngOnInit(): Promise<void> {
+    await this.loadMarkers();
+  }
+
+  async loadMarkers(): Promise<void> {
+    this.homeMarker = await this.bookmarksService.getHomeMarker();
+    this.workMarker = await this.bookmarksService.getWorkMarker();
+    this.favoriteMarkers = await this.bookmarksService.getFavoriteMarkers();
+  }
+
+  async setHomeMarker(): Promise<void> {
+    if (this.markerLat !== null && this.markerLng !== null) {
+      const marker: Place = { label: 'Casa', geometry: { point: [this.markerLng, this.markerLat] } };
+      await this.bookmarksService.setHomeMarker(marker);
+      await this.loadMarkers();
+    }
+  }
+
+  async setWorkMarker(): Promise<void> {
+    if (this.markerLat !== null && this.markerLng !== null) {
+      const marker: Place = { label: 'Trabajo', geometry: { point: [this.markerLng, this.markerLat] } };
+      await this.bookmarksService.setWorkMarker(marker);
+      await this.loadMarkers();
+    }
+  }
+
+  async addFavoriteMarker(): Promise<void> {
+    if (this.markerName && this.markerLat !== null && this.markerLng !== null) {
+      const marker: Place = { label: this.markerName, geometry: { point: [this.markerLng, this.markerLat] } };
+      await this.bookmarksService.addFavoriteMarker(marker);
+      await this.loadMarkers();
+    }
+  }
+
+  async addWorkPlace(place: Place): Promise<void> {
+    await this.bookmarksService.setWorkMarker(place);
+    await this.loadMarkers();
+  }
+
+  async addHomePlace(place: Place): Promise<void> {
+    await this.bookmarksService.setHomeMarker(place);
+    await this.loadMarkers();
+  }
+
+  async addFavoritePlace(place: Place): Promise<void> {
+    await this.bookmarksService.addFavoriteMarker(place);
+    await this.loadMarkers();
+  }
+
+  async removeHomeMarker(): Promise<void> {
+    await this.bookmarksService.removeHomeMarker();
+    await this.loadMarkers();
+  }
+
+  async removeWorkMarker(): Promise<void> {
+    await this.bookmarksService.removeWorkMarker();
+    await this.loadMarkers();
+  }
+
+  async removeFavoriteMarker(marker: Place): Promise<void> {
+    await this.bookmarksService.removeFavoriteMarker(marker);
+    await this.loadMarkers();
   }
 }

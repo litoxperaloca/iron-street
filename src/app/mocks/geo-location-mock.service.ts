@@ -1,11 +1,9 @@
-import { EventEmitter, Injectable } from '@angular/core';
-import { Geolocation, Position } from '@capacitor/geolocation';
+import { Injectable } from '@angular/core';
+import { Position } from '@capacitor/geolocation';
 import * as turf from '@turf/turf';
 import { Point } from 'geojson';
 import { environment } from 'src/environments/environment';
-import { HomePage } from '../pages/home/home.page';
 import { AlertService } from '../services/alert.service';
-import { GeoLocationService } from '../services/geo-location.service';
 import { MapService } from '../services/map.service';
 import { SpeedService } from '../services/speed.service';
 
@@ -156,13 +154,10 @@ export class GeoLocationMockService {
     [-56.206441, -34.903116]
   ];
 
-  private watchID!: string | null;
   private currentPosition: any = null;
   private lastCurrentLocation: any;
   private lastBboxCalculatedForDataIncome: any = null;
-  private eventEmitter = new EventEmitter<any>();
-  private index = 0;
-  private intervalId: any = null;
+  index = 0;
   private lastTimeStamp: number = 0;
 
   getLastCurrentLocation(): Position {
@@ -185,16 +180,8 @@ export class GeoLocationMockService {
   }
 
   async getNextPosition() {
-    if (this.index >= this.coordinates.length || ((window as any).homePage as HomePage).shouldEndSimulation) {
+    if (this.index >= this.coordinates.length) {
       this.index = 0; // Reset or stop navigation
-      //environment.mocking = false;
-      ((window as any).geoLocationService as GeoLocationService).mocking = false;
-      if (!((window as any).homePage as HomePage).shouldEndSimulation) {
-        ((window as any).homePage as HomePage).shouldEndSimulation = true;
-        this.alertService.presentAlert("Fin de la simulación", "Se utilizará la ubicación real nuevamente", "Se ha llegado al final de la simulación", ["OK"]);
-        ((window as any).homePage as HomePage).cancelTripSimulation();
-
-      }
       const nullPosition: Position = {
         coords: {
           latitude: 0,
@@ -209,7 +196,7 @@ export class GeoLocationMockService {
       };
       return nullPosition;
     }
-    if (this.index > 0) setTimeout(() => { }, 1000); // Simulate delay between positions
+    //if (this.index > 0) setTimeout(() => { }, 1000); // Simulate delay between positions
     const currentCoord = this.coordinates[this.index];
     const time = Date.now();
     const position: Position = {
@@ -247,68 +234,6 @@ export class GeoLocationMockService {
     return this.currentPosition;
   }
 
-  async getCurrentPosition() {
-    try {
-      const permissions = await Geolocation.checkPermissions();
-      if (permissions.location !== 'granted') {
-        await Geolocation.requestPermissions();
-      }
-      const options = {
-        maximumAge: 4000,
-        timeout: 10000,
-        enableHighAccuracy: true,
-      };
-      const coordinates = await Geolocation.getCurrentPosition(options);
-      return coordinates;
-    } catch (e) {
-      console.error('Error getting location', e);
-      return null;
-    }
-  }
-
-  async startLocationObserver() {
-    let self = this;
-    const options = {
-      maximumAge: 4000,
-      timeout: 10000,
-      enableHighAccuracy: true,
-    };
-    this.watchID = await Geolocation.watchPosition(options, (position, err) => {
-      if (err) {
-        console.error('Error watching position:', err);
-        return;
-      }
-      //console.log('Location observer started');
-    });
-  }
-
-  stopLocationObserver() {
-    if (this.watchID != null) Geolocation.clearWatch({ id: this.watchID });
-
-  }
-
-  // Nuevo método para observar cambios en la posición
-  async watchPosition(callback: (position: Position | null, error?: any) => void) {
-    const options = {
-      maximumAge: 4000,
-      timeout: 10000,
-      enableHighAccuracy: true,
-    };
-    this.watchID = await Geolocation.watchPosition(options, (position, error) => {
-      if (error) {
-        callback(null, error);
-        return;
-      }
-      callback(position);
-    });
-
-    return this.watchID;
-  }
-
-  // Método para detener la observación
-  stopWatchingPosition() {
-    if (this.watchID != null) Geolocation.clearWatch({ id: this.watchID });
-  }
 
 
 
@@ -387,35 +312,6 @@ export class GeoLocationMockService {
   getCurrentPositionScreenBox(): [[number, number], [number, number]] {
     const userPos: Position = this.getLastCurrentLocation();
     return this.createBoundingBox(userPos.coords, 2);
-  }
-  startNavigation() {
-    this.intervalId = setInterval(() => {
-      if (this.index >= this.coordinates.length) {
-        this.index = 0; // Reset or stop navigation
-      }
-      const currentCoord = this.coordinates[this.index];
-      const position = {
-        coords: {
-          latitude: currentCoord[1],
-          longitude: currentCoord[0],
-          accuracy: 5, // Simulated accuracy
-          altitude: null,
-          altitudeAccuracy: null,
-          heading: null,
-          speed: null
-        },
-        timestamp: Date.now()
-      };
-      this.eventEmitter.emit('gps-location');
-      this.index++;
-    }, 1000); // Update rate of 1 second
-  }
-
-  stopNavigation() {
-    if (this.intervalId !== null) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
   }
 
   // Allow components to listen to the custom event

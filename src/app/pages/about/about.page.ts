@@ -1,15 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { WindowService } from 'src/app/services/window.service';
 
 @Component({
   selector: 'app-about',
   templateUrl: './about.page.html',
   styleUrls: ['./about.page.scss'],
 })
-export class AboutPage implements OnInit {
+export class AboutPage implements OnInit, OnDestroy {
   classList: any;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private windowService: WindowService) {
+  }
+
+  ngOnDestroy(): void {
+    this.windowService.unattachComponent("about");
   }
 
   ngOnInit() {
@@ -17,10 +22,10 @@ export class AboutPage implements OnInit {
     let $elsArr = document.getElementsByClassName('el');
     let $closeBtnsArr = document.querySelectorAll('el__close-btn');
     if (!$cont) return;
-    setTimeout(function () {
+    const timeOut: any = setTimeout(function () {
       if ($cont) $cont.classList.remove('s--inactive');
     }, 300);
-
+    this.windowService.attachedTimeOut("about", "mosaicLoaded", timeOut);
     for (let index = 0; index < $elsArr.length; index++) {
       let $el = ($elsArr as HTMLCollectionOf<HTMLDivElement>)[index];
       if ($el && $el.className === "el") {
@@ -67,12 +72,13 @@ export class AboutPage implements OnInit {
   }
 
 
-  prototypeTest() {
+  openMap() {
 
-    this.router.navigate(['/home']);
+    this.router.navigateByUrl('/home', { replaceUrl: true });
 
 
   }
+
 
   feedback() {
     window.open('https://ironplatform.com.uy/ironplatform/ironstreet/feedback/');

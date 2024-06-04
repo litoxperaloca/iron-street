@@ -1,6 +1,5 @@
 // src/app/services/sensor-manager.service.ts
 import { Injectable } from '@angular/core';
-import { Geolocation, Position } from '@capacitor/geolocation';
 import * as Motion from '@capacitor/motion/dist/esm/index';
 import KalmanFilter from 'kalmanjs';
 
@@ -15,34 +14,6 @@ export class SensorFusionService {
   private orientationUpdateInterval: any;
 
   constructor() { }
-
-  async startLocationTracking(callback: (position: Position) => void): Promise<void> {
-    Geolocation.watchPosition({ maximumAge: 0, enableHighAccuracy: true }, (position, err) => {
-      this.locationUpdateInterval = setInterval(async () => {
-
-        if (!err && position) {
-          const filteredLat = this.kfLat.filter(position.coords.latitude);
-          const filteredLon = this.kfLon.filter(position.coords.longitude);
-          const filterpos: Position = {
-            coords: {
-              latitude: filteredLat,
-              longitude: filteredLon,
-              accuracy: position.coords.accuracy,
-              altitude: position.coords.altitude,
-              altitudeAccuracy: position.coords.altitudeAccuracy,
-              heading: position.coords.heading,
-              speed: position.coords.speed,
-            },
-            timestamp: position.timestamp
-          };
-
-          callback(filterpos);
-        } else {
-          console.error('GPS Error:', err);
-        }
-      }, 3000); // Update every 3000 milliseconds
-    });
-  }
 
   async startOrientationTracking(callback: (heading: number) => void): Promise<void> {
     if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {

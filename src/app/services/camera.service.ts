@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
 import { MapService } from './map.service';
+import { WindowService } from './window.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class CameraService {
     throw new Error('Method not implemented.');
   }
 
-  constructor(mapservice: MapService) { }
+  constructor(private mapservice: MapService, private windowService: WindowService) { }
 
   async setCameraSKYPosition(position: Position) {
     if (!position || !position.coords) {
@@ -72,7 +73,7 @@ export class CameraService {
         },
         essential: true,
         pitch: 55,
-        //bearing: 65
+        bearing: position.coords.heading as number
       });
       map.once('moveend', () => {
         self.locked = false;
@@ -93,7 +94,8 @@ export class CameraService {
     map.setCenter([lng, lat]);
 
     // Request the next frame of the rotation
-    requestAnimationFrame(((window as any).mapService as MapService).rotateCamera);
+    const req: any = requestAnimationFrame(((window as any).mapService as MapService).rotateCamera);
+    this.windowService.attachedAnimationFrameRequest("home", "cameraService_rotateCamera", req);
   }
 
   async updateCameraFromUserPosition(location: any) {

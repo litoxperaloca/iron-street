@@ -39,7 +39,7 @@ ion-menu {
 
     ion-label {
     font-weight: 600;
-    font-size: 13pt;
+    font-size: 12pt;
     }
   }
 }
@@ -49,8 +49,8 @@ ion-menu.md {
   ion-content {
     --padding-start: 8px;
     --padding-end: 8px;
-    --padding-top: 20px;
-    --padding-bottom: 20px;
+    --padding-top: 10px;
+    --padding-bottom: 10px;
   }
 
   ion-list-header,
@@ -71,7 +71,7 @@ ion-menu.md {
 
   ion-list#labels-list ion-list-header {
     font-size: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
    color: var(--ion-color-primary);
     min-height: 26px;
   }
@@ -79,7 +79,7 @@ ion-menu.md {
 
 ion-menu.ios {
   ion-content {
-    --padding-bottom: 20px;
+    --padding-bottom: 10px;
   }
 
   ion-list {
@@ -87,8 +87,8 @@ ion-menu.ios {
   }
 
   ion-item {
-    --padding-start: 16px; /* iOS specific padding */
-    --padding-end: 16px;
+    --padding-start: 10px; /* iOS specific padding */
+    --padding-end: 10px;
     ion-icon {
       color: var(--ion-color-dark); /* iOS specific icon color */
     }
@@ -96,8 +96,8 @@ ion-menu.ios {
 
   ion-list-header,
   ion-note {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   ion-list#labels-list ion-list-header {
@@ -107,4 +107,47 @@ ion-menu.ios {
   ion-note {
     margin-bottom: 8px;
   }
+}
+
+h4.appMenu{
+      font-weight: 600;
+    font-size: 12pt;
+    color: #009688;
+}
+
+h4.userMenu{
+      font-weight: 600;
+    font-size: 12pt;
+    color: #009688;
+}
+
+h4.helpMenu{
+      font-weight: 600;
+    font-size: 12pt;
+    color: #009688;
+}
+
+h4.infoMenu{
+      font-weight: 600;
+    font-size: 12pt;
+    color: #009688;
+}
+
+h4.legalMenu{
+      font-weight: 600;
+    font-size: 12pt;
+    color: #009688;
+}
+
+#logoIronStreet{
+    background: url(/assets/icons/icon-512x512.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+    height: 150px;
+    width: 150px;
+    margin: 25px auto;
+    display: flex;
+    box-shadow: 0 0 10px 3px #fff;
+    border-radius: 50%;
 }

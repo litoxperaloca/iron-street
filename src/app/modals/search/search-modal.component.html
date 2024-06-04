@@ -39,18 +39,22 @@
         <!-- Suggestions and Loading Logic Remains the Same -->
 
         <div *ngIf="!segmentIsLoading[currentSegment]">
-          <ion-list *ngIf="suggestions.length > 0; else noSuggestions">
-            <ion-item *ngFor="let suggestion of suggestions;"
-            (click)="setDestinationFromPlace(suggestion)"
-            class="suggestion-item">
-              <ion-icon [name]="getSuggestionIcon(suggestion)" slot="start"></ion-icon>
-              <ion-label>
-                <h3>{{ suggestion.label }}</h3>
-                <p>{{ suggestion.municipality }}, {{ suggestion.country }}</p>
-              </ion-label>
-              <ion-icon name="location-outline" slot="end"></ion-icon>
-            </ion-item>
-          </ion-list>
+          <div *ngFor="let country of getCountryKeys()">
+            <ion-label color="primary">{{country}}</ion-label>
+            <div *ngFor="let municipality of getMunicipalityKeys(country)">
+              <ion-label color="secondary">Dentro de {{ municipality }}:</ion-label>
+              <ion-list>
+                <ion-item *ngFor="let suggestion of groupedPlaces[country][municipality]" (click)="setDestinationFromPlace(suggestion)" class="suggestion-item">
+                  <ion-icon size="small" [name]="getSuggestionIcon(suggestion)" slot="start"></ion-icon>
+                  <ion-label>
+                    <h6>{{ suggestion.label }}</h6>
+                    <p>{{ suggestion.municipality }}, {{ suggestion.country }}</p>
+                  </ion-label>
+                  <ion-icon size="small" name="location-outline" slot="end"></ion-icon>
+                </ion-item>
+              </ion-list>
+            </div>
+          </div>
 
           <ng-template #noSuggestions>
             <ion-text color="medium" class="no-suggestions-text" *ngIf="searchTerm.length > 0 && suggestions.length > 0">
@@ -81,7 +85,91 @@
 
       <div *ngIf="currentSegment === 'favoritos'" class="segment-content">
         <h2 color="warning">Favoritos</h2>
-        <!-- Additional content for Favoritos -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Casa</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="homeMarker">
+            <ion-item>
+              <ion-icon color="success" class="notDefaultColor" name="home-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>{{ homeMarker.label }}</h2>
+              </ion-label>
+              <ion-button fill="clear" color="primary" (click)="setDestinationFromPlace(homeMarker)">
+                <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" color="danger" (click)="removeHomeMarker()">
+                <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-card-content>
+          <ion-card-content *ngIf="!homeMarker">
+            <ion-item>
+              <ion-icon color="success" class="notDefaultColor" name="home-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Aún no se ha guardado ningún lugar como "Casa".</h2>
+              </ion-label>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Trabajo</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="workMarker">
+            <ion-item>
+              <ion-icon color="secondary" class="notDefaultColor" name="business-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>{{ workMarker.label }}</h2>
+              </ion-label>
+              <ion-button fill="clear" color="primary" (click)="setDestinationFromPlace(workMarker)">
+                <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" color="danger" (click)="removeWorkMarker()">
+                <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-card-content>
+          <ion-card-content *ngIf="!workMarker">
+            <ion-item>
+              <ion-icon color="secondary" class="notDefaultColor" name="business-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Aún no se ha guardado ningún lugar como "Trabajo".</h2>
+              </ion-label>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Favoritos</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="favoriteMarkers.length>0">
+            <ion-list>
+              <ion-item *ngFor="let marker of favoriteMarkers">
+                <ion-icon color="warning" class="notDefaultColor" name="star-outline" slot="start"></ion-icon>
+                <ion-label>
+                  <h2>{{ marker.label }}</h2>
+                </ion-label>
+                <ion-button fill="clear" color="primary" (click)="setDestinationFromPlace(marker)">
+                  <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="removeFavoriteMarker(marker)">
+                  <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+          <ion-card-content *ngIf="favoriteMarkers.length==0">
+            <ion-item>
+              <ion-icon color="warning" class="notDefaultColor" name="star-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>Tu lista de lugares favoritos está vacía.</h2>
+              </ion-label>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
       </div>
 
       <div *ngIf="segmentIsLoading[currentSegment]">

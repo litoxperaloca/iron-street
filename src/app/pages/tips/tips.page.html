@@ -1,0 +1,96 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ 'ALGUNOS_TIPS_INICIALES' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <div class="console-container"><span id="text"></span>
+    <div class="console-underscore" id="console">&#95;</div>
+  </div>
+
+<div id="retrobg">
+  <div id="retrobg-sky">
+    <div id="retrobg-starS">
+      <div class="retrobg-star1" style="left: 7%; top: 5%; transform: scale(_2_);"></div>
+      <div class="retrobg-star2" style="left: 10%; top: 45%; transform: scale(1);"></div>
+      <div class="retrobg-star1" style="left: 12%; top: 35%; transform: scale(1);"></div>
+      <div class="retrobg-star1" style="left: 15%; top: 39%; transform: scale(1);"></div>
+      <div class="retrobg-star3" style="left: 20%; top: 10%; transform: scale(1);"></div>
+      <div class="retrobg-star2" style="left: 40%; top: 16%; transform: scale(2);"></div>
+      <div class="retrobg-star2" style="left: 60%; top: 23%; transform: scale(1);"></div>
+      <div class="retrobg-star3" style="left: 67%; top: 27%; transform: scale(1);"></div>
+      <div class="retrobg-star3" style="left: 75%; top: 10%; transform: scale(2);"></div>
+      <div class="retrobg-star3" style="left: 80%; top: 25%; transform: scale(1);"></div>
+      <div class="retrobg-star2" style="left: 83%; top: 57%; transform: scale(1);"></div>
+      <div class="retrobg-star1" style="left: 95%; top: 5%; transform: scale(1);"></div>
+      <div class="retrobg-star2" style="left: 96%; top: 72%; transform: scale(1);"></div>
+    </div>
+    <div id="retrobg-sunWrap">
+      <div id="retrobg-sun"></div>
+    </div>
+    <div id="retrobg-mountains">
+      <div id="retrobg-mountains-left" class="retrobg-mountain"></div>
+      <div id="retrobg-mountains-right" class="retrobg-mountain"></div>
+    </div>
+    <div id="retrobg-citywrap">
+      <div id="retrobg-city">
+      </div>
+    </div>
+  </div>
+  <div id="retrobg-ground">
+    <div id="retrobg-linesWrap">
+      <div id="retrobg-lines">
+        <div id="retrobg-vlines">
+          <div class="retrobg-vline"></div>
+          <div class="retrobg-vline"></div>
+
+        </div>
+        <div id="retrobg-hlines">
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+          <div class="retrobg-hline"></div>
+        </div>
+      </div>
+    </div>
+    <div id="retrobg-groundShadow"></div>
+      <div id="speed"></div>
+
+<div id="streetlight5" class="streetlight"></div>
+    <div id="streetlight4" class="streetlight"></div>
+        <div id="streetlight3" class="streetlight"></div>
+    <div id="streetlight2" class="streetlight"></div>
+
+    <div id="streetlight" class="streetlight"></div>
+    <div id="cadillacBack"></div>
+    <div class="smoke-wrap">
+      <img class="smoke" src="/assets/img/icons/smoke.png" alt="smoke">
+    </div>
+    <div class="smoke-wrap">
+      <img class="smoke2" src="/assets/img/icons/smoke.png" alt="smoke">
+    </div>
+    <div class="smoke-wrap">
+      <img class="smoke3" src="/assets/img/icons/smoke.png" alt="smoke">
+    </div>
+  </div>
+</div>
+
+</ion-content>
+<ion-footer [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button color="success" size="large" (click)="next()">{{ 'SIGUIENTE' | translate }}<ion-icon name="chevron-forward-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

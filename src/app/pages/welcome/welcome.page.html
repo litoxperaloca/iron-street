@@ -1,0 +1,40 @@
+<ion-header [translucent]="false">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title></ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+
+<div id="logo" data-aos-easing="ease"
+data-aos-once="true"></div>
+
+<div id="firstTime"><h2>{{ 'PRIMERA_VEZ_EN_IRON_STREET' | translate }}</h2></div>
+  <!-- partial:index.partial.html -->
+  <div class="loop-wrapper">
+    <div class="sky"></div>
+    <div class="mnt"></div>
+    <div class="city"></div>
+    <div class="hill"></div>
+    <div class="tree"></div>
+
+    <div class="rock"></div>
+    <div class="truck"></div>
+    <div class="wheel"></div>
+    <div class="wheelb"></div>
+
+  </div>
+  <!-- partial -->
+</ion-content>
+<ion-footer [translucent]="false">
+<ion-toolbar>
+  <ion-buttons slot="end">
+    <ion-button color="success" size="large" (click)="next()">{{ 'COMENZAR' | translate }}<ion-icon name="chevron-forward-circle-outline"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>
+</ion-footer>

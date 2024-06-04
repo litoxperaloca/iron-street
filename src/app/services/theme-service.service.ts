@@ -20,18 +20,21 @@ export class ThemeService {
 
   toggleTheme(): void {
     this.theme = this.theme === 'dark' ? 'light' : 'dark';
-    this.applyTheme();
+    this.applyTheme(this.theme);
   }
 
-  applyTheme(): void {
+  applyTheme(theme: 'dark' | 'light'): void {
+    this.theme = theme;
     if (this.theme === 'dark') {
+      document.body.classList.remove('light');
+      document.body.classList.remove('light-mode');
       document.body.classList.add('dark');
-
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark');
       document.body.classList.remove('dark-mode');
-
+      document.body.classList.add('light');
+      document.body.classList.add('light-mode');
     }
   }
 

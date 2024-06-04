@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Geolocation, Position } from '@capacitor/geolocation';
+import { Position } from '@capacitor/geolocation';
 import { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import * as turf from '@turf/turf';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
@@ -29,32 +29,6 @@ export class SpeedService {
 
   }
 
-  getMaxSpeedForCurrentLocation() {
-    // TODO: Implement getMaxSpeedForCurrentLocation function
-
-  }
-
-  async getCurrentSpeedAsPromise(): Promise<number> {
-    try {
-      const position: Position = await Geolocation.getCurrentPosition();
-      if (position.coords.speed !== null) {
-        const speed: number | null = position.coords.speed; // Speed in meters per second
-        if (speed !== null) {
-          return this.convertSpeedToKmh(speed); // Convert speed to km/h
-        } else {
-          return this.lastCurrentSpeed;
-        }
-      } else {
-        return this.lastCurrentSpeed;
-      }
-
-    } catch (error) {
-      console.error('Error getting current speed:', error);
-      // Return a default speed or handle the error as needed
-      return 0; // Default speed (assuming 0 km/h)
-    }
-  }
-
   convertSpeedToKmh(speed: number): number {
     return speed * 3.6; // Convert speed from meters per second to kilometers per hour
   }
@@ -75,29 +49,6 @@ export class SpeedService {
 
   private locationInterval: any; // Store the interval ID for location monitoring
 
-  startWatchingSpeedLimit(): void {
-    this.monitorLocation(); // Start monitoring user's location
-  }
-
-  async monitorLocation(): Promise<void> {
-    // Periodically check user's location and update current step
-    const self = this;
-    this.locationInterval = setInterval(() => {
-
-
-      const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
-      if (userPosition == self.lastPosition) {
-        //console.log("No hay cambio de posición");
-      } else {
-        self.lastPosition = userPosition;
-        self.userStreet(userPosition);
-        if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
-          ((window as any).homePage as HomePage).currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
-        }
-      }
-    }, 1100); // Check every 5 seconds (adjust interval as needed)
-  }
-
   locationUpdate(): void {
     // Periodically check user's location and update current step
     const self = this;
@@ -114,13 +65,6 @@ export class SpeedService {
 
   }
 
-
-
-
-
-  async stopWatchingSpeedLimit(): Promise<void> {
-    if (this.locationInterval) clearInterval(this.locationInterval);
-  }
 
 
   userStreet(position: Position) {

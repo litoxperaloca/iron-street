@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { FolderPageRoutingModule } from './folder-routing.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { FolderPage } from './folder.page';
 
 @NgModule({
@@ -13,7 +14,8 @@ import { FolderPage } from './folder.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    FolderPageRoutingModule
+    FolderPageRoutingModule,
+    TranslateModule
   ],
   declarations: [FolderPage]
 })

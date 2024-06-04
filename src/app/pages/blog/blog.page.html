@@ -3,31 +3,32 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Iron Street</ion-title>
+    <ion-title>{{ "IRONBLOG:_NOVEDADES" | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <h4>IronBlog</h4>
-  <p class="intro-text">
-    Novedades de Iron Street
-  </p>
+<ion-content [fullscreen]="true" class="ion-padding">
     <div class="searchLoader" *ngIf="isLoading">
       <ion-spinner name="crescent"></ion-spinner>
     </div>
   <ion-grid>
     <ion-row>
+
       <ion-col size="12" size-md="6" size-lg="4" *ngFor="let post of blogPosts"
         (click)="selectPost(post)">
         <ion-card>
           <ion-card-header>
-            <ion-card-title>{{ cleanRender(post.title.rendered) }}</ion-card-title>
+            <ion-card-title>{{cleanRender(post.title.rendered)}}</ion-card-title>
           </ion-card-header>
-          <ion-card-content>
-            <img loading="lazy" [src]="post.featuredImageUrl" alt="{{ post.title.rendered }}">
+          <ion-card-content (click)="selectPost(post)">
+            <div *ngIf="!post.featuredImageUrl">
+              <ion-spinner name="crescent" class="centeredSpinner"></ion-spinner>
+            </div>
+            <img *ngIf="post.featuredImageUrl" loading="eager" [src]="post.featuredImageUrl" alt="{{post.title.rendered}}">
           </ion-card-content>
         </ion-card>
       </ion-col>
+
     </ion-row>
   </ion-grid>
 </ion-content>

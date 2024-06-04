@@ -676,3 +676,25 @@ position: absolute;
 .flexEqualRow ion-icon{
   font-size: xx-large;
 }
+
+.bookmarkIcon{
+  font-size: 14pt !important;
+  float: right;
+  clear: both;
+}
+
+.highlight-icon {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+0% {
+  transform: scale(1);
+}
+50% {
+  transform: scale(1.5);
+}
+100% {
+  transform: scale(1);
+}
+}

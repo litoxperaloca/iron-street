@@ -7,7 +7,7 @@ import { ModalComponents } from '../models/modal-components.enum'; // Asumiendo 
   providedIn: 'root',
 })
 export class ModalService {
-  private modal!: HTMLIonModalElement;
+  private modal: HTMLIonModalElement | undefined;
   isBottomSheetOpen: boolean = false;
   private dataReturned: any;
 
@@ -36,10 +36,13 @@ export class ModalService {
     });
 
     this.setModal(modal);
-    await this.modal.present();
-    const { data } = await modal.onDidDismiss();
-    this.dataReturned = data;
-    this.isBottomSheetOpen = false;
+    if (this.modal) {
+
+      await this.modal.present();
+      const { data } = await modal.onDidDismiss();
+      this.dataReturned = data;
+      this.isBottomSheetOpen = false;
+    }
   }
 
   private setModal(newModal: any) {
@@ -47,9 +50,10 @@ export class ModalService {
     this.modal = newModal;
   }
 
-  private avoidMultipleInstancesOfModal() {
+  avoidMultipleInstancesOfModal() {
     if (this.modal) {
       this.modal.dismiss();
+      this.modal = undefined;
     }
   }
 

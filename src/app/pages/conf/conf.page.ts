@@ -1,101 +1,94 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { TTSOptions } from '@capacitor-community/text-to-speech';
+import { PreferencesService } from 'src/app/services/preferences.service';
+import { ThemeService } from 'src/app/services/theme-service.service';
 import { VoiceService } from 'src/app/services/voice.service';
-import { ThemeService } from '../../services/theme-service.service';
+import { HomePage } from '../home/home.page';
 @Component({
   selector: 'app-conf',
   templateUrl: './conf.page.html',
   styleUrls: ['./conf.page.scss'],
 })
 export class ConfPage implements OnInit {
-  //VOICE CONFIG
-  isLoading: boolean = false;
-  voices: SpeechSynthesisVoice[] = [];
-  textToSpeak: string = "";
-  voiceId: number = 0;
-  pitch: number = 1;
-  rate: number = 1;
-  volume: number = 1;
-  lan: string = "es-ES";
-  category: string = "ambient";
-  marker: string = "marker";
-  isMarker: boolean = true;
-  isMarkerEnabled: boolean = true;
+  preferences = {
+    darkTheme: false,
+    voiceInstructions: true,
+    voice: '',
+    voiceId: 0,
+    voiceSpeed: 1,
+    voiceVolume: 1,
+    voiceTone: 1,
+    language: 'es',
+    mapStyle: '3D atardecer',
+    distanceUnit: 'km'
+  };
 
-  //APPEARENCE CONFIG
-  isDarkMode: boolean = false;
-  isLightMode: boolean = false;
-  isAutoMode: boolean = false;
-  highContrast: boolean = false;
-  fontSize: 'small' | 'medium' | 'large' = 'medium';
-  backgroundColor: string = "#000000";
+  availableVoices: string[] = []; // Aquí puedes poner la lista de voces disponibles
+  mapStyles = [
+    '3D atardecer', 'Estilo 1', 'Estilo 2', 'Estilo 3',
+    'Estilo 4', 'Estilo 5', 'Estilo 6', 'Estilo 7',
+    'Estilo 8', 'Estilo 9', 'Estilo 10', 'Estilo 11'
+  ];
 
+  constructor(
+    private preferencesService: PreferencesService,
+    private voiceService: VoiceService,
+    private themeService: ThemeService) {
+    this.voiceService.getVoices().then((voices) => {
+      if (voices) {
+        voices.forEach(element => {
+          this.availableVoices.push(element.voiceURI);
+        });
+      }
+    });
+  }
 
-  constructor(private router: Router, private voiceService: VoiceService, private themeService: ThemeService) {
-
+  ngOnInit() {
+    this.loadPreferences();
 
   }
 
-  async ngOnInit() {
-    this.isLoading = true;
-    if (this.themeService.isDarkMode) {
-      this.isDarkMode = true;
-      this.isLightMode = false;
-      this.isAutoMode = false;
-    } else if (this.themeService.isLightMode) {
-      this.isDarkMode = false;
-      this.isLightMode = true;
-      this.isAutoMode = false;
-    }
-    this.voices = await this.voiceService.getVoices();
-
-    this.isLoading = false;
+  async toggleTheme() {
+    this.preferencesService.changeTheme(this.preferences.darkTheme).then(async () => {
+      await this.preferencesService.savePreferences(this.preferences);
+    });
   }
 
-  toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    this.isLightMode = !this.isLightMode;
-    this.isAutoMode = !this.isAutoMode;
-    this.themeService.toggleTheme();
+  async changeLanguage() {
+    this.preferencesService.changeLanguage(this.preferences.language).then(async () => {
+      await this.preferencesService.savePreferences(this.preferences);
+    });
   }
 
-  toggleHighContrast(): void {
-    this.highContrast = !this.highContrast;
-    this.themeService.toggleHighContrast(this.highContrast);
+  async selectVoice(voice: string) {
+    this.preferences.voice = voice;
+    this.preferences.voiceId = this.availableVoices.indexOf(voice);
+    await this.savePreferences();
   }
 
-  changeFontSize(): void {
-    this.themeService.changeFontSize(this.fontSize);
+  async loadPreferences() {
+    this.preferences = await this.preferencesService.getPreferences();
   }
 
-  changeBackgroundColor(): void {
-    this.themeService.changeBackgroundColor(this.backgroundColor);
-  }
-
-  selectVouceLang() {
-    this.voiceService.selectLang(this.lan);
-  }
-
-  speakWithParms(): void {
-    const options: TTSOptions = {
-      text: this.textToSpeak,
-      lang: this.lan,
-      rate: this.rate,
-      pitch: this.pitch,
-      volume: this.volume,
-      category: this.category,
-      voice: this.voiceId
-    };
-    this.voiceService.speakWithOptions(options);
-  }
+  async savePreferences() {
+    this.preferencesService.savePreferences(this.preferences).then(() => {
+      this.voiceService.conf().then(() => {
 
 
-  speak(text: string, voiceId: number): void {
-    this.voiceService.speakWithVoice(text, voiceId);
-  }
+        if (this.preferences.voiceInstructions) {
+          if ((window as any).homePage) {
+            ((window as any).homePage as HomePage).audioOn = true;
+          }
+          this.voiceService.speakerStatus = true;
+          this.voiceService.isSpeaking = false;
+        } else {
+          if ((window as any).homePage) {
+            ((window as any).homePage as HomePage).audioOn = false;
+          }
+          this.voiceService.speakerStatus = false;
+          this.voiceService.isSpeaking = false;
+        }
+      });
+    });
 
-  selectVoiceById() {
-    this.voiceService.selectVoiceById(this.voiceId);
   }
 }

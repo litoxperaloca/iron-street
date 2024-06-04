@@ -7,6 +7,7 @@ import { HomePage } from '../pages/home/home.page';
 import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service'; // Your MapService with updateUserMarker method
 import { VoiceService } from './voice.service'; // Assuming you have a VoiceService for speaking instructions
+import { WindowService } from './window.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,13 +17,12 @@ export class TripService {
   private route: any; // Store the route information
   private lastDisplayedStep: number = -1; // Store the last displayed step
 
-  private locationInterval: any; // Store the interval ID for location monitoring
   private lastUserPosition!: Position; // Store the last known user position
   // Import the navigation.js module
   constructor(
     private voiceService: VoiceService,
     private mapService: MapService,
-    private geoLocationService: GeoLocationService) { }
+    private windowService: WindowService) { }
 
 
 
@@ -31,8 +31,8 @@ export class TripService {
     const Navigation: any = require('navigation.js')({
       units: 'kilometres',
       maxReRouteDistance: 1,
-      maxSnapToLocation: 0.2,
-      warnUserTime: 7
+      maxSnapToLocation: 0.4,
+      warnUserTime: 12
     });
     // Periodically check user's location and update current step
     const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
@@ -73,7 +73,7 @@ export class TripService {
     // Display instructions for current step if needed
     if (shouldReRoute) this.reroute(); // Reroute if user is far away from the route
 
-    const stepCompleted = currentStep.distance <= 0.07; // Adjust threshold as needed
+    const stepCompleted = currentStep.distance <= 0.15; // Adjust threshold as needed
     if (stepCompleted && currentStep.step >= this.route.steps.length - 1) {
       this.finishTrip();
     }
@@ -89,48 +89,6 @@ export class TripService {
     this.locationUpdate(true);
   }
 
-  async monitorLocation(): Promise<void> {
-    // Periodically check user's location and update current step
-    this.locationInterval = setInterval(() => {
-      const Navigation: any = require('navigation.js')({
-        units: 'kilometres',
-        maxReRouteDistance: 1,
-        maxSnapToLocation: 0.2,
-        warnUserTime: 7
-      });
-      const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
-      const userLocation: Navigation.UserLocation = {
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [userPosition.coords.longitude, userPosition.coords.latitude]
-        }
-      };
-      const currentStep: CurrentStep = Navigation.getCurrentStep(userLocation, this.route, this.userCurrentStep);
-      if (currentStep.step === this.userCurrentStep && this.userCurrentStep === 0 && this.lastDisplayedStep === -1) {
-        this.displayInstructions(currentStep);
-        this.userCurrentStep = currentStep.step;
-        //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
-        this.mapService.setCameraPOVPosition(userPosition);
-      }
-      if (currentStep.step > this.userCurrentStep) {
-        this.displayInstructions(currentStep);
-        this.userCurrentStep = currentStep.step;
-        //this.mapService.lockCameraAtUserPosition(userLocation, currentStep.step);
-        this.mapService.setCameraPOVPosition(userPosition);
-      }
-      const shouldReRoute: boolean = currentStep.distance > 1; // Adjust threshold as needed
-
-      // Display instructions for current step if needed
-      if (shouldReRoute) this.reroute(); // Reroute if user is far away from the route
-
-      const stepCompleted = currentStep.distance <= 0.01; // Adjust threshold as needed
-      if (stepCompleted && currentStep.step >= this.route.steps.length - 1) {
-        this.finishTrip();
-      }
-
-    }, 2000); // Check every 5 seconds (adjust interval as needed)
-  }
 
   async displayInstructions(currentStep: CurrentStep): Promise<void> {
     // Display instructions based on current step
@@ -172,27 +130,30 @@ export class TripService {
         }, 2500); // Adjust delay as needed
 
         if (tripStepDetailsNext) {
-          setTimeout(async () => {
+          const time1: any = setTimeout(async () => {
             tripStepDetailsNext.style.display = "block";
             const voiceInstructionsNext = this.route.steps[nextStep.step].maneuver.instruction;
             await this.voiceService.speak(voiceInstructionsNext);
             tripStepDetailsNext.style.display = "none";
-          }, 2500); // Adjust delay as needed
+          }, 1500); // Adjust delay as needed}
+          this.windowService.attachedTimeOut("home", "tripservice_1", time1);
         }
 
       } else {
-        setTimeout(() => {
+        const time3: any = setTimeout(() => {
           if (tripStepDetails) tripStepDetails.style.display = "none";
-        }, 2500); // Adjust delay as needed
+        }, 1500); // Adjust delay as needed
+        this.windowService.attachedTimeOut("home", "tripservice_2", time3);
       }
 
 
     } else {
       await this.finishTrip();
-      setTimeout(() => {
+      const time2: any = setTimeout(() => {
 
         if (tripStepDetails) tripStepDetails.style.display = "none";
-      }, 2500); // Adjust delay as needed
+      }, 1500); // Adjust delay as needed
+      this.windowService.attachedTimeOut("home", "tripservice_2", time2);
 
     }
   }
@@ -220,7 +181,6 @@ export class TripService {
 
   async finishTrip(): Promise<void> {
     // Cancel the trip and stop monitoring user's location
-    clearInterval(this.locationInterval);
     this.voiceService.speak("Ha llegado a su destino.");
     ((window as any).homePage as HomePage).cancelTrip(); // Your MapService with cancelTrip method
     this.lastDisplayedStep = -1; // Reset last displayed step
@@ -231,7 +191,6 @@ export class TripService {
 
   async cancelTrip(): Promise<void> {
     // Cancel the trip and stop monitoring user's location
-    if (this.locationInterval) clearInterval(this.locationInterval);
     this.lastDisplayedStep = -1; // Reset last displayed step
     this.userCurrentStep = 0; // Reset user's current step
     this.route = null; // Reset route information

@@ -127,6 +127,10 @@ ion-icon{
     color: white;
 }
 
+ion-icon.notDefaultColor{
+  color: inherit !important;
+}
+
 .item.sc-ion-label-md-h, .item .sc-ion-label-md-h {
     --color: initial;
     display: block;
@@ -175,7 +179,7 @@ ion-icon{
     line-height: 2.2;
       display: -ms-flexbox;
     display: flex;
-    font-size: 10pt !important;
+    font-size: 20pt !important;
     line-height: 1.6 !important;
     position: relative;
     -ms-flex-flow: row nowrap;
@@ -197,18 +201,4 @@ ion-icon{
   margin: 0;
 }
 
-
-
-.centeredSpinner {
-      position: relative;
-    /* top: calc(50% - 30px); */
-    z-index: 40;
-    width: 80px;
-    /* left: calc(50% - 30px); */
-    display: flex;
-    margin-left: auto;
-    margin-right: auto;
-    height: 80px;
-    color: var(--ion-color-secondary);
-  }
 

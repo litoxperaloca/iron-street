@@ -4,14 +4,17 @@ const config: CapacitorConfig = {
   appId: 'uy.com.ironplatform.ironstreet',
   appName: 'IronStreet',
   webDir: 'www',
+  loggingBehavior: 'none',
   server: {
-    allowNavigation: [
-      'mapbox.com',
-      '*.mapbox.com',
-      '*.mapboxcdn.com',
-    ],
+    hostname: 'ironstreet.com.uy',
     cleartext: false,  // Enforce HTTPS, disallow HTTP to improve security
-    androidScheme: 'https'
+    androidScheme: 'https',
+    allowNavigation: [
+      'https://*.ironplatform.com.uy',
+      'https://*.ironstreet.com.uy',
+      'https://*.osm.com',
+      'https://*.mapbox.com',
+      'https://*.api.mapbox.com']
   },
   plugins: {
     CapacitorHttp: {

@@ -3,83 +3,84 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Configuración</ion-title>
+    <ion-title>{{ "CONFIGURACIÓN" | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="searchLoader" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-  </div>
-  <div *ngIf="!isLoading">
+<ion-content  class="ion-padding" [fullscreen]="true">
 
-        <div class="icon-above-text">
-          <ion-icon color="darh" name="contrast-outline"></ion-icon>
-          <span>Apariencia</span>
-        </div>
-
-        <ion-item>
-          <ion-label>Toggle DemoModo oscuro</ion-label>
-          <ion-toggle [(ngModel)]="isDarkMode" (ionChange)="toggleTheme()"></ion-toggle>
-        </ion-item>
-
-        <ion-item>
-          <ion-label>Contraste</ion-label>
-          <ion-toggle [(ngModel)]="highContrast" (ionChange)="toggleHighContrast()"></ion-toggle>
-        </ion-item>
-
-        <ion-item>
-          <ion-label>Tamaño de letra</ion-label>
-          <ion-select [(ngModel)]="fontSize" (ionChange)="changeFontSize()">
-            <ion-select-option value="small">Pequeño</ion-select-option>
-            <ion-select-option value="medium">Mediano</ion-select-option>
-            <ion-select-option value="large">Grande</ion-select-option>
-          </ion-select>
-        </ion-item>
-
-        <ion-item>
-          <ion-label>Color de fondo</ion-label>
-          <ion-select [(ngModel)]="backgroundColor" (ionChange)="changeBackgroundColor()">
-            <ion-select-option value="white">Blanco</ion-select-option>
-            <ion-select-option value="gray">Gris</ion-select-option>
-            <ion-select-option value="black">Negro</ion-select-option>
-          </ion-select>lguu
-        </ion-item>
-
-
-
-  </div>
-
-  <div *ngIf="!isLoading">
-
-    <div class="icon-above-text">
-      <ion-icon color="light" name="voice-outline"></ion-icon>
-      <span>Voz de la App</span>
-    </div>
-
+  <ion-list lines="full" class="settings-list">
+    <!-- General -->
+    <ion-item-divider>
+      <ion-label color="success" class="subHeader">
+        <ion-icon slot="start" name="globe-outline"></ion-icon>{{ "GENERAL" | translate }}</ion-label>
+    </ion-item-divider>
     <ion-item>
-      <ion-label>Voz</ion-label>
-      <ion-select [(ngModel)]="voiceId" (ionChange)="selectVoiceById()">
-        <ion-select-option *ngFor="let voice in voiceService.getVoices(); let i=index;" value="{{i}}">{{voice.name}}</ion-select-option>
+      <ion-label>{{ "IDIOMA" | translate }}</ion-label>
+      <ion-select [(ngModel)]="preferences.language" interface="action-sheet" (ionChange)="changeLanguage()">
+        <ion-select-option value="es">{{ "ESPAÑOL" | translate }}</ion-select-option>
+        <ion-select-option value="en">{{ "ENGLISH" | translate }}</ion-select-option>
+        <ion-select-option value="pt">{{ "PORTUGUES" | translate }}</ion-select-option>
       </ion-select>
     </ion-item>
+<ion-item>
+  <ion-label>{{ "UNIDAD_DE_DISTANCIA" | translate }}</ion-label>
+  <ion-segment [(ngModel)]="preferences.distanceUnit" (ionChange)="savePreferences()">
+    <ion-segment-button value="KM">
+      <ion-label>{{ "KM" | translate }}</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="MI">
+      <ion-label>{{ "MI" | translate }}</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</ion-item>
 
+    <!-- Appearence -->
+    <ion-item-divider>
+      <ion-label  color="tertiary" class="subHeader">
+        <ion-icon slot="start" name="color-palette-outline"></ion-icon>{{ "APARIENCIA" | translate }}</ion-label>
+    </ion-item-divider>
     <ion-item>
-      <ion-label>Lenguage</ion-label>
-      <ion-select [(ngModel)]="backgroundColor" (ionChange)="selectVouceLang()">
-        <ion-select-option value="es-ES">es-ES</ion-select-option>
-        <ion-select-option value="en-US">en-US</ion-select-option>
+      <ion-label>{{ "TEMA_CLARO/OSCURO:" | translate }}</ion-label>
+      <ion-toggle [(ngModel)]="preferences.darkTheme" (ionChange)="toggleTheme()"></ion-toggle>
+    </ion-item>
+
+    <!-- Voice Output -->
+    <ion-item-divider>
+      <ion-label color="warning" class="subHeader">
+        <ion-icon slot="start" name="volume-high-outline"></ion-icon>{{ "SALIDA_DE_VOZ" | translate }}</ion-label>
+    </ion-item-divider>
+    <ion-item>
+      <ion-label>{{ "INSTRUCCIONES_DE_VOZ" | translate }}</ion-label>
+      <ion-toggle [(ngModel)]="preferences.voiceInstructions" (ionChange)="savePreferences()"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{ "VOZ" | translate }}</ion-label>
+      <ion-select [(ngModel)]="preferences.voice" interface="action-sheet" (ionChange)="selectVoice(preferences.voice)">
+        <ion-select-option *ngFor="let voice of availableVoices" [value]="voice">{{voice}}</ion-select-option>
       </ion-select>
     </ion-item>
-
     <ion-item>
-      <ion-label>Velocidad</ion-label>
-      <ion-toggle [(ngModel)]="rate" (ionChange)="toggleTheme()"></ion-toggle>
+      <ion-label>{{ "VELOCIDAD" | translate }}</ion-label>
+      <ion-range min="0.5" max="2" step="0.1" [(ngModel)]="preferences.voiceSpeed" (ionChange)="savePreferences()">
+        <ion-icon size="small" slot="start" name="speedometer-outline"></ion-icon>
+        <ion-label slot="end">{{ "2X" | translate }}</ion-label>
+      </ion-range>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{ "VOLUMEN" | translate }}</ion-label>
+      <ion-range min="0" max="1" step="0.1" [(ngModel)]="preferences.voiceVolume" (ionChange)="savePreferences()">
+        <ion-icon size="small" slot="start" name="volume-low-outline"></ion-icon>
+        <ion-icon size="small" slot="end" name="volume-high-outline"></ion-icon>
+      </ion-range>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{ "TONO" | translate }}</ion-label>
+      <ion-range min="0" max="2" step="0.1" [(ngModel)]="preferences.voiceTone" (ionChange)="savePreferences()">
+        <ion-icon size="small" slot="start" name="musical-note-outline"></ion-icon>
+        <ion-label slot="end">{{ "2X" | translate }}</ion-label>
+      </ion-range>
     </ion-item>
 
-    <ion-item>
-      <ion-label>Tono</ion-label>
-      <ion-toggle [(ngModel)]="pitch" (ionChange)="toggleHighContrast()"></ion-toggle>
-    </ion-item>
-  </div>
+  </ion-list>
 </ion-content>

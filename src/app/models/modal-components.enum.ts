@@ -3,12 +3,20 @@ export enum ModalComponents {
   SearchReverse = 'SearchReverse',
   Settings = 'Settings',
   MapSettings = 'MapSettings',
-  PlaceInfo = 'PlaceInfo'
+  PlaceInfo = 'PlaceInfo',
+  BookmarkAdd = 'BookmarkAdd',
+  Osm = 'Osm',
+  Location = 'Location',
+  Conf = 'Conf'
 }
 
 
+import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
+import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
+import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 // Importa los componentes modales
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
+import { OsmModalComponent } from '../modals/osm-modal/osm-modal.component';
 import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
@@ -21,5 +29,9 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.Settings]: SettingsModalComponent,
   [ModalComponents.MapSettings]: MapSettingsModalComponent,
   [ModalComponents.PlaceInfo]: PlaceInfoModalComponent,
+  [ModalComponents.BookmarkAdd]: BookmarkModalComponent,
+  [ModalComponents.Osm]: OsmModalComponent,
+  [ModalComponents.Location]: LocationModalComponent,
+  [ModalComponents.Conf]: ConfModalComponent
 
 };

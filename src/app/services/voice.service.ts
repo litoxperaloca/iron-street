@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
+import { PreferencesService } from './preferences.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VoiceService {
-  private speakerStatus: boolean = true; // Usamos un booleano para el estado del altavoz
+  speakerStatus: boolean = true; // Usamos un booleano para el estado del altavoz
   voiceId: number = 0;
   lang: string = 'es-ES';
   rate: number = 1.3;
@@ -17,11 +18,12 @@ export class VoiceService {
   speechQueue: string[] = [];
 
 
-  constructor() {
+  constructor(private preferencesService: PreferencesService) {
     if (this.voices.length === 0) {
       this.getSupportedVoices().then((voices) => {
         this.voices = voices.voices;
       });
+
     }
   }
 
@@ -107,17 +109,28 @@ export class VoiceService {
     return this.speakerStatus;
   }
 
-  async getSupportedVoices(): Promise<{ voices: SpeechSynthesisVoice[]; }> {
-    return await TextToSpeech.getSupportedVoices();
+  async getSupportedVoices(): Promise<{ voices: SpeechSynthesisVoice[] }> {
+    return TextToSpeech.getSupportedVoices();
   }
 
+  async conf() {
+    this.preferencesService.getPreferences().then((preferences) => {
+      this.voiceId = preferences.voiceId;
+      this.volume = preferences.voiceVolume;
+      this.pitch = preferences.voiceTone;
+      this.rate = preferences.voiceSpeed;
+      this.lang = preferences.language;
+      this.speakerStatus = preferences.voiceInstructions;
+    });
 
+  }
 
   async speak(text: string): Promise<void> {
-    this.speechQueue.push(text); // Add text to the queue
+    this.speechQueue.push(text); // Add the text to the queue
     if (!this.isSpeaking) {
       await this.processQueue(); // If not currently speaking, start processing the queue
     }
+
   }
 
   async processQueue(): Promise<void> {
@@ -130,30 +143,35 @@ export class VoiceService {
     const currentText = this.speechQueue.shift(); // Get the first item from the queue
     if (currentText === undefined) return;
 
-    try {
-      await TextToSpeech.speak({
-        text: currentText,
-        lang: this.lang,
-        rate: this.rate,
-        pitch: this.pitch,
-        volume: this.volume,
-        category: this.category,
-        voice: this.voiceId
-      }).then(async () => {
-        this.isSpeaking = false; // Reset speaking flag
-        await this.processQueue(); // Continue processing the queue
-        //('Speech completed successfully');
-      }).catch(async (error) => {
-        console.error('Failed to speak:', error);
-        this.isSpeaking = false; // Reset speaking flag
-        await this.processQueue(); // Continue processing the queue
-      });
+    if (this.speakerStatus) {
+      try {
+        await TextToSpeech.speak({
+          text: currentText,
+          lang: this.lang,
+          rate: this.rate,
+          pitch: this.pitch,
+          volume: this.volume,
+          category: this.category,
+          voice: this.voiceId
+        }).then(async () => {
+          this.isSpeaking = false; // Reset speaking flag
+          await this.processQueue(); // Continue processing the queue
+          //('Speech completed successfully');
+        }).catch(async (error) => {
+          console.error('Failed to speak:', error);
+          this.isSpeaking = false; // Reset speaking flag
+          await this.processQueue(); // Continue processing the queue
+        });
 
-    } catch (error) {
-      console.error('Failed to speak:', error);
-      this.isSpeaking = false; // Reset speaking flag on catch
-      await this.processQueue(); // Continue processing
+      } catch (error) {
+        console.error('Failed to speak:', error);
+        this.isSpeaking = false; // Reset speaking flag on catch
+        await this.processQueue(); // Continue processing
+      }
     }
+
+
+
   }
 
   stopSpeaking(): void {

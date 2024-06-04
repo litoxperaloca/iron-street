@@ -14,6 +14,7 @@ export class BlogPage implements OnInit {
   baseUrl: string = environment.blogConfig.wpUrl;
   categoryDefinitonId: number = 85; // Adjust as neededfeaturedImageUrl: string = '';
   isLoading: boolean = false;
+
   async loadFeaturedImage(mediaId: number) {
     const featuredImageUrl = await this.wordpressService.getFeaturedImageUrl(mediaId);
     return featuredImageUrl;
@@ -33,7 +34,6 @@ export class BlogPage implements OnInit {
       //console.log('Posts:', posts);
       this.blogPosts = posts;
       this.blogPosts.forEach((post) => {
-
         // Assuming 'definition' has an 'featured_media' field you want to pass
         this.loadFeaturedImage(post.featured_media).then((url) => {
           post.featuredImageUrl = url;
@@ -66,7 +66,7 @@ export class BlogPage implements OnInit {
   selectPost(definition: any) {
     // Assuming 'definition' has an 'id' field you want to pass
     if (definition && definition.id && definition.id > 0 && this.router) {
-      this.router.navigate(['/category-detail', definition.id]);
+      this.router.navigate(['/post', definition.id]);
     }
   }
 }

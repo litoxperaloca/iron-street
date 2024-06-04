@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { AuthPageRoutingModule } from './auth-routing.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthPage } from './auth.page';
 
 @NgModule({
@@ -13,7 +14,8 @@ import { AuthPage } from './auth.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    AuthPageRoutingModule
+    AuthPageRoutingModule,
+    TranslateModule
   ],
   declarations: [AuthPage]
 })

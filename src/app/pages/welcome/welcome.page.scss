@@ -1,0 +1,325 @@
+
+.loop-wrapper {
+  margin: 0 auto;
+  position: fixed;
+  display: block;
+  width: 100%;
+  bottom: 70px;
+  height: 250px;
+  overflow: hidden;
+  border-bottom: 4px solid #7f7f7f;
+  color: #fff;
+}
+.mountain {
+  position: absolute;
+  right: -900px;
+  bottom: -20px;
+    width: 5px;
+    height: 5px;
+    box-shadow: 0 0 0 90px #342723, 80px 70px 0 90px #28291a, 110px 90px 0 90px #2c1d20, 250px 250px 0 70px #08180d, 290px 320px 0 80px #1a4844, 320px 400px 0 70px #102826;
+  transform: rotate(130deg);
+  -webkit-animation: mtn 20s linear infinite;
+          animation: mtn 20s linear infinite;
+}
+.sky {
+position: absolute;
+    right: -2000px;
+    width: 2000px;
+    height: 100%;
+    animation: sky 30s linear infinite;
+    background: url(/assets/img/icons/sky2.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.mnt {
+position: absolute;
+    right: -1200px;
+    bottom: -20px;
+    width: 1300px;
+    height: 250px;
+    animation: mntreal 13s linear infinite;
+    background: url(/assets/img/icons/mountains.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.city {
+position: absolute;
+    right: -900px;
+    bottom: -20px;
+    width: 700px;
+    height: 200px;
+    animation: city 10s linear infinite;
+    background: url(/assets/img/icons/city2.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.hill {
+  position: absolute;
+  right: -900px;
+  bottom: -50px;
+  width: 400px;
+  border-radius: 50%;
+  height: 20px;
+    box-shadow: 0 0 5px 60px #2c502e, -20px 0 5px 20px #29552b, -90px 0 5px 50px #374b21, 250px 0 5px 50px #293f2b, 290px 0 5px 60px #29602c, 620px 0 80px #4b6034;
+  -webkit-animation: hill 4s 2s linear infinite;
+          animation: hill 4s 2s linear infinite;
+}
+.tree, .tree:nth-child(2), .tree:nth-child(3) {
+  position: absolute;
+  height: 121px;
+  width: 150px;
+  bottom: -15px;
+  background: url(/assets/img/icons/tree.png) no-repeat;
+  background-size: cover;
+}
+.rock {
+  margin-top: -17%;
+  height: 2%;
+  width: 2%;
+  bottom: -2px;
+  border-radius: 20px;
+  position: absolute;
+  background: #1f1f20;
+}
+.truck, .wheels {
+    transition: all ease;
+    width: 200px;
+    bottom: 0;
+    right: calc(50% - 100px);
+    position: absolute;
+}
+.truck {
+    background: url(/assets/img/icons/cadillac.png) no-repeat;
+    background-size: auto;
+    height: 55px;
+}
+.truck:before {
+  content: " ";
+  position: absolute;
+  width: 15px;
+  box-shadow:
+    -30px 28px 0 1.5px #fff,
+     -35px 18px 0 1.5px #fff;
+}
+
+
+.tree  { -webkit-animation: tree 10s 0.000s linear infinite; animation: tree 3s 0.000s linear infinite; }
+.tree:nth-child(2)  { -webkit-animation: tree2 2s 0.150s linear infinite; animation: tree2 2s 0.150s linear infinite; }
+.tree:nth-child(3)  { -webkit-animation: tree3 8s 0.050s linear infinite; animation: tree3 8s 0.050s linear infinite; }
+.rock  { -webkit-animation: rock 4s   -0.530s linear infinite; animation: rock 4s   -0.530s linear infinite; }
+.truck  { -webkit-animation: truck 4s   0.080s ease infinite; animation: truck 4s   0.080s ease infinite; }
+.wheels  { -webkit-animation: truck 4s   0.001s ease infinite; animation: truck 4s   0.001s ease infinite; }
+.truck:before { -webkit-animation: wind 1.5s   0.000s ease infinite; animation: wind 1.5s   0.000s ease infinite; }
+
+@-webkit-keyframes city {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@keyframes city {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@-webkit-keyframes mntreal {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@keyframes mntreal {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@-webkit-keyframes sky {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@keyframes sky {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@-webkit-keyframes tree {
+  0%   { transform: translate(1350px); }
+  50% {}
+  100% { transform: translate(-50px); }
+}
+
+
+@keyframes tree {
+  0%   { transform: translate(1350px); }
+  50% {}
+  100% { transform: translate(-200px); }
+}
+@-webkit-keyframes tree2 {
+  0%   { transform: translate(650px); }
+  50% {}
+  100% { transform: translate(-200x); }
+}
+@keyframes tree2 {
+  0%   { transform: translate(650px); }
+  50% {}
+  100% { transform: translate(-50px); }
+}
+@-webkit-keyframes tree3 {
+  0%   { transform: translate(2750px); }
+  50% {}
+  100% { transform: translate(-50px); }
+}
+@keyframes tree3 {
+  0%   { transform: translate(2750px); }
+  50% {}
+  100% { transform: translate(-50px); }
+}
+
+@-webkit-keyframes rock {
+  0%   { right: -200px; }
+  100% { right: 2000px; }
+}
+
+@keyframes rock {
+  0%   { right: -200px; }
+  100% { right: 2000px; }
+}
+@-webkit-keyframes truck {
+  0%   { }
+  6%   { transform: translateY(0px); }
+  7%   { transform: translateY(-6px); }
+  9%   { transform: translateY(0px); }
+  10%   { transform: translateY(-1px); }
+  11%   { transform: translateY(0px); }
+  100%   { }
+}
+@keyframes truck {
+  0%   { }
+  6%   { transform: translateY(0px); }
+  7%   { transform: translateY(-6px); }
+  9%   { transform: translateY(0px); }
+  10%   { transform: translateY(-1px); }
+  11%   { transform: translateY(0px); }
+  100%   { }
+}
+@-webkit-keyframes wind {
+  0%   {  }
+  50%   { transform: translateY(3px) }
+  100%   { }
+}
+@keyframes wind {
+  0%   {  }
+  50%   { transform: translateY(3px) }
+  100%   { }
+}
+@-webkit-keyframes mtn {
+  100% {
+    transform: translateX(-2000px) rotate(130deg);
+  }
+}
+@keyframes mtn {
+  100% {
+    transform: translateX(-2000px) rotate(130deg);
+  }
+}
+@-webkit-keyframes hill {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+@keyframes hill {
+  100% {
+    transform: translateX(-2000px);
+  }
+}
+#logo{
+  background: url(/assets/icons/icon-512x512.png);
+  background-repeat: no-repeat;
+    background-size: cover;
+
+    position: relative;
+  height: 130px;
+  width: 130px;
+  margin: 0 auto;
+  display: flex;
+  top: 33px;
+  box-shadow: 0 0 7px 1px white;
+    border-radius: 50%;
+}
+[data-aos][data-aos][data-aos-easing=ease], body[data-aos-easing=ease] [data-aos] {
+    transition-timing-function: ease;
+}
+
+[data-aos][data-aos][data-aos-duration="400"], body[data-aos-duration="400"] [data-aos] {
+    transition-duration: 2s;
+}
+.aos-animate {
+    transform: perspective(2500px) rotateY(359deg);
+    transition-duration: 2s;
+}
+
+.aos-animated {
+    transform: none !important;
+    transition-duration: 4s;
+}
+
+
+.wp-block-uagb-container {
+    display: flex;
+    position: relative;
+    box-sizing: border-box;
+    transition-property: box-shadow;
+    transition-duration: 2s;
+    transition-timing-function: ease;
+}
+
+[data-aos=flip-left] {
+    transform: perspective(2500px) rotateY(-100deg);
+}
+
+
+.wheel {
+    width: 35px;
+    height: 35px;
+    bottom: 0;
+    position: absolute;
+    left: calc(50% - 65px);
+    animation: spin-right .3s linear infinite;
+     background: url(/assets/img/icons/wheel.png);
+       background-size: cover;
+
+}
+
+
+.wheelb {
+    width: 35px;
+    height: 35px;
+    bottom: 0;
+    position: absolute;
+    right: calc(50% - 80px);
+    animation: spin-right .3s linear infinite;
+     background: url(/assets/img/icons/wheel.png);
+       background-size: cover;
+
+}
+
+@keyframes spin-right {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#firstTime{
+      display: flex;
+    justify-content: center;
+    /* position: RELATIVE; */
+    margin-top: 50px;
+}
+
+#firstTime h2{
+  font-style: 14pt;
+  font-weight: 600;
+}
+

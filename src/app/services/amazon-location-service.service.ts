@@ -32,6 +32,7 @@ export class AmazonLocationServiceService {
   }
 
   searchByTextOptions = {
+
     //countries: ["URY", "ARG", "BRA"], // Alpha-3 country codes
     countries: ["URY"],
     maxResults: 10, // 50 is the max and the default

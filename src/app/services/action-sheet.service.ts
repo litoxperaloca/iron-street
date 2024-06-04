@@ -30,6 +30,33 @@ export class ActionSheetService {
     });
   }
 
+  async askQuestionAorBorC(questionHeader: string, questionSubheader: string, optionA: string, optionB: string, optionC: string): Promise<boolean> {
+    return new Promise<boolean>(async (resolve) => {
+      const actionSheet = await this.actionSheetController.create({
+        header: questionHeader,
+        subHeader: questionSubheader,
+        buttons: [{
+          text: optionA,
+          handler: () => resolve(true)
+        }, {
+          text: optionB,
+          handler: () => resolve(false)
+        },
+        {
+          text: optionC,
+          handler: () => resolve(false)
+        },
+        {
+
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => resolve(false)
+        }]
+      });
+      await actionSheet.present();
+    });
+  }
+
   async showMenuOptions(options: { text: string, icon?: string, handler: () => void }[]): Promise<void> {
     const actionSheet = await this.actionSheetController.create({
       header: 'Select an Option',

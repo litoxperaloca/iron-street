@@ -2,17 +2,49 @@
     <ion-menu contentId="main-content" type="push" swipe-gesture="false">
       <ion-content>
         <ion-list id="inbox-list">
-          <ion-list-header>Iron Street</ion-list-header>
-          <ion-note>from Iron Platfom</ion-note>
-
+          <div id="logoIronStreet"></div>
+          <h4 class="appMenu">Usando la app:</h4>
           <ion-menu-toggle auto-hide="true" *ngFor="let p of appPages; let i = index">
             <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
               <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
+
+          <h4 class="userMenu">Cuenta de usuario:</h4>
+          <ion-menu-toggle auto-hide="true" *ngFor="let p of userPages; let i = index">
+            <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
+            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+
+        <h4 class="helpMenu">Ayuda y asistencia:</h4>
+        <ion-menu-toggle auto-hide="true" *ngFor="let p of helpPages; let i = index">
+          <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
+            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+
+        <h4 class="infoMenu">Información:</h4>
+        <ion-menu-toggle auto-hide="true" *ngFor="let p of infoPages; let i = index">
+          <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
+            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+
+        <h4 class="legalMenu">Sobre Iron Street:</h4>
+        <ion-menu-toggle auto-hide="true" *ngFor="let p of legalPages; let i = index">
+          <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
+            <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+            <ion-label>{{ p.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
         </ion-list>
       </ion-content>
     </ion-menu>
+
     <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>

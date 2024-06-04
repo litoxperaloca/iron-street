@@ -1,0 +1,102 @@
+ion-icon{
+    font-size: 50px !important;
+    --ion-stroke-width: 50px;
+    width: 100px;
+    height: 100px;
+    margin: 10px auto;
+    position: relative;
+    display: flex;
+}
+
+#modalBarButton{
+    ion-icon{
+        font-size: 30px !important;
+        --ion-stroke-width: 30px;
+        width: 40px;
+        height: 40px;
+        margin: 10px auto;
+        position: relative;
+        display: flex;
+    }
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
+    top: 0;
+}
+// Styling for the card to give it a modern and clean look
+ion-card {
+  border-radius: 12px;  // Rounded corners for a softer look
+
+  ion-card-header {
+    /*background-color: #ffffff;  // White background for the header*/
+    border-top-left-radius: 12px;  // Rounded corners on the top
+    border-top-right-radius: 12px;
+    padding: 16px;  // Padding inside the header
+    border-bottom: 0.5px solid var(--ion-color-dark);  // Slightly lighter than the title for regular text;  // Subtle separator
+
+    ion-card-title {
+      color: var(--ion-color-primary);  // Slightly lighter than the title for regular text
+      // Dark color for contrast and readability
+      font-size: 14pt;  // Slightly larger font size for importance
+      font-weight: 600;
+    }
+
+    ion-card-subtitle {
+      color: var(--ion-color-secondary);  // Slightly lighter than the title for regular text
+      font-size: 12pt;  // Smaller than the title
+      font-weight: 600;
+
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;  // Consistent padding
+    color: var(--ion-color-dark);  // Slightly lighter than the title for regular text
+
+    ion-list {
+      padding: 0;  // Remove default padding to align list items
+
+      ion-item {
+        --background: transparent;  // Transparent background for items
+        --padding-start: 0;  // Align text properly
+        --padding-end: 0;
+        --inner-padding-end: 0;
+        --border-color: transparent;  // No borders between items
+
+        ion-label {
+          h2 {
+            font-weight: 600;
+            font-size: 12pt;  // Emphasize the property key
+            color: var(--ion-color-tertiary);  // Slightly lighter than the title for regular text
+          }
+
+          p {
+            font-size: 12pt;
+            font-weight: 600;
+            margin-top: 4px;  // Space between key and value
+               color: var(--ion-color-dark);  // Slightly lighter than the title for regular text
+          }
+        }
+      }
+    }
+  }
+}
+
+// Custom styles for loader
+.searchLoader {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  ion-spinner {
+    --spinner-color: var(--ion-color-dark);  // Use primary color for the spinner
+  }
+}
+
+.bookmarkSelectIcon{
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 20pt;
+}

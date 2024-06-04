@@ -1,13 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 
-import { WordpressServiceService } from './wordpress-service.service';
+import { beforeEach, describe, it } from 'node:test';
+import { WordpressService } from './wordpress-service.service';
 
 describe('WordpressServiceService', () => {
-  let service: WordpressServiceService;
+  let service: WordpressService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(WordpressServiceService);
+    service = TestBed.inject(WordpressService);
   });
 
   it('should be created', () => {

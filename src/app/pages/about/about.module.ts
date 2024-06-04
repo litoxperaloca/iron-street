@@ -1,11 +1,12 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
 import { AboutPageRoutingModule } from './about-routing.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { AboutPage } from './about.page';
 
 @NgModule({
@@ -13,8 +14,9 @@ import { AboutPage } from './about.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    AboutPageRoutingModule
+    AboutPageRoutingModule,
+    TranslateModule
   ],
   declarations: [AboutPage]
 })
-export class AboutPageModule {}
+export class AboutPageModule { }

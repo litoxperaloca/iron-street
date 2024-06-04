@@ -22,7 +22,7 @@ export class WordpressService {
     }
   }
   async getFeaturedImageUrl(mediaId: number): Promise<string> {
-    const url = `${this.baseUrl}media/${mediaId}`;
+    const url = `${this.baseUrl}/media/${mediaId}`;
 
     try {
       const response = await CapacitorHttp.get({ url });
@@ -52,7 +52,7 @@ export class WordpressService {
   async getPostById(id: number) {
     try {
       const response = await CapacitorHttp.get({
-        url: environment.blogConfig.wpUrl + `/${id}`,
+        url: environment.blogConfig.wpUrl + `/posts/${id}`,
         headers: {}, // Add any required headers here
       });
       return response.data;

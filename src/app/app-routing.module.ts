@@ -4,8 +4,12 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'about',
+    redirectTo: 'welcome',
     pathMatch: 'full'
+  },
+  {
+    path: 'welcome',
+    loadChildren: () => import('./pages/welcome/welcome.module').then(m => m.WelcomePageModule)
   },
   {
     path: 'folder/:id',
@@ -58,7 +62,17 @@ const routes: Routes = [
   {
     path: 'subscribe',
     loadChildren: () => import('./pages/subscribe/subscribe.module').then(m => m.SubscribePageModule)
+  },
+  {
+    path: 'tips',
+    loadChildren: () => import('./pages/tips/tips.module').then(m => m.TipsPageModule)
+  },
+  {
+    path: 'post/:id',
+    loadChildren: () => import('./pages/post/post.module').then(m => m.PostPageModule)
   }
+
+
 ];
 
 @NgModule({

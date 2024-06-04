@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="locatePlace()">
+      <ion-icon src="{{ featureIcon }}" size="small"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding" *ngIf="osmPlace && osmPlace.label">{{osmPlace.label}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+
+
+  <div>
+
+    <div>
+      <ion-list>
+          <ion-item>
+            <ion-label *ngIf="osmFeature && osmFeature.properties &&  osmFeature.properties['amenity']">Tipo: {{ osmFeature.properties['amenity']}}</ion-label>
+            <ion-label *ngIf="osmFeature && osmFeature.properties && osmFeature.properties['category'].name">Categoría: {{osmFeature.properties['category'].name }}</ion-label>
+          </ion-item>
+        <ion-item>
+                  <div id="modalBarButton">
+                    <ion-icon (click)="dismiss()" name="close-circle-outline" size="big" color="danger">
+                    </ion-icon>
+                    <ion-icon *ngIf="placeDataIncludeWebsite" (click)="openOutsideLink(featureWebsite)" name="globe-outline" size="big"
+                      color="primary">
+                    </ion-icon>
+                    <ion-icon *ngIf="placeDataIncludePhone" (click)="callNumber(featurePhone1)" name="call-outline" size="big"
+                      color="secondary">
+                    </ion-icon>
+                    <ion-icon (click)="toggleInfo()" name="information-outline" size="big" color="tertiary">
+                    </ion-icon>
+                    <ion-icon (click)="toggleBookmarks()" name="star-outline" size="big" color="warning">
+                    </ion-icon>
+                    <ion-icon (click)="setDestinationOSMifAbortCurrent(osmFeatureIdSelected)" name="navigate-outline" size="big"
+                      color="success">
+                    </ion-icon>
+                  </div>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addHomePlace()">
+          <h4>Guardar este lugar como:</h4>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addHomePlace()">
+          <ion-label>Casa</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="success"
+            name="home-outline"></ion-icon>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addWorkPlace()">
+          <ion-label>Trabajo</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="secondary"
+            name="business-outline"></ion-icon>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addFavoritePlace()">
+          <ion-label>En la lista de favoritos</ion-label><ion-icon class="bookmarkSelectIcon" size="small"
+            color="warning" name="star-outline"></ion-icon>
+        </ion-item>
+      </ion-list>
+      <hr/>
+      <ion-card *ngIf="infoMgr && osmFeature && osmFeature.properties">
+        <ion-card-header>
+          <ion-label>Información disponible:</ion-label>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item *ngFor="let prop of featurePropsNormalized">
+              <ion-label>
+                <h2>{{ prop.keyTranslated }}</h2>
+                <p>{{ prop.value }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+
+  </div>
+
+</ion-content>

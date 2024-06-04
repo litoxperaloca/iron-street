@@ -68,7 +68,6 @@ export class MapService {
   private lastPosition: mapboxgl.LngLat | null = null;
   mapPressedMarkerInstance: mapboxgl.Marker | null = null;
   popUpMapPressed: mapboxgl.Popup | null = null;
-  longPressTimer: any;
   firstTouchDone: boolean = false;
 
 
@@ -119,10 +118,10 @@ export class MapService {
     map.on('load', () => {
       map.resize();
 
-      setTimeout(() => {
+      const timeOutIntroTime = setTimeout(() => {
         this.introTimeWaited = true;
       }, this.introTime);
-
+      this.windowService.attachedTimeOut("home", "mapService_introTime", timeOutIntroTime);
       this.windowService.setValueIntoProperty('map', map);
       this.setDefaults();
       this.mapControls.directions.on('route', (event: any) => {
@@ -196,7 +195,6 @@ export class MapService {
 
 
           ((window as any).mapService as MapService).mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'visible');
-
           ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 1);
           ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 8);
           ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-opacity', 0.5);
@@ -238,7 +236,7 @@ export class MapService {
         // Ensure there's data from which to derive a popup
         if (e.features.length > 0) {
           const feature = e.features[0];
-          const popup = ((window as any).mapService as MapService).createDestinationPopup(feature.geometry.coordinates as [number, number]);
+          const popup = ((window as any).mapService as MapService).createDestinationPopupFromUnknown(feature.geometry.coordinates as [number, number]);
           // Set the popup's content and location
           popup.addTo(map);
         }
@@ -272,24 +270,23 @@ export class MapService {
       //console.log(e);
       if (this.mapbox.isEasing() || this.mapbox.isMoving()
         || this.mapbox.isRotating() || this.mapbox.isZooming()) {
-        if (this.longPressTimer) {
-          clearTimeout(this.longPressTimer);
-        }
+        this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
         return;
       } else {
         if (this.firstTouchDone) {
-          if (this.longPressTimer) {
-            clearTimeout(this.longPressTimer);
-          }
+          this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
+
         } else {
           this.firstTouchDone = true;
-          this.longPressTimer = setTimeout(() => {
+          const longPressTimer = setTimeout(() => {
             if (this.popUpMapPressed) {
               this.popUpMapPressed.remove();
             }
             const coordinates = e.lngLat;
             this.addMarkerWithPopup(coordinates);
-          }, 2000); // 1000ms for a long press
+          }, 1500); // 1000ms for a long press
+          this.windowService.attachedTimeOut("home", "mapService_longPressTimer", longPressTimer);
+
         }
 
       }
@@ -299,8 +296,7 @@ export class MapService {
     this.mapbox.on('touchend', (e) => {
       // console.log(e);
 
-      clearTimeout(this.longPressTimer)
-      this.longPressTimer = null;
+      this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
       this.firstTouchDone = false;
 
     });
@@ -318,9 +314,9 @@ export class MapService {
     //this.popUpMapPressed = popup;
     let marker = new mapboxgl.Marker()
       .setLngLat(coordinates)
-      .setPopup(popup) // sets a popup on this marker
+      //.setPopup(popup) // sets a popup on this marker
       .addTo(this.mapbox);
-    popup.addTo(this.mapbox);
+    //popup.addTo(this.mapbox);
     this.mapPressedMarkerInstance = marker;
   }
 
@@ -356,7 +352,6 @@ export class MapService {
   // Function to rotate the camera around the world
   rotateCamera(timestamp: number) {
     if (((window as any).mapService as MapService).introTimeWaited && !((window as any).mapService as MapService).isRotating) {
-
     } else {
       if (((window as any).mapService as MapService).isRotating) {
         ((window as any).cameraService as CameraService).rotateCamera(timestamp);
@@ -395,7 +390,8 @@ export class MapService {
      html += '<input type="button" id="cancelTripButtonPopUp" value="Cancelar" onclick="window.homePage.cancelMapPressed()"></input>';
      html += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta hacia aquí" onclick="window.homePage.searchMapPressed()"></input>';
      html += '</div>';*/
-
+    ((window as any).homePage as HomePage).openLocationModal(coordinates);
+    this.mapbox.flyTo({ center: coordinates });
     //html += '<input id="destinationViewMoreButton" type="button" value="Ver más" onclick="document.getElementById(\'destinationDetails\').style.display=\'block\'; document.getElementById(\'destinationViewMoreButton\').style.display=\'none;\'"></input>';
     const popup = new mapboxgl.Popup({
       closeOnClick: true,
@@ -404,6 +400,30 @@ export class MapService {
       .setHTML(html);
     popup.addClassName('mapPressedPopUp');
     this.popUpMapPressed = popup;
+    // Crea un popup y lo añade al mapa en el punto medio
+    return popup;
+  }
+
+  createDestinationPopupFromUnknown(coordinates: [number, number]): mapboxgl.Popup {
+    if (this.popUpDestination) this.popUpDestination.remove();
+    let html = '<h6>' + '(' + coordinates[0] + ',' + coordinates[1] + ')' + '</h6>';
+    html += '<div id="destinationActions">';
+    html += '<ion-icon onclick="window.homePage.cancelTrip()" name ="close-circle-outline" size="big" color="danger" > </ion-icon>';
+    html += '<ion-icon onclick="window.homePage.startTrip()" name = "navigate-circle-outline" size="big" color="success" > </ion-icon>';
+
+    //html += '<input type="button" id="cancelTripButtonPopUp" value="Cancelar" onclick="window.homePage.cancelTrip()"></input>';
+    //html += '<input type="button" id="startTripButtonPopUp" value="Iniciar viaje" onclick="window.homePage.startTrip()"></input>';
+    html += '</div>';
+    ((window as any).homePage as HomePage).openLocationModal(coordinates);
+    this.mapbox.flyTo({ center: coordinates });
+    //html += '<input id="destinationViewMoreButton" type="button" value="Ver más" onclick="document.getElementById(\'destinationDetails\').style.display=\'block\'; document.getElementById(\'destinationViewMoreButton\').style.display=\'none;\'"></input>';
+    const popup = new mapboxgl.Popup({
+      closeOnClick: true,
+      //offset: 20
+    }).setLngLat(coordinates)
+      .setHTML(html);
+    popup.addClassName('destinationPopUp');
+    this.popUpDestination = popup;
     // Crea un popup y lo añade al mapa en el punto medio
     return popup;
   }
@@ -443,6 +463,9 @@ export class MapService {
 
   cleanDestinationLabel(label: string): string {
     //TODO: Implementar limpieza de etiqueta de destino, seleccionando contenido hasta primera aparicion del caracter ","
+    if (label.startsWith("(")) {
+      return label;
+    }
     const commaIndex = label.indexOf(',');
     if (commaIndex !== -1) {
       label = label.substring(0, commaIndex);
@@ -712,7 +735,8 @@ export class MapService {
       this.setupInteractionListeners();
       ((window as any).homePage as HomePage).alreadyGeoLocated();
       ((window as any).cameraService as CameraService).updateCameraForUserMarkerFirstGeoEvent(newLocation, bearing);
-      setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+      const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+      this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
     } else {
       if (heading) {
         marker.setRotation(heading);
@@ -721,7 +745,9 @@ export class MapService {
       if (this.trackingUser) {
         this.mapEventIsFromTracking = true;
         ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newLocation, bearing);
-        setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+        const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+        this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+
       }
     }
   }
@@ -755,37 +781,6 @@ export class MapService {
       }
     }
   }*/
-
-  private animateMarker(newLngLat: [number, number], newHeading: number) {
-    if (this.isAnimating) return; // If already animating, ignore further calls
-    this.isAnimating = true;
-    const marker: mapboxgl.Marker = this.getUserMarker();
-
-    const start = performance.now();
-    const duration = 1000;
-    const fromLngLat = marker.getLngLat();
-    const fromRotation = marker.getRotation();
-
-    const animate = (timestamp: number) => {
-      const elapsed = timestamp - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const lng = fromLngLat.lng + (newLngLat[0] - fromLngLat.lng) * progress;
-      const lat = fromLngLat.lat + (newLngLat[1] - fromLngLat.lat) * progress;
-      const rotation = fromRotation + (newHeading - fromRotation) * progress;
-
-      marker.setLngLat([lng, lat]).setRotation(rotation);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        this.isAnimating = false; // Reset the flag once animation completes
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }
-
-
 
 
   getUserMarker(): mapboxgl.Marker {
@@ -971,6 +966,7 @@ export class MapService {
     ((window as any).tripService as TripService).cancelTrip();
     if (environment.mocking) {
       environment.mocking = false;
+      this.geoLocationService.mocking = false;
     }
   }
 
@@ -988,13 +984,21 @@ export class MapService {
     ((window as any).mapService as MapService).currentStep = 0;
     ((window as any).mapService as MapService).alreadySpoken = false;
     ((window as any).tripService as TripService).cancelTrip();
-    if (environment.mocking) {
-      environment.mocking = false;
-    }
   }
 
   leaveMapPage() {
-    this.sourcesAndLayers = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
+    if (this.mapbox && this.mapbox.getCanvas()) {
+      this.mapbox.remove();
+      this.isAnimating = false; // Indicador de si una animación está en curso
+
+      this.isTripStarted = false;
+      this.isRotating = true; // Flag to control rotation
+
+      this.introTimeWaited = false;
+      this.trackingUser = true;
+      this.mapEventIsFromTracking = false;
+      this.sourcesAndLayers = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
+    }
   }
 
   async startTrip(): Promise<void> {
@@ -1028,7 +1032,9 @@ export class MapService {
     this.mapEventIsFromTracking = true;
     this.trackingUser = true;
     ((window as any).cameraService as CameraService).lockCameraAtPosition(userLocation, bearing);
-    setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+    const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+    this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+
   }
   async addWaypoint(waypoint: Place) {
     //console.log("Adding waypoint:", waypoint);
@@ -1062,6 +1068,9 @@ export class MapService {
       this.mapControls.directions.actions.setRouteIndex(0);
       this.cleanRoutePopups();
       this.destination = "(" + latlon[0].toFixed(4) + "," + latlon[1].toFixed(4) + ")";
+
+      this.destinationPlace = { label: this.destination, geometry: { point: latlon } };
+
       if (!this.mapControls.directions.getOrigin().type) {
         const position = this.geoLocationService.getLastCurrentLocation();
         if (position) {
@@ -1098,7 +1107,8 @@ export class MapService {
     this.mapEventIsFromTracking = true;
     this.trackingUser = true;
     ((window as any).cameraService as CameraService).setCameraPOVPosition(position);
-    setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+    const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+    this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
 
   }
 
@@ -1324,7 +1334,10 @@ export class MapService {
                   ]
                 }
               };
-              let topHTML: string = '<h6>' + place.label + '</h6>';
+              let topHTML = '<ion-icon class="bookmarkIcon" onclick="window.homePage.addBookmark(\'' + feature.id + '\')" name="star-outline" size="big" color="warning"> </ion-icon>';
+
+              topHTML += '<h6>' + place.label + '</h6>';
+
               topHTML += '<h7>' + categoryName + '</h7>';
               const description = Object.keys(properties).map(key => {
                 return `<p>${key}: ${properties[key]}</p>`;
@@ -1357,10 +1370,19 @@ export class MapService {
                 if (self.popups.includes(featurePopup)) self.popups[feature.id as number].remove();
               }
               feature.properties['category'] = category;
-              featurePopup.addTo(map);
+              //featurePopup.addTo(map);
               self.popups[feature.id as number] = featurePopup;
               self.osmFeatures[feature.id as number] = feature;
               self.osmPlaces[feature.id as number] = place;
+
+              const iconElement = document.querySelector(`[data-id="${feature.id}"]`);
+              if (iconElement) {
+                iconElement.classList.toggle('highlight-icon');
+              }
+              ((window as any).homePage as HomePage).openOsmModal(feature.id as number);
+              self.mapbox.flyTo({
+                center: [coordinates[0], coordinates[1]]
+              });
             }
           });
         }
@@ -1466,9 +1488,13 @@ export class MapService {
           if (this.trackingUser) {
             this.mapEventIsFromTracking = true;
             ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
-            setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+            const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+            this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+
           }
-          requestAnimationFrame(animateMarker);
+          const req: any = requestAnimationFrame(animateMarker);
+          this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", req);
+
         } else {
           // Complete the animation
           if (this.animationTarget) {
@@ -1482,13 +1508,17 @@ export class MapService {
             if (this.trackingUser) {
               this.mapEventIsFromTracking = true;
               ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([this.animationTarget.lng, this.animationTarget.lat], newHeading);
-              setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+              const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+              this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+
             }
           }
         }
       };
 
-      requestAnimationFrame(animateMarker);
+      const req: any = requestAnimationFrame(animateMarker);
+      this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", req);
+
     } else {
       let newHeading = 0;
       // If the marker does not exist, create a new one
@@ -1515,7 +1545,9 @@ export class MapService {
       if (this.trackingUser) {
         this.mapEventIsFromTracking = true;
         ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
-        setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+        const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+        this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+
       }
     }
 

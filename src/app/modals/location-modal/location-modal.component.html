@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button color="secondary" (click)="locatePlace()">
+        <ion-icon color="secondary" name="location-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">Nueva ubicación seleccionada</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+
+
+  <div>
+
+    <div>
+      <ion-list>
+          <ion-item>
+            <ion-label *ngIf="place && place.label">{{place.label}}</ion-label>
+          </ion-item>
+        <ion-item>
+                  <div id="modalBarButton">
+                    <ion-icon (click)="dismiss()" name="close-circle-outline" size="big" color="danger">
+                    </ion-icon>
+                    <ion-icon (click)="toggleInfo()" name="information-outline" size="big" color="tertiary">
+                    </ion-icon>
+                    <ion-icon (click)="toggleBookmarks()" name="star-outline" size="big" color="warning">
+                    </ion-icon>
+                    <ion-icon (click)="setDestinationFromPlace()" name="navigate-outline" size="big"
+                      color="success">
+                    </ion-icon>
+                  </div>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addHomePlace()">
+          <h4>Guardar este lugar como:</h4>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addHomePlace()">
+          <ion-label>Casa</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="success"
+            name="home-outline"></ion-icon>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addWorkPlace()">
+          <ion-label>Trabajo</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="secondary"
+            name="business-outline"></ion-icon>
+        </ion-item>
+        <ion-item *ngIf="bookmarkMgr" (click)="addFavoritePlace()">
+          <ion-label>En la lista de favoritos</ion-label><ion-icon class="bookmarkSelectIcon" size="small"
+            color="warning" name="star-outline"></ion-icon>
+        </ion-item>
+      </ion-list>
+      <ion-card *ngIf="infoMgr && !infoLoaded">
+        <ion-card-header>
+          <ion-label>Buscando dirección...</ion-label>
+        </ion-card-header>
+        <ion-card-content>
+          <div *ngIf="loading">
+            <ion-spinner name="crescent" class="centeredSpinner"></ion-spinner>
+          </div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card *ngIf="infoMgr && infoLoaded">
+        <ion-card-header>
+          <ion-label>Dirección encontrada:</ion-label>
+        </ion-card-header>
+        <ion-card-content>
+                  <h4 *ngIf="place && place.label">{{place.label}}</h4>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+
+  </div>
+
+</ion-content>
