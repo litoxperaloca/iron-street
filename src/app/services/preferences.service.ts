@@ -96,9 +96,34 @@ export class PreferencesService {
     this.languageChanged.emit(lang);
   }
 
+  async changeLanguageAndSavePref(lang: string) {
+    this.translate.setDefaultLang(lang);
+    this.translate.use(lang);
+    await Storage.set({ key: 'language', value: lang });
+    this.getPreferences().then(async (preferences) => {
+      preferences.language = lang;
+      await this.savePreferences(preferences);
+      this.languageChanged.emit(lang);
+    });
+  }
+
   async changeTheme(darkMode: boolean) {
     let theme: 'dark' | 'light' = darkMode ? 'dark' : 'light';
     this.themeService.applyTheme(theme);
     await Storage.set({ key: 'theme', value: theme });
+  }
+
+  async toggleTheme() {
+    const { value } = await Storage.get({ key: 'theme' });
+    const theme = value || 'dark'; // Usa 'es' como idioma predeterminado si no hay valor almacenado
+    if (theme === 'dark' || theme === 'light') {
+      const invertTheme = theme === 'dark' ? 'light' : 'dark';
+      this.themeService.applyTheme(invertTheme);
+      await Storage.set({ key: 'theme', value: invertTheme });
+      this.getPreferences().then(async (preferences) => {
+        preferences.darkTheme = invertTheme === 'dark' ? true : false;
+        await this.savePreferences(preferences);
+      });
+    }
   }
 }

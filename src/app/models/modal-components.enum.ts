@@ -7,7 +7,8 @@ export enum ModalComponents {
   BookmarkAdd = 'BookmarkAdd',
   Osm = 'Osm',
   Location = 'Location',
-  Conf = 'Conf'
+  Conf = 'Conf',
+  MaxSpeed = 'MaxSpeed'
 }
 
 
@@ -16,6 +17,7 @@ import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 // Importa los componentes modales
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
+import { MaxSpeedDetailsModalComponent } from '../modals/max-speed-details-modal/max-speed-details-modal.component';
 import { OsmModalComponent } from '../modals/osm-modal/osm-modal.component';
 import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
@@ -32,6 +34,7 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.BookmarkAdd]: BookmarkModalComponent,
   [ModalComponents.Osm]: OsmModalComponent,
   [ModalComponents.Location]: LocationModalComponent,
-  [ModalComponents.Conf]: ConfModalComponent
+  [ModalComponents.Conf]: ConfModalComponent,
+  [ModalComponents.MaxSpeed]: MaxSpeedDetailsModalComponent
 
 };

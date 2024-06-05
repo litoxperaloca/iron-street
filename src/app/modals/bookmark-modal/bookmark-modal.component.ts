@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { Place } from '@aws-amplify/geo';
 import { ModalController, NavParams } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { HomePage } from 'src/app/pages/home/home.page';
 import { MapService } from 'src/app/services/map.service';
 import { BookmarksService } from '../../services/bookmarks.service';
@@ -26,7 +27,8 @@ export class BookmarkModalComponent {
     private navParams: NavParams,
     private modalService: ModalService,
     private bookmarksService: BookmarksService,
-    private mapService: MapService
+    private mapService: MapService,
+    private translate: TranslateService
   ) {
     const osmFeatureid: number = ((window as any).homePage as HomePage).osmClickedId;
     this.osmFeatureIdSelected = osmFeatureid;

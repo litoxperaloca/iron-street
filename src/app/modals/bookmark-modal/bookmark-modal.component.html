@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title class="ion-padding">Guardar punto como:</ion-title>
+    <ion-title class="ion-padding">{{"Guardar punto como" | translate }}:</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -17,16 +17,16 @@
     <div>
       <ion-list>
         <ion-list-header>
-          <ion-label>Selecciona un tipo de marcador</ion-label>
+          <ion-label>{{"Selecciona un tipo de marcador" | translate }}</ion-label>
         </ion-list-header>
         <ion-item (click)="addHomePlace()">
-          <ion-label>Casa</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="success" name="home-outline"></ion-icon>
+          <ion-label>{{"Casa" | translate }}</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="success" name="home-outline"></ion-icon>
         </ion-item>
         <ion-item (click)="addWorkPlace()">
-          <ion-label>Trabajo</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="secondary" name="business-outline"></ion-icon>
+          <ion-label>{{"Trabajo" | translate }}</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="secondary" name="business-outline"></ion-icon>
         </ion-item>
         <ion-item (click)="addFavoritePlace()">
-          <ion-label>En la lista de favoritos</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="warning" name="star-outline"></ion-icon>
+          <ion-label>{{"En la lista de favoritos" | translate }}</ion-label><ion-icon class="bookmarkSelectIcon" size="small" color="warning" name="star-outline"></ion-icon>
         </ion-item>
       </ion-list>
     </div>

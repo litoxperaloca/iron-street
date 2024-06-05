@@ -208,11 +208,11 @@ export class SearchModalComponent {
     }
   }
 
-  setDestinationFromPlace(destination: Place) {
+  async setDestinationFromPlace(destination: Place) {
     if (this.extraParam) {
-      if (destination) this.mapService.addWaypoint(destination);
+      if (destination) await this.mapService.addWaypoint(destination);
     } else {
-      if (destination) this.mapService.setDestination(destination);
+      if (destination) await this.mapService.setDestination(destination);
 
     }
     this.dismiss();

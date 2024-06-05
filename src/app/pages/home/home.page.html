@@ -2,7 +2,6 @@
   <div id="container">
     <div id="mapbox"></div>
 
-    <div id="poste"></div>
     <div id="tripDetailsContainer">
       <h4 id="tripDestination">{{tripDestination}}</h4>
       <div class="flexEqualRow">
@@ -38,28 +37,8 @@
       <div id="stepIconNext" class="directions-icon-{{nextManeuvreIcon}}"></div>
     </div>
 
-    <div id="newTripContainer">
-      <div class="flexMiddleRow">
-        <ion-icon color="danger" class="smallButtonIcon" (click)="stopTrip()" name="stop-circle-outline"></ion-icon>
-        <h4 id="tripDestination">{{tripDestination}}</h4>
-        <div id="estimatedHorizontal">
-          <div id="tripDuration">
-            <ion-icon class="noteIcon" color="primary" name="time-outline"></ion-icon>
-            <div class="noteText" color="primary">{{eta}} mins.</div>
-          </div>
-          <div id="tripDistance">
-            <ion-icon class="noteIcon" color="primary" name="analytics-outline"></ion-icon>
-            <div class="noteText" color="primary">{{dta}} kms.</div>
-          </div>
-        </div>
-        <ion-icon color="tertiary" class="smallbButtonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline">
-        </ion-icon>
-
-      </div>
-    </div>
-
     <div id="tripProgress" [ngClass]="{'simulating':simulation===true}">
-      <div *ngIf="simulation" class="flexMiddleRow_MotionFnt">
+      <div *ngIf="simulation" class="flexMiddleRow motionFont">
         <p>{{ 'simulando_viaje...' | translate }}</p>
       </div>
       <div class="flexMiddleRow">
@@ -78,13 +57,15 @@
 
 
     <ion-card class="card_left" id="card_left">
-      <ion-card-header class="max">{{currentMaxSpeed}} <span class="smallSize">km/h</span>
+      <ion-card-header class="max" (click)="openMaxSpeedModal()">
+        {{currentMaxSpeed}}
       </ion-card-header>
-      <ion-card-header class="current">{{currentSpeed}} <span class="smallSize">km/h</span>
+      <ion-card-header class="current">
+        {{currentSpeed}}
       </ion-card-header>
     </ion-card>
 
-    <div id="geoLocating">
+    <div id="geolocating">
       <h4>{{ 'buscando_ubicación...' | translate }}</h4>
       <ion-spinner name="crescent"></ion-spinner>
     </div>

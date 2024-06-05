@@ -1,28 +1,5 @@
 @import 'src/theme/variables.scss';
 
-
-/* mapsettings-modal.component.scss */
-:root {
-  /* Light Theme Colors */
-  --modal-primary-color: #4a90e2;
-  --modal-secondary-color: #f8f8f8;
-  --modal-accent-color: #ff9500;
-  --modal-text-color: #333;
-  --modal-content-bg-color: #ffffff;
-  --modal-border-radius: 8px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark Theme Colors */
-    --modal-primary-color: #5a5c6c;
-    --modal-secondary-color: #2a2b2e;
-    --modal-accent-color: #c2a22a;
-    --modal-text-color: #c7c7c7;
-    --modal-content-bg-color: #1c1d20;
-  }
-}
-
 .map-settings-modal {
   ion-header {
     --background: var(--modal-primary-color);
@@ -60,14 +37,14 @@
 
     &:hover {
       transform: translateY(-5px);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px var(--iron-grid-img-box-shadow-color);
     }
 
     ion-img {
       width: 100%;
       max-width: 90px;
       border-radius: var(--modal-border-radius);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px var(--iron-grid-img-box-shadow-color);
     }
 
     ion-label {
@@ -95,7 +72,7 @@
 
 ion-img{
      margin-bottom: 10px;
-    box-shadow: 0 0 4px 2px #1db5d6d4;
+    box-shadow: 0 0 4px 2px var(--iron-grid-img-box-shadow-color);
     border-radius: 7px;
 }
 

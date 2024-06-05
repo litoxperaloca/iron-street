@@ -203,7 +203,7 @@ margin-bottom: 15px !important;
 /* Header Max & Current Styles */
 ion-card-header.max, ion-card-header.current {
     font-size: 20pt;
-    padding-top: 8px;
+    padding-top: 16px;
     padding-left: 5px;
     border-radius: 50%;
     width: 72px;
@@ -215,11 +215,9 @@ ion-card-header.max, ion-card-header.current {
 ion-card-header.max {
     margin: 0;
     float: right;
-    background: #fff !important;
-    border: 3px solid #6c1313 !important;
-    color: #6c1313;
-    box-shadow: 2px 2px 7px 1px #000000;
-
+    background: url(/assets/img/icons/maxspeed.png) !important;
+    color: #232834;
+    background-size: 100% 100% !important;
 }
 
 span.smallSize{
@@ -229,12 +227,11 @@ span.smallSize{
 
 
 ion-card-header.current {
-background: #000 !important;
-    border: 3px solid #fff !important;
-    color: #fff;
+    background: url(/assets/img/icons/yourspeed.png) !important;
+    color: #232834;
+    background-size: 100% 100% !important;
     float: right;
-    margin-top: 5px;
-box-shadow: 2px 2px 7px 1px #000000;
+    margin-top: 4px;
 }
 
 .card_right, .card_left {
@@ -292,7 +289,7 @@ right: 5px;
 #tripDetailsContainer {
     position: absolute;
     bottom: 0px;
-    background: #090b1a;
+    background: var(--iron-trip-containers-background);
     z-index: 5;
     padding: 5px;
     left: 0px;
@@ -395,7 +392,7 @@ font-size: 12pt;
     display: none;
     position: absolute;
     bottom: 0px;
-    background: #090b1a;
+    background: var(--iron-trip-containers-background);
     z-index: 5;
     left: 0px;
     right: 0px;
@@ -465,7 +462,7 @@ ion-progress-bar .progress{
 }
 
 ion-progress-bar .progress-buffer-bar {
-    background: #F44336;
+    background: var(--ion-color-danger);
     z-index: 1;
 }
 

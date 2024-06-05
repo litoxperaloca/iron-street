@@ -1,0 +1,53 @@
+<ion-header class="search-modal">
+  <ion-toolbar color="black">
+     <ion-title class="ion-padding" *ngIf="currentStreet && currentStreet.properties">
+      <span class="success" *ngIf="currentStreet.properties['name']">
+        {{currentStreet.properties["name"]}}
+      </span>
+      <br/>
+      <span class="danger" *ngIf="currentStreet.properties['maxspeed']">
+        MAX: {{currentStreet.properties["maxspeed"]}} Km/h.
+      </span>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+
+
+  <div *ngIf="currentStreet && currentStreet.properties">
+
+      <ion-list lines="full" class="settings-list">
+              <ion-item>
+                <div id="modalBarButton">
+                  <ion-icon (click)="dismiss()" name="close-circle-outline" size="big" color="danger">
+                  </ion-icon>
+                  <ion-icon (click)="toggleInfo()" name="information-outline" size="big" color="tertiary">
+                  </ion-icon>
+                  <ion-icon *ngIf="!isShowingSpeedWayOnMap" (click)="showMaxSpeedStreetWayOnMap()" name="eye-outline" size="big"
+                    color="success">
+                  </ion-icon>
+                  <ion-icon *ngIf="isShowingSpeedWayOnMap" (click)="hideMaxSpeedStreetWayOnMap()" name="eye-off-outline" size="big"
+                    color="success">
+                  </ion-icon>
+                </div>
+              </ion-item>
+        <ion-item *ngIf="infoMgr && currentStreet.properties['highway']">
+          <ion-label color="secondary">{{ "HighWayTipe" | translate }}:</ion-label>
+          <span class="seventy">{{currentStreet.properties["highway"]}}</span>
+        </ion-item>
+        <ion-item *ngIf="infoMgr && currentStreet.properties['sidewalk']">
+          <ion-label color="secondary">{{ "sidewalk" | translate }}</ion-label>
+          <span class="seventy">{{currentStreet.properties["sidewalk"]}}</span>
+        </ion-item>
+        <ion-item *ngIf="infoMgr && currentStreet.properties['source:maxspeed']">
+          <ion-label color="secondary">{{ "source:maxspeed" | translate }}:</ion-label>
+          <span class="seventy link" (click)="openOutsideLink(currentStreet.properties['source:maxspeed'])">{{currentStreet.properties["source:maxspeed"]}}</span>
+        </ion-item>
+
+      </ion-list>
+
+
+  </div>
+
+</ion-content>

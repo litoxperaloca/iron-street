@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { HomePage } from 'src/app/pages/home/home.page';
 import { ModalService } from 'src/app/services/modal.service';
 import { PreferencesService } from 'src/app/services/preferences.service';
@@ -43,7 +44,8 @@ export class ConfModalComponent {
     private navParams: NavParams,
     private modalService: ModalService,
     private preferencesService: PreferencesService,
-    private voiceService: VoiceService) {
+    private voiceService: VoiceService,
+    private translate: TranslateService) {
     if (this.navParams.get('isFinalDestination')) {
       this.extraParam = this.navParams.get('extraParam'); // Accessing the passed parameter
 

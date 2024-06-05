@@ -58,6 +58,8 @@ export class MapService {
   trackingUser: boolean = true;
   mapEventIsFromTracking: boolean = false;
   popUpMainRoute: mapboxgl.Popup | null = null;
+  popUpMaxSpeedWay: mapboxgl.Popup | null = null;
+
   popUpAltRoute: mapboxgl.Popup | null = null;
   popUpDestination: mapboxgl.Popup | null = null;
   popups: mapboxgl.Popup[] = [];
@@ -69,7 +71,8 @@ export class MapService {
   mapPressedMarkerInstance: mapboxgl.Marker | null = null;
   popUpMapPressed: mapboxgl.Popup | null = null;
   firstTouchDone: boolean = false;
-
+  showingMaxSpeedWay: boolean = false;
+  showingMaxSpeedWayId: string | null = null;
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
@@ -997,6 +1000,7 @@ export class MapService {
       this.introTimeWaited = false;
       this.trackingUser = true;
       this.mapEventIsFromTracking = false;
+      this.hideUserCurrentStreetMaxSpeedWay();
       this.sourcesAndLayers = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
     }
   }
@@ -1176,6 +1180,123 @@ export class MapService {
     //this.addSymbolTileVectorLayer(map, "ironsemaphore.png", "custom-semaphore-marker", "semaphoreDataSource", "litoxperaloca.3deav1ng", 0.40, "semaphoreDataLayer", "semaphores_uruguay-6l99vu", 14, 22);
     this.addSymbolTileVectorLayer(map, "ironstop.png", "custom-stop-marker", "stopDataSource", "litoxperaloca.dlnykr8f", 0.50, "stopDataLayer", "stop_uruguay-6tysu4", 14, 22);
     this.addSymbolTileVectorLayer(map, "ironcamera.png", "custom-speed-camera-marker", "speedCamerasDataSource", "litoxperaloca.c1pj6s0f", 0.60, "speedCamerasDataLayer", "speed_cameras_uruguay-9ef5og", 12, 22);
+  }
+
+  setUserCurrentStreet(currentStreet: mapboxgl.MapboxGeoJSONFeature | null) {
+    this.userCurrentStreet = currentStreet;
+    if (this.showingMaxSpeedWay) {
+      if (this.userCurrentStreet && this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
+        if (this.showingMaxSpeedWay && this.showingMaxSpeedWayId != this.userCurrentStreet.properties['@id']) {
+          this.mapbox.setFilter('maxspeedRenderLayer', ['==', ['get', '@id'], this.userCurrentStreet.properties['@id']]);
+          this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
+          if (this.userCurrentStreet.geometry.type === "LineString") {
+            if (this.popUpMaxSpeedWay) {
+              this.popUpMaxSpeedWay.remove();
+              this.popUpMaxSpeedWay = null;
+            }
+            const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry.coordinates);
+            this.popUpMaxSpeedWay = maxSpeedPopUp;
+            this.popUpMaxSpeedWay.addTo(this.mapbox);
+          }
+        }
+
+      }
+    }
+  }
+
+  async hideUserCurrentStreetMaxSpeedWay() {
+    if (this.mapbox.getLayer("maxspeedRenderLayer")) {
+      this.mapbox.removeLayer("maxspeedRenderLayer");
+      this.showingMaxSpeedWayId = null;
+      this.showingMaxSpeedWay = false;
+    }
+    if (this.popUpMaxSpeedWay) {
+      this.popUpMaxSpeedWay.remove();
+      this.popUpMaxSpeedWay = null;
+    }
+  }
+
+  createMaxSpeedWayPopUp(maxSpeed: number, coordinates: number[][]): mapboxgl.Popup {
+    let divider = 2;
+
+    // Convierte la ruta en un objeto GeoJSON
+    const line = turf.lineString(coordinates);
+    // Calcula la longitud total de la línea
+    const lineLength = turf.length(line, { units: 'kilometers' });
+
+    // Encuentra el punto medio
+    const midPoint = turf.along(line, lineLength / divider, { units: 'kilometers' });
+    const popUp = new mapboxgl.Popup({
+      closeOnClick: false,
+      anchor: "top" as mapboxgl.Anchor, // Cast anchor to Anchor type,
+      offset: 10
+      // Cast anchor to Anchor type
+    })
+      .setLngLat(midPoint.geometry.coordinates as [number, number])
+      .setHTML('<div><p> ' + 'MAX: ' + maxSpeed + ' Km/h.</p</div>');
+
+    let className: string = "red";
+    this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#E91E63');
+
+    if (maxSpeed >= 60) {
+      className = "yellow";
+      this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#ffc107');
+    }
+    if (maxSpeed >= 75) {
+      className = "green";
+      this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#079421');
+    }
+    popUp.addClassName("maxSpeedWayPopUp");
+
+    popUp.addClassName(className + "PopUp");
+    // Crea un popup y lo añade al mapa en el punto medio
+    return popUp;
+  }
+
+  async showUserCurrentStreetMaxSpeedWay() {
+    if (!this.mapbox.getLayer("maxspeedRenderLayer")) {
+      this.mapbox.addLayer(
+        {
+          "id": "maxspeedRenderLayer",
+          "minzoom": 7,
+          "maxzoom": 22,
+          "type": "line",
+          "paint": {
+            "line-color": "red",
+            "line-width": 10,
+            "line-opacity": 1,
+            "line-emissive-strength": 2,
+          },
+          "layout": {
+            "visibility": "visible",
+          },
+          "source": "maxspeedDataSource",
+          "source-layer": "export_1-12rpm8"
+        });
+    }
+    if (this.userCurrentStreet) {
+      this.mapbox.setLayoutProperty("maxspeedRenderLayer", "visibility", "visible");
+
+      if (this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
+        this.mapbox.setFilter('maxspeedRenderLayer', ['==', ['get', '@id'], this.userCurrentStreet.properties['@id']]);
+        this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
+        this.showingMaxSpeedWay = true;
+        if (this.userCurrentStreet.geometry.type === "LineString") {
+          const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry.coordinates);
+          this.popUpMaxSpeedWay = maxSpeedPopUp;
+          this.popUpMaxSpeedWay.addTo(this.mapbox);
+        }
+      } else {
+        this.showingMaxSpeedWayId = null;
+        this.showingMaxSpeedWay = false;
+        if (this.popUpMaxSpeedWay) {
+          this.popUpMaxSpeedWay.remove();
+          this.popUpMaxSpeedWay = null;
+        }
+
+      }
+
+    }
   }
 
   addLineTileVectorLayer(

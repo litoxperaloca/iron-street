@@ -3,7 +3,14 @@
       <ion-content>
         <ion-list id="inbox-list">
           <div id="logoIronStreet"></div>
-          <h4 class="appMenu">Usando la app:</h4>
+            <h4 class="shortcutsMenu">{{"Atajos"|translate}}:</h4>
+            <div id="menuShortcuts">
+              <ion-icon name="contrast-sharp" size="large" (click)="toggleTheme()"></ion-icon>
+              <img loading="eager" (click)="changeLanguage('es')" src="/assets/img/flags/es.png" width="32" height="32" alt="es" />
+              <img loading="eager" (click)="changeLanguage('en')" src="/assets/img/flags/en.png" width="32" height="32" alt="en"/>
+              <img loading="eager" (click)="changeLanguage('pt')" src="/assets/img/flags/pt.png" width="32" height="32" alt="pt"/>
+           </div>
+          <h4 class="appMenu">{{"Menú principal"|translate}}:</h4>
           <ion-menu-toggle auto-hide="true" *ngFor="let p of appPages; let i = index">
             <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
               <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
@@ -11,7 +18,7 @@
             </ion-item>
           </ion-menu-toggle>
 
-          <h4 class="userMenu">Cuenta de usuario:</h4>
+          <h4 class="userMenu">{{"Cuenta de usuario"|translate}}:</h4>
           <ion-menu-toggle auto-hide="true" *ngFor="let p of userPages; let i = index">
             <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
             <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
@@ -19,7 +26,7 @@
           </ion-item>
         </ion-menu-toggle>
 
-        <h4 class="helpMenu">Ayuda y asistencia:</h4>
+        <h4 class="helpMenu">{{"Ayuda y asistencia"|translate}}:</h4>
         <ion-menu-toggle auto-hide="true" *ngFor="let p of helpPages; let i = index">
           <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
             <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
@@ -27,7 +34,7 @@
           </ion-item>
         </ion-menu-toggle>
 
-        <h4 class="infoMenu">Información:</h4>
+        <h4 class="infoMenu">{{"Información"|translate}}:</h4>
         <ion-menu-toggle auto-hide="true" *ngFor="let p of infoPages; let i = index">
           <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
             <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
@@ -35,7 +42,7 @@
           </ion-item>
         </ion-menu-toggle>
 
-        <h4 class="legalMenu">Sobre Iron Street:</h4>
+        <h4 class="legalMenu">{{"Sobre Iron Street"|translate}}:</h4>
         <ion-menu-toggle auto-hide="true" *ngFor="let p of legalPages; let i = index">
           <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
             <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>

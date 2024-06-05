@@ -101,7 +101,8 @@ export class SpeedService {
           }
         });
 
-        ((window as any).mapService as MapService).userCurrentStreet = closestFeature;
+        ((window as any).mapService as MapService).setUserCurrentStreet(closestFeature);
+
         const cF: MapboxGeoJSONFeature | null = ((window as any).mapService as MapService).userCurrentStreet;
         if (cF != null && cF.geometry && cF.geometry.type == 'LineString' && cF.geometry.coordinates && cF.geometry.coordinates.length > 0) {
           const nearestPoint: NearestPointOnLine = turf.nearestPointOnLine(turf.lineString(cF.geometry.coordinates), userPoint);

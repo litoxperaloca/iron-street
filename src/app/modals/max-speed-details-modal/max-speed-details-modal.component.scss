@@ -1,12 +1,38 @@
 // Importing variables for theme consistency
 @import 'src/theme/variables.scss';
 
-.search-modal {
-  ion-header {
+ion-icon{
+    font-size: 25px !important;
+    --ion-stroke-width: 50px;
+    width: 25px;
+    height: 25px;
+    margin: 5px auto;
+    position: relative;
+    display: flex;
+}
+
+#modalBarButton{
+    ion-icon{
+        font-size: 20px !important;
+        --ion-stroke-width: 30px;
+        width: 30px;
+        height: 30px;
+        margin: 5px auto;
+        position: relative;
+        display: flex;
+    }
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
+    top: 0;
+}
+
+ion-header.search-modal {
     --background: var(--background-color);
     color: var(--text-color);
     border-bottom: 1px solid var(--border-color);
-  }
+    text-align: center;
 
   ion-toolbar {
     --background: var(--background-color);
@@ -14,7 +40,25 @@
   }
 
   ion-title {
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 12pt;
+    text-align: center;
+
+    span.success{
+      color: var(--ion-color-success);
+    }
+
+    span.danger{
+      color: var(--ion-color-danger);
+    }
+
+    span.seventy{
+      width: 70%;
+    }
+
+    span.link{
+      overflow: auto;
+    }
   }
 
   ion-content {
@@ -85,7 +129,7 @@
   }
 }
 ion-header ion-toolbar{
-    padding: 20px !important;
+    padding: 10px !important;
 }
 
 ion-segment-button {
@@ -121,10 +165,10 @@ searchbar-input-container{
 
 ion-item.suggestion-item{
       width: 100%;
-    color:  var(--color);
+    color: white;
 }
 ion-icon{
-    color: var(--color);
+    color: white;
 }
 
 ion-icon.notDefaultColor{
@@ -132,20 +176,18 @@ ion-icon.notDefaultColor{
 }
 
 .item.sc-ion-label-md-h, .item .sc-ion-label-md-h {
-    --color: initial;
     display: block;
-    color: var(--color);
-    font-family: var(--ion-font-family, inherit);
-    font-size: inherit;
+    font-size: 12pt;
     text-overflow: ellipsis;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-}
+    font-weight: 600;
+  }
 
-.item ion-label h3 {
-
-    font-size: 16pt !important;
-    font-weight: normal !important;
+.ion-item span {
+margin-left: 15px;
+    font-size: 12pt !important;
+    font-weight: 600 !important;
     line-height: normal !important;
 }
 
@@ -201,4 +243,18 @@ ion-icon.notDefaultColor{
   margin: 0;
 }
 
+
+
+.centeredSpinner {
+      position: relative;
+    top: 0;
+    z-index: 40;
+    width: 80px;
+    /* left: calc(50% - 30px); */
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    height: 80px;
+    color: var(--ion-color-secondary);
+  }
 

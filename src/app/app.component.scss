@@ -109,34 +109,40 @@ ion-menu.ios {
   }
 }
 
-h4.appMenu{
-      font-weight: 600;
+h4.shortcutsMenu{
+    font-weight: 600;
     font-size: 12pt;
-    color: #009688;
+    color: var(--ion-color-secondary);;
+}
+
+h4.appMenu{
+    font-weight: 600;
+    font-size: 14pt;
+    color: var(--ion-color-success);;
 }
 
 h4.userMenu{
       font-weight: 600;
-    font-size: 12pt;
-    color: #009688;
+    font-size: 14pt;
+    color: var(--ion-color-success);;
 }
 
 h4.helpMenu{
       font-weight: 600;
-    font-size: 12pt;
-    color: #009688;
+    font-size: 14pt;
+    color: var(--ion-color-success);;
 }
 
 h4.infoMenu{
       font-weight: 600;
-    font-size: 12pt;
-    color: #009688;
+    font-size: 14pt;
+    color: var(--ion-color-success);;
 }
 
 h4.legalMenu{
       font-weight: 600;
-    font-size: 12pt;
-    color: #009688;
+    font-size: 14pt;
+    color: var(--ion-color-success);
 }
 
 #logoIronStreet{
@@ -150,4 +156,10 @@ h4.legalMenu{
     display: flex;
     box-shadow: 0 0 10px 3px #fff;
     border-radius: 50%;
+}
+
+#menuShortcuts{
+  display: flex;
+  justify-content: space-evenly;
+  margin-bottom: 25px;
 }

@@ -603,6 +603,12 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   }
 
+  openMaxSpeedModal(): void {
+
+    this.openModal("MaxSpeed");
+
+  }
+
   setDestinationFromCoords() {
     this.mapService.closeCustomPopup()
     this.mapService.setDestinationFromCoords();

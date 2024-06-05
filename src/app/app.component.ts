@@ -71,6 +71,14 @@ export class AppComponent {
     });
   }
 
+  async toggleTheme() {
+    await this.preferencesService.toggleTheme();
+  }
+
+  async changeLanguage(language: string) {
+    await this.preferencesService.changeLanguageAndSavePref(language);
+  }
+
   initializePages() {
     this.translate.get([
       'MAP_TRIPS_ROUTES',

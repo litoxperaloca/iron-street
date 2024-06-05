@@ -2,6 +2,7 @@ import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
+import { MaxSpeedDetailsModalComponent } from '../modals/max-speed-details-modal/max-speed-details-modal.component';
 import { OsmModalComponent } from '../modals/osm-modal/osm-modal.component';
 import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
@@ -79,6 +80,14 @@ export const ComponentRef = {
     cssClass: 'bottom-sheet-modal',
     breakpoints: [0, 0.55],
     initialBreakpoint: 0.55,
+    backdropBreakpoint: 0.75,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.MaxSpeed]: {
+    component: MaxSpeedDetailsModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.20, 0.45],
+    initialBreakpoint: 0.20,
     backdropBreakpoint: 0.75,
     props: {} // Añade las propiedades que necesites
   },

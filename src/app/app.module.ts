@@ -30,6 +30,7 @@ import { BookmarkModalComponent } from './modals/bookmark-modal/bookmark-modal.c
 import { ConfModalComponent } from './modals/conf-modal/conf-modal.component';
 import { LocationModalComponent } from './modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
+import { MaxSpeedDetailsModalComponent } from './modals/max-speed-details-modal/max-speed-details-modal.component';
 import { OsmModalComponent } from './modals/osm-modal/osm-modal.component';
 import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from './modals/search-reverse-modal/search-reverse-modal.component';
@@ -69,7 +70,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       BookmarkModalComponent,
       OsmModalComponent,
       LocationModalComponent,
-      ConfModalComponent
+      ConfModalComponent,
+      MaxSpeedDetailsModalComponent
     ],
   imports: [
     BrowserModule,
