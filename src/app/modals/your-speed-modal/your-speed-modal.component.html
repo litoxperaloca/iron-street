@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">{{ "VELOCIDAD" | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+  <div id="yourSpeed">
+          <div class="needle" [style.transform]="'rotate(' + needleRotation() + 'deg)'"></div>
+
+  </div>
+  <ion-label class="currentSpeedText">{{currentSpeed}} Km/h</ion-label>
+
+</ion-content>

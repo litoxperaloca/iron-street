@@ -8,12 +8,15 @@ export enum ModalComponents {
   Osm = 'Osm',
   Location = 'Location',
   Conf = 'Conf',
-  MaxSpeed = 'MaxSpeed'
+  MaxSpeed = 'MaxSpeed',
+  YourSpeed = 'YourSpeed',
+  Debug = 'Debug'
 }
 
 
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
+import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 // Importa los componentes modales
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
@@ -23,6 +26,7 @@ import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-m
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
 import { SettingsModalComponent } from '../modals/settings/settings-modal.component';
+import { YourSpeedModalComponent } from '../modals/your-speed-modal/your-speed-modal.component';
 // Mapeo de tipos de modal a componentes
 export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.Search]: SearchModalComponent,
@@ -35,6 +39,10 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.Osm]: OsmModalComponent,
   [ModalComponents.Location]: LocationModalComponent,
   [ModalComponents.Conf]: ConfModalComponent,
-  [ModalComponents.MaxSpeed]: MaxSpeedDetailsModalComponent
+  [ModalComponents.MaxSpeed]: MaxSpeedDetailsModalComponent,
+  [ModalComponents.YourSpeed]: YourSpeedModalComponent,
+  [ModalComponents.Debug]: DebugModalComponent
+
+
 
 };

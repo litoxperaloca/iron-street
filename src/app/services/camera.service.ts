@@ -202,7 +202,7 @@ export class CameraService {
         center: position,
         zoom: 17,
         animate: true,
-        duration: 1000,
+        duration: 400,
         //minZoom: 19,
         //speed: 1.5,
         pitch: 55,
@@ -231,19 +231,20 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.easeTo({
-        animate: true,
-        duration: 500,
-        center: position,
-        //zoom: 16,
-        //speed: 1.5,
-        //pitch: 0,
-        bearing: mapBearing,
-        essential: true,
-        easing(t) {
-          return t;
+      map.flyTo(
+        {
+          animate: true,
+          duration: 400,
+          //minZoom: 19,
+          //speed: 1.5,
+          essential: true,
+          //minZoom: 19,
+          center: position,
+          bearing: mapBearing
         }
-      });
+      );
+      /*self.locked = false;
+      self.isFlying = false;*/
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;

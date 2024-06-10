@@ -29,14 +29,17 @@ export class MaxSpeedDetailsModalComponent implements OnInit {
     if (this.infoMgr) {
       this.modalService.setBreakPoint(0.45);
     } else {
-      this.modalService.setBreakPoint(0.20);
+      this.modalService.setBreakPoint(0.17);
     }
   }
+
 
   ngOnInit() {
     if (this.mapService.userCurrentStreet) {
       this.currentStreet = this.mapService.userCurrentStreet;
-      console.log(this.currentStreet);
+      this.mapService.currentStreetChanged.subscribe(street => {
+        this.currentStreet = street;
+      })
       if (this.mapService.showingMaxSpeedWay) {
         this.isShowingSpeedWayOnMap = true;
       } else {

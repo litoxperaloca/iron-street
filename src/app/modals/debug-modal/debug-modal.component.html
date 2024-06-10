@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">DEBUG</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+  <ion-list>
+    <ion-item>
+      Environment.mocking: {{getEnvironmentMocking()}}
+    </ion-item>
+    <ion-item>
+      GeolocationService.mocking: {{getGeolocationMocking()}}
+    </ion-item>
+    <ion-item>
+      HomePage is simulating: {{getSimulating()}}
+    </ion-item>
+    <ion-item>
+      GEO LAT: {{getLatitude()}}
+    </ion-item>
+    <ion-item>
+      GEO LON: {{getLongitude()}}
+    </ion-item>
+    <ion-item>
+      SNAPED LAT: {{getSnapedLatitude()}}
+    </ion-item>
+    <ion-item>
+      SNAPED LON: {{getSnapedLongitude()}}
+    </ion-item>
+    <ion-item>
+      SNAPED HEADING: {{getSnapedHeading()}}
+    </ion-item>
+    <ion-item *ngIf="currentStreet && currentStreet.properties && currentStreet.properties['name']">
+      Current Street: {{currentStreet.properties['name']}}
+    </ion-item>
+    <ion-item *ngIf="currentStreet && currentStreet.properties && currentStreet.properties['maxspeed']">
+      Max Speed: {{currentStreet.properties['maxspeed']}}
+    </ion-item>
+      <ion-item *ngIf="currentStreet && currentStreet.properties && currentStreet.properties['name']">
+        Current Speed: {{getCurrentSpeed()}}
+      </ion-item>
+    <ion-item>
+      Tracking user: {{getTrackingUser()}}
+    </ion-item>
+    <ion-item>
+      Map event is from Tracking: {{getMapEventTrackingUser()}}
+    </ion-item>
+    <ion-item>
+      Camera locked: {{getCameraLocked()}}
+    </ion-item>
+    <ion-item>
+      Camera flying: {{getCameraFlying()}}
+    </ion-item>
+  </ion-list>
+</ion-content>

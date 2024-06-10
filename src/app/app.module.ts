@@ -28,12 +28,14 @@ import { AppComponent } from './app.component';
 import { GeoLocationMockService } from './mocks/geo-location-mock.service';
 import { BookmarkModalComponent } from './modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from './modals/conf-modal/conf-modal.component';
+import { DebugModalComponent } from './modals/debug-modal/debug-modal.component';
 import { LocationModalComponent } from './modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from './modals/max-speed-details-modal/max-speed-details-modal.component';
 import { OsmModalComponent } from './modals/osm-modal/osm-modal.component';
 import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from './modals/search-reverse-modal/search-reverse-modal.component';
+import { YourSpeedModalComponent } from './modals/your-speed-modal/your-speed-modal.component';
 import { AlertService } from './services/alert.service';
 import { AmazonLocationServiceService } from './services/amazon-location-service.service';
 import { BookmarksService } from './services/bookmarks.service';
@@ -71,7 +73,9 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       OsmModalComponent,
       LocationModalComponent,
       ConfModalComponent,
-      MaxSpeedDetailsModalComponent
+      MaxSpeedDetailsModalComponent,
+      YourSpeedModalComponent,
+      DebugModalComponent
     ],
   imports: [
     BrowserModule,

@@ -17,7 +17,7 @@
     </ion-item-divider>
     <ion-item>
       <ion-label>{{ "IDIOMA" | translate }}</ion-label>
-      <ion-select [(ngModel)]="preferences.language" interface="action-sheet" (ionChange)="changeLanguage()">
+      <ion-select [(ngModel)]="preferences.language" interface="popover" (ionChange)="changeLanguage()">
         <ion-select-option value="es">{{ "ESPAÑOL" | translate }}</ion-select-option>
         <ion-select-option value="en">{{ "ENGLISH" | translate }}</ion-select-option>
         <ion-select-option value="pt">{{ "PORTUGUES" | translate }}</ion-select-option>
@@ -56,7 +56,7 @@
     </ion-item>
     <ion-item>
       <ion-label>{{ "VOZ" | translate }}</ion-label>
-      <ion-select [(ngModel)]="preferences.voice" interface="action-sheet" (ionChange)="selectVoice(preferences.voice)">
+      <ion-select [(ngModel)]="preferences.voice" interface="popover" (ionChange)="selectVoice(preferences.voice)">
         <ion-select-option *ngFor="let voice of availableVoices" [value]="voice">{{voice}}</ion-select-option>
       </ion-select>
     </ion-item>

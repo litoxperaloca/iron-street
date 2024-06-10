@@ -1,5 +1,6 @@
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
+import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from '../modals/max-speed-details-modal/max-speed-details-modal.component';
@@ -8,6 +9,7 @@ import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-m
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
 import { SettingsModalComponent } from '../modals/settings/settings-modal.component'; // Importa el resto de tus componentes
+import { YourSpeedModalComponent } from '../modals/your-speed-modal/your-speed-modal.component';
 import { ModalComponents } from './modal-components.enum'; // Import the ModalComponents enum
 
 export const ComponentRef = {
@@ -86,9 +88,25 @@ export const ComponentRef = {
   [ModalComponents.MaxSpeed]: {
     component: MaxSpeedDetailsModalComponent,
     cssClass: 'bottom-sheet-modal',
-    breakpoints: [0, 0.20, 0.45],
-    initialBreakpoint: 0.20,
+    breakpoints: [0, 0.17, 0.45],
+    initialBreakpoint: 0.17,
     backdropBreakpoint: 0.75,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.YourSpeed]: {
+    component: YourSpeedModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.5],
+    initialBreakpoint: 0.5,
+    backdropBreakpoint: 0.75,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.Debug]: {
+    component: DebugModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.5, 0.75, 1],
+    initialBreakpoint: 0.75,
+    backdropBreakpoint: 1,
     props: {} // Añade las propiedades que necesites
   },
 };

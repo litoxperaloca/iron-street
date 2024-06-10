@@ -771,3 +771,7 @@ position: absolute;
 .closeModalBtn{
   color: var(--color) !important;
 }
+
+a.mapboxgl-ctrl-logo,.mapboxgl-ctrl-attrib-button {
+  pointer-events: none;
+}

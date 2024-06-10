@@ -68,7 +68,7 @@ export class SpeedService {
 
 
   userStreet(position: Position) {
-    const self = this;
+    //const self = this;
     const map = ((window as any).mapService as MapService).getMap();
 
     if (!position || !map.getLayer("maxspeedDataLayer")) {
@@ -79,18 +79,20 @@ export class SpeedService {
       // Convert the user's coordinates to a point
       const coordinates = [longitude, latitude];
       const userPoint = turf.point(coordinates);
-      const bbox = ((window as any).geoLocationService as GeoLocationService).createUserBoundingBox(position);
+      //const bbox = ((window as any).geoLocationService as GeoLocationService).createUserBoundingBox(position);
       // Query the rendered line features at the user's location
-      const features = map.queryRenderedFeatures(undefined, { layers: ["maxspeedDataLayer"] })
+      const features = map.querySourceFeatures('maxspeedDataSource', {
+        sourceLayer: 'export_1-12rpm8'
+      });
       if (features.length > 0) {
         var closestFeature: MapboxGeoJSONFeature | null = null;
         var minDistance = Number.MAX_VALUE;
         // Iterate through all line features to find the closest one
         features.forEach(feature => {
-          if (feature.layer.id === 'maxspeedDataLayer' && feature.geometry.type === 'LineString') {
+          if (feature.geometry.type === 'LineString') {
             //console.log("Feature:", feature);
             const line = turf.lineString(feature.geometry.coordinates);
-            const distance = turf.pointToLineDistance(userPoint, line);
+            //const distance = turf.pointToLineDistance(userPoint, line);
             const pointInLine = turf.nearestPointOnLine(line, userPoint);
             const distancePoints: number = turf.distance(pointInLine, userPoint, { units: 'kilometers' });
 

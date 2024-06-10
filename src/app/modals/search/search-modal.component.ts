@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Place, SearchForSuggestionsResult, SearchForSuggestionsResults } from '@aws-amplify/geo';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { InfiniteScrollCustomEvent, ModalController, NavParams } from '@ionic/angular';
+import { Feature } from 'geojson';
 import { environment } from 'src/environments/environment';
 import { AmazonLocationServiceService } from '../../services/amazon-location-service.service';
 import { BookmarksService } from '../../services/bookmarks.service';
@@ -75,8 +76,7 @@ export class SearchModalComponent {
   onIonInfinite(ev: InfiniteScrollCustomEvent) {
     this.search().then(() => {
       (ev as InfiniteScrollCustomEvent).target.complete();
-    }
-    )
+    })
   }
 
   async doGet(url: string, params: Record<string, string>): Promise<HttpResponse> {
@@ -109,8 +109,11 @@ export class SearchModalComponent {
       if (searchMpde == "strContains") {
         this.groupedPlaces = {};
         await this.amazonLocationServiceService.searchByText(this.searchTerm).then((response: Place[] | undefined) => {
+          console.log(response);
           if (response) this.suggestions = response;
           this.suggestions.forEach(place => {
+            const countryCode: string = place.country;
+            place.country = this.amazonLocationServiceService.getCountryName(countryCode);
             if (!this.groupedPlaces[place.country]) {
               this.groupedPlaces[place.country] = {};
             }
@@ -119,10 +122,29 @@ export class SearchModalComponent {
             }
             this.groupedPlaces[place.country][place.municipality].push(place)
           });
-          this.segmentIsLoading[this.currentSegment] = false;
-          console.log(this.groupedPlaces);
+
 
         });
+        await this.osmService.searchByText(this.searchTerm).then((response: any) => {
+          console.log(response);
+          const osmData = this.formatOSMResponse(response.data.features);//this.suggestions.join = response;
+          osmData.forEach(place => {
+            if (place) {
+              place = place as Place;
+              if (place.country && place.municipality) {
+                if (!this.groupedPlaces[place.country]) {
+                  this.groupedPlaces[place.country] = {};
+                }
+                if (!this.groupedPlaces[place.country][place.municipality]) {
+                  this.groupedPlaces[place.country][place.municipality] = [];
+                }
+                this.groupedPlaces[place.country][place.municipality].push(place)
+              }
+            }
+          });
+        });
+        this.segmentIsLoading[this.currentSegment] = false;
+        console.log(this.groupedPlaces);
 
       } else {
         await this.amazonLocationServiceService.suggestPlace(this.searchTerm).then((response: SearchForSuggestionsResults) => {
@@ -135,6 +157,31 @@ export class SearchModalComponent {
     }
 
   }
+
+  formatOSMResponse(osmResponse: Feature[]) {
+    return osmResponse.map(item => {
+      if (item.properties && item.geometry.type == 'Point') {
+        //const addressComponents = (item.properties['display_name'] as string).split(',').map(s => s.trim());
+
+        const place: Place = {
+          addressNumber: item.properties['address']['house_number'] || '',
+          country: item.properties['address']['country'] || '',
+          geometry: {
+            point: [item.geometry.coordinates[0], item.geometry.coordinates[1]]
+          },
+          label: item.properties['display_name'],
+          municipality: item.properties['address']['state'] || '',
+          neighborhood: item.properties['address']['neighbourhood'] || item.properties['address']['suburb'] || item.properties['address']['town'] || '',
+          postalCode: item.properties['address']['postcode'] || '',
+          street: item.properties['address']['road'] || '',
+
+        };
+        return place;
+      }
+      return null;
+    });
+  }
+
   getCountryKeys() {
     return Object.keys(this.groupedPlaces);
   }

@@ -60,7 +60,7 @@
       <ion-card-header class="max" (click)="openMaxSpeedModal()">
         {{currentMaxSpeed}}
       </ion-card-header>
-      <ion-card-header class="current">
+      <ion-card-header class="current" (click)="openCurrentSpeedModal()">
         {{currentSpeed}}
       </ion-card-header>
     </ion-card>
@@ -102,8 +102,11 @@
         <ion-fab-button *ngIf="audioOn" color="light" (click)="openModal('Conf')">
           <ion-icon color="warning" name="volume-high-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button *ngIf="!audioOn" color="light" (click)="openModal('conf')">
+        <ion-fab-button *ngIf="!audioOn" color="light" (click)="openModal('Conf')">
           <ion-icon color="warning" name="volume-mute-outline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="light" (click)="openModal('Debug')">
+          <ion-icon color="danger" name="bug-outline"></ion-icon>
         </ion-fab-button>
       </ion-fab>
     </div>

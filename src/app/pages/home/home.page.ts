@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Position } from '@capacitor/geolocation';
 import { MenuController, ToastController } from '@ionic/angular'; // Add this line
@@ -55,6 +55,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   shouldEndSimulation: boolean = false;
   getMock: boolean = true;
   isNative: boolean = false;
+  speedChanged = new EventEmitter<number>();
 
   constructor(
     private translateService: TranslateService,
@@ -165,6 +166,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
             } else {
               self.currentSpeed = 0;
             }
+            self.speedChanged.emit(self.currentSpeed);
 
           }
 
@@ -231,6 +233,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     } else {
       self.currentSpeed = 0;
     }
+    self.speedChanged.emit(self.currentSpeed);
 
 
   }
@@ -279,6 +282,8 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
           } else {
             self.currentSpeed = 0;
           }
+          self.speedChanged.emit(self.currentSpeed);
+
         });
 
     }, 2200); // Check every 2 seconds (adjust interval as needed)
@@ -607,6 +612,10 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
     this.openModal("MaxSpeed");
 
+  }
+
+  openCurrentSpeedModal() {
+    this.openModal("YourSpeed");
   }
 
   setDestinationFromCoords() {

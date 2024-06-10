@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
 import mapboxgl, { MapboxGeoJSONFeature } from 'mapbox-gl';
@@ -73,6 +73,7 @@ export class MapService {
   firstTouchDone: boolean = false;
   showingMaxSpeedWay: boolean = false;
   showingMaxSpeedWayId: string | null = null;
+  currentStreetChanged = new EventEmitter<mapboxgl.MapboxGeoJSONFeature>();
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
@@ -226,11 +227,13 @@ export class MapService {
           ((window as any).homePage as HomePage).tripDuration = parseFloat(durationMain.toFixed(2));
           ((window as any).mapService as MapService).popUpDestination = popup;
           const directionsBounds = ((window as any).mapService as MapService).calculateBounds([((window as any).mapService as MapService).coordinatesMainRoute, ((window as any).mapService as MapService).coordinatesAltRoute]);
-          map.fitBounds(directionsBounds, { padding: 10, zoom: 14 });
+          this.trackingUser = false;
+          this.mapEventIsFromTracking = false;
           const center = directionsBounds.getCenter();
           const targetPoint: [number, number] = feature.geometry.coordinates; // Arbitrary point for bearing
           const bearing = this.calculateBearing(center, targetPoint);
-          map.rotateTo(bearing);
+          map.fitBounds(directionsBounds, { padding: 100, bearing: bearing, animate: false });
+          //map.rotateTo(bearing);
         }
       });
 
@@ -271,6 +274,8 @@ export class MapService {
 
     this.mapbox.on('touchstart', (e) => {
       //console.log(e);
+      this.trackingUser = false;
+      this.mapEventIsFromTracking = false;
       if (this.mapbox.isEasing() || this.mapbox.isMoving()
         || this.mapbox.isRotating() || this.mapbox.isZooming()) {
         this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
@@ -991,6 +996,8 @@ export class MapService {
 
   leaveMapPage() {
     if (this.mapbox && this.mapbox.getCanvas()) {
+      this.hideUserCurrentStreetMaxSpeedWay();
+
       this.mapbox.remove();
       this.isAnimating = false; // Indicador de si una animación está en curso
 
@@ -1000,7 +1007,6 @@ export class MapService {
       this.introTimeWaited = false;
       this.trackingUser = true;
       this.mapEventIsFromTracking = false;
-      this.hideUserCurrentStreetMaxSpeedWay();
       this.sourcesAndLayers = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
     }
   }
@@ -1184,6 +1190,10 @@ export class MapService {
 
   setUserCurrentStreet(currentStreet: mapboxgl.MapboxGeoJSONFeature | null) {
     this.userCurrentStreet = currentStreet;
+    if (this.userCurrentStreet) {
+      this.currentStreetChanged.emit(this.userCurrentStreet);
+    }
+
     if (this.showingMaxSpeedWay) {
       if (this.userCurrentStreet && this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
         if (this.showingMaxSpeedWay && this.showingMaxSpeedWayId != this.userCurrentStreet.properties['@id']) {
@@ -1686,6 +1696,125 @@ export class MapService {
       );
     }
     return 0; // Default heading si no hay suficiente info
+  }
+
+  public updateUserMarkerSnapedPosition() {
+    const newCoordinates: [number, number] = [
+      this.sensorService.getSensorSnapLongitude(),
+      this.sensorService.getSensorSnapLatitude()
+    ];
+    const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
+    const userMarker = this.getUserMarker();
+    const userMarkerVision = this.getUserVisionMarker();
+    const rotationVision = this.sensorService.getSensorHeadingAbs();
+    const animationDuration = 800;
+
+    // If the user marker doesn't exist, create it
+    if (!userMarker) {
+      this.createAndPositionUserMarker(newPosition, rotationVision);
+      return;
+    }
+
+    // If already animating, update the animation target and exit
+    if (this.isAnimating) {
+      this.animationTarget = newPosition;
+      return;
+    }
+
+    const startPosition = userMarker.getLngLat();
+    const newHeading = this.calculateHeading(startPosition, newPosition, userMarker.getRotation());
+    const startTime = performance.now();
+
+    this.isAnimating = true;
+    this.animationTarget = newPosition;
+
+    const animateMarker = (currentTime: number) => {
+      if (!this.isAnimating) return;
+
+      const progress = Math.min((currentTime - startTime) / animationDuration, 1);
+      const interpolatedPosition = this.interpolatePosition(startPosition, newPosition, progress);
+      const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), newHeading, progress);
+
+      userMarker.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+      userMarkerVision.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+
+      if (progress < 1) {
+        let frame = requestAnimationFrame(animateMarker);
+        this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
+
+      } else {
+        this.completeAnimation(newPosition, newHeading, rotationVision);
+      }
+    };
+
+    let frame = requestAnimationFrame(animateMarker);
+    this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
+  }
+
+  private createAndPositionUserMarker(newPosition: mapboxgl.LngLat, rotation: number) {
+    const userMarker = this.getUserMarker().setLngLat(newPosition).setRotation(rotation).addTo(this.mapbox);
+    this.getUserVisionMarker().setLngLat(newPosition).addTo(this.mapbox);
+    this.updateMarkerRotation(0);
+
+    if (this.isRotating) {
+      this.trackingUser = true;
+      this.userLocationMarkerPrerequisitesOk = true;
+      this.isRotating = false;
+      this.setupInteractionListeners();
+      ((window as any).homePage as HomePage).alreadyGeoLocated();
+    }
+
+    if (this.trackingUser) {
+      this.mapEventIsFromTracking = true;
+      ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([newPosition.lng, newPosition.lat], rotation);
+      this.resetMapEventTrackingFlag();
+    }
+  }
+
+  private calculateHeading(startPosition: mapboxgl.LngLat, newPosition: mapboxgl.LngLat, currentRotation: number): number {
+    if (!this.lastPosition) return currentRotation || 0;
+
+    const positionsAreEqual = startPosition.lat == newPosition.lat && startPosition.lng == newPosition.lng;
+    if (positionsAreEqual) return currentRotation || 0;
+
+    return turf.bearing(
+      turf.point([this.lastPosition.lng, this.lastPosition.lat]),
+      turf.point([newPosition.lng, newPosition.lat])
+    );
+  }
+
+  private interpolatePosition(startPosition: mapboxgl.LngLat, targetPosition: mapboxgl.LngLat, progress: number): mapboxgl.LngLatLike {
+    return [
+      startPosition.lng + (targetPosition.lng - startPosition.lng) * progress,
+      startPosition.lat + (targetPosition.lat - startPosition.lat) * progress
+    ];
+  }
+
+  private interpolateRotation(startRotation: number, targetRotation: number, progress: number): number {
+    return startRotation + (targetRotation - startRotation) * progress;
+  }
+
+  private completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number, rotationVision: number) {
+    const userMarker = this.getUserMarker();
+    const userMarkerVision = this.getUserVisionMarker();
+
+    userMarker.setLngLat(newPosition).setRotation(newHeading);
+    userMarkerVision.setLngLat(newPosition).setRotation(newHeading);
+    this.updateMarkerRotation(rotationVision);
+
+    this.isAnimating = false;
+    this.lastPosition = newPosition;
+    this.windowService.unAttachAnimationFrameRequest("home", "mapService_updateUserSnapedPosition");
+    if (this.trackingUser) {
+      this.mapEventIsFromTracking = true;
+      ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([newPosition.lng, newPosition.lat], newHeading);
+      this.resetMapEventTrackingFlag();
+    }
+  }
+
+  private resetMapEventTrackingFlag() {
+    const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500);
+    this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
   }
 
 }

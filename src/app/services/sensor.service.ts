@@ -173,7 +173,7 @@ export class SensorService {
     this.sensorData.snapLongitude = coordinates[0];
     this.sensorData.closestStreetFeatureLine = feature;
     this.sensorData.closestPoint = nearestPoint;
-    ((window as any).mapService as MapService).updateUserSnapedPosition();
+    ((window as any).mapService as MapService).updateUserMarkerSnapedPosition();
   }
 
   getLastCurrentLocationPredicted(): [number, number] {
