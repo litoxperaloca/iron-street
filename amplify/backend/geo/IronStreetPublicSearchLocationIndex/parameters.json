@@ -8,5 +8,5 @@
   "indexName": "IronStreetPublicSearchLocationIndex",
   "dataProvider": "Here",
   "dataSourceIntendedUse": "SingleUse",
-  "isDefault": false
+  "isDefault": true
 }

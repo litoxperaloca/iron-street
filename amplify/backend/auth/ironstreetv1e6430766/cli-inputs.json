@@ -2,7 +2,7 @@
   "version": "1",
   "cognitoConfig": {
     "identityPoolName": "ironstreetv1e6430766_identitypool_e6430766",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "ironste6430766",
     "userPoolName": "ironstreetv1e6430766_userpool_e6430766",
     "autoVerifiedAttributes": [

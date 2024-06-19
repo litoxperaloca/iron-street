@@ -65,7 +65,7 @@
           "resourceName": "ironstreetv1e6430766"
         }
       ],
-      "isDefault": false,
+      "isDefault": true,
       "providerPlugin": "awscloudformation",
       "service": "PlaceIndex"
     },
@@ -82,7 +82,7 @@
           "resourceName": "ironstreetv1e6430766"
         }
       ],
-      "isDefault": true,
+      "isDefault": false,
       "providerPlugin": "awscloudformation",
       "service": "PlaceIndex"
     }
