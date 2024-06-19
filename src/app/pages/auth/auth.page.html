@@ -3,15 +3,43 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>{{ 'REGISTRARSE_/_INICIAR_SESIÓN' | translate }}</ion-title>
+    <ion-title *ngIf="!userIsLogged">{{ 'REGISTRARSE_/_INICIAR_SESIÓN' | translate }}</ion-title>
+    <ion-title *ngIf="userIsLogged">{{ 'IRON PROFILE' | translate }}</ion-title>
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
 
-<amplify-authenticator [socialProviders]="['amazon', 'apple', 'facebook', 'google']">
+<amplify-authenticator [socialProviders]="['facebook', 'google']">
   <ng-template amplifySlot="authenticated" let-user="user" let-signOut="signOut">
-    <h2>Welcome, {{ user.username }}!</h2>
+    <div class="user-info">
+      <ion-avatar *ngIf="user && user.attributes && user.attributes.picture">
+        <img src="{{ user.attributes.picture }}" alt="User Photo"/>
+      </ion-avatar>
+      <h2 *ngIf="user && user.username">{{"WELCOME" | translate}}, {{ user.username }}!</h2>
+    </div>
+    <ion-list *ngIf="user && user.attributes">
+      <ion-item>
+        <ion-label>Cuenta:</ion-label>
+        <ion-text>{{ user.attributes.email_verified ? 'Validada' : 'No Validada' }}</ion-text>
+        <ion-button *ngIf="!user.attributes.email_verified" (click)="verifyEmail()">Validar cuenta</ion-button>
+      </ion-item>
+    </ion-list>
+    <ion-list>
+      <ion-item (click)="editProfile()">
+        <ion-label>Editar información personal</ion-label>
+      </ion-item>
+      <ion-item (click)="viewTripsHistory()">
+        <ion-label>Ver historial de viajes</ion-label>
+      </ion-item>
+      <ion-item (click)="viewDrivingStats()">
+        <ion-label>Estadísticas sobre tu conducción hasta ahora</ion-label>
+      </ion-item>
+      <ion-item (click)="viewNotifications()">
+        <ion-label>Notificaciones</ion-label>
+      </ion-item>
+    </ion-list>
     <button (click)="signOut()">Sign Out</button>
   </ng-template>
 </amplify-authenticator>

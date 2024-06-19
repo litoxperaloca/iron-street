@@ -14,7 +14,8 @@ const config: CapacitorConfig = {
       'https://*.ironstreet.com.uy',
       'https://*.osm.com',
       'https://*.mapbox.com',
-      'https://*.api.mapbox.com']
+      'https://*.api.mapbox.com',
+      'https://main.dsldx96mlwnk.amplifyapp.com']
   },
   plugins: {
     CapacitorHttp: {

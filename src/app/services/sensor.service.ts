@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
 import { RotationRate } from '@capacitor/motion';
-import { NearestPointOnLine } from '@turf/nearest-point-on-line';
 //import * as turf from '@turf/turf';
 import KalmanFilter from 'kalmanjs';
 //import { MapboxGeoJSONFeature } from 'mapbox-gl';
@@ -33,7 +32,7 @@ interface SensorData {
   headingAbs: number; // calculated from old and new position
   snapLatitude: number;
   snapLongitude: number;
-  closestPoint: NearestPointOnLine;
+  closestPoint: any;
   closestStreetFeatureLine: MapboxGeoJSONFeature;
 }
 
@@ -167,7 +166,7 @@ export class SensorService {
     }
   }
 
-  updateSnapToRoadPosition(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: NearestPointOnLine) {
+  updateSnapToRoadPosition(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any) {
     this.sensorData.snapLatitude = coordinates[1];
     this.sensorData.snapLongitude = coordinates[0];
     this.sensorData.closestStreetFeatureLine = feature;

@@ -94,7 +94,7 @@
     "FEEDBACK_IMPORTANCE": "Your feedback on this version is vital for the project.",
     "MAP_TRIPS_ROUTES": "Map, trips, routes, etc",
     "SETTINGS": "Settings",
-    "REGISTER_LOGIN": "Register / Log in",
+    "REGISTER_LOGIN": "Log in / Sing up",
     "SUBSCRIPTIONS": "Subscriptions",
     "REWARDS": "Rewards and prizes",
     "NEWS": "News",
@@ -103,5 +103,8 @@
     "FAQ": "Frequently Asked Questions",
     "CONTACT": "Contact",
     "PRIVACY_POLICY": "Privacy policy",
-    "TERMS_CONDITIONS": "Terms and conditions"
+    "TERMS_CONDITIONS": "Terms and conditions",
+    "WELCOME": "Welcome",
+    "IRON PROFILE": "Your Iron Profile"
+
 }

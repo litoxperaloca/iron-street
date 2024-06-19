@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
-import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
+import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Amplify } from 'aws-amplify';
+import { I18n } from 'aws-amplify/utils';
 import { ManeurveModalComponent } from 'src/app/modals/maneurve/maneurve-modal.component';
 import { PermissionModalComponent } from 'src/app/modals/permission/permission-modal.component';
 import { RouteModalComponent } from 'src/app/modals/route/route-modal.component';
@@ -49,6 +50,7 @@ import { ThemeService } from './services/theme-service.service';
 import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
+
 
 Amplify.configure(awsconfig);
 
@@ -127,6 +129,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       BookmarksService,
       PreferencesService,
       TranslateService,
+      AuthenticatorService,
+      I18n
     ],
   bootstrap: [AppComponent],
 })

@@ -1,0 +1,44 @@
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+
+  h2 {
+    font-size: 1.2em;
+    margin: 0;
+  }
+}
+
+ion-list {
+  margin-bottom: 20px;
+
+  ion-item {
+    ion-label {
+      font-weight: bold;
+    }
+  }
+}
+
+ion-button {
+  --padding-start: 20px;
+  --padding-end: 20px;
+  margin-top: 10px;
+}
+
+body.dark ion-button {
+  --background: #000000;
+  --color: #fff;
+}
+
+
+body.light ion-button {
+  background-color: #ffffff;
+  color: #000;
+}

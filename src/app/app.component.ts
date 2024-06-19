@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
-import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
+import { AuthenticatorService, translations } from '@aws-amplify/ui-angular';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { I18n } from 'aws-amplify/utils';
 import { PreferencesService } from './services/preferences.service';
+
 @Component({
-  imports: [AmplifyAuthenticatorModule],
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
+  styleUrls: ['app.component.scss']
 })
 export class AppComponent {
   public languages: string[] = ['es', 'en', 'pt'];
@@ -58,7 +59,7 @@ export class AppComponent {
     private preferencesService: PreferencesService,
     public platform: Platform,
     private translate: TranslateService,
-    public authenticator: AuthenticatorService) {
+    public Auth: AuthenticatorService) {
 
     // Establece el idioma predeterminado
     this.platform.ready().then(async () => {
@@ -68,8 +69,16 @@ export class AppComponent {
       this.preferencesService.languageChanged.subscribe(lang => {
         this.language = lang;
         this.initializePages();
+        I18n.putVocabularies(translations);
+        I18n.setLanguage(lang);
       })
-      this.initializePages();
+      //this.initializePages();
+      await this.preferencesService.getLanguage().then(lang => {
+        this.language = lang;
+        this.initializePages();
+        I18n.putVocabularies(translations);
+        I18n.setLanguage(lang);
+      });
     });
   }
 

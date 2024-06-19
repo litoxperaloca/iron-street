@@ -82,6 +82,8 @@ export class PreferencesService {
     const language = value || 'es'; // Usa 'es' como idioma predeterminado si no hay valor almacenado
     this.translate.setDefaultLang(language);
     this.translate.use(language);
+    this.languageChanged.emit(language);
+
   }
 
   async getLanguage(): Promise<string> {

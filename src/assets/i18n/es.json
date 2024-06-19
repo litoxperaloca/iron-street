@@ -99,7 +99,7 @@
     "FEEDBACK_IMPORTANCE": "Tus comentarios sobre esta versión son de vital importancia para el proyecto.",
     "MAP_TRIPS_ROUTES": "Mapa, viajes, rutas, etc",
     "SETTINGS": "Configuración",
-    "REGISTER_LOGIN": "Registrarse / Iniciar sesión",
+    "REGISTER_LOGIN": "Iniciar sesión / Registrarse",
     "SUBSCRIPTIONS": "Suscripciones",
     "REWARDS": "Premios y recompensas",
     "NEWS": "Novedades",
@@ -108,5 +108,7 @@
     "FAQ": "Preguntas frecuentes",
     "CONTACT": "Contacto",
     "PRIVACY_POLICY": "Política de privacidad",
-    "TERMS_CONDITIONS": "Términos y condiciones"
+    "TERMS_CONDITIONS": "Términos y condiciones",
+    "WELCOME": "Bienvenido/a",
+    "IRON PROFILE": "Tu Perfil de Iron Street"
 }
