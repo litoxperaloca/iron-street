@@ -10,11 +10,10 @@ export class ModalService {
   private modal: HTMLIonModalElement | undefined;
   isBottomSheetOpen: boolean = false;
   private dataReturned: any;
-
+  modalId: string | undefined;
   constructor(private modalController: ModalController) { }
 
-  async openModal(componentName: String, extraParam?: any) {
-
+  async openModal(componentName: string, extraParam?: any) {
     let modalComponent: ModalComponents = ModalComponents[componentName as keyof typeof ModalComponents];
     const componentRef = ComponentRef[modalComponent];
     if (!componentRef) {
@@ -35,24 +34,44 @@ export class ModalService {
       backdropBreakpoint: componentRef.backdropBreakpoint || 1,
     });
 
-    this.setModal(modal);
+    await this.setModal(modal, componentName);
+
     if (this.modal) {
 
       await this.modal.present();
       const { data } = await modal.onDidDismiss();
+      this.modal = undefined;
+      //this.modalId = undefined;
       this.dataReturned = data;
       this.isBottomSheetOpen = false;
     }
   }
 
-  private setModal(newModal: any) {
-    this.avoidMultipleInstancesOfModal();
-    this.modal = newModal;
+  private async setModal(newModal: any, componentName: string) {
+
+    if (this.modal) {
+      await this.modal.dismiss().then(() => {
+        if (this.modalId && this.modalId === componentName) {
+          this.modalId = undefined;
+          this.modal = undefined;
+        }
+        else {
+          this.modal = newModal;
+          this.modalId = componentName;
+        }
+      });
+
+    } else {
+      this.modal = newModal;
+      this.modalId = componentName;
+
+    }
+
   }
 
-  avoidMultipleInstancesOfModal() {
+  async avoidMultipleInstancesOfModal() {
     if (this.modal) {
-      this.modal.dismiss();
+      await this.modal.dismiss();
       this.modal = undefined;
     }
   }

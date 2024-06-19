@@ -1,10 +1,6 @@
 <ion-header>
   <ion-toolbar color="black">
-    <ion-buttons slot="start">
-      <ion-button (click)="locatePlace()">
-      <ion-icon src="{{ featureIcon }}" size="small"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <ion-img class="featureCategoryIcon" slot="start" [src]="featureIcon" (click)="locatePlace()"></ion-img>
     <ion-title class="ion-padding" *ngIf="osmPlace && osmPlace.label">{{osmPlace.label}}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -17,24 +13,23 @@
     <div>
       <ion-list>
           <ion-item>
-            <ion-label *ngIf="osmFeature && osmFeature.properties &&  osmFeature.properties['amenity']">Tipo: {{ osmFeature.properties['amenity']}}</ion-label>
-            <ion-label *ngIf="osmFeature && osmFeature.properties && osmFeature.properties['category'].name">Categoría: {{osmFeature.properties['category'].name }}</ion-label>
+            <ion-label>{{getFullAddress()}}</ion-label>
           </ion-item>
         <ion-item>
                   <div id="modalBarButton">
-                    <ion-icon (click)="dismiss()" name="close-circle-outline" size="big" color="danger">
+                    <ion-icon (click)="dismiss()" name="close-circle-sharp" size="big" color="danger">
                     </ion-icon>
-                    <ion-icon *ngIf="placeDataIncludeWebsite" (click)="openOutsideLink(featureWebsite)" name="globe-outline" size="big"
+                    <ion-icon *ngIf="placeDataIncludeWebsite" (click)="openOutsideLink(featureWebsite)" name="globe-sharp" size="big"
                       color="primary">
                     </ion-icon>
-                    <ion-icon *ngIf="placeDataIncludePhone" (click)="callNumber(featurePhone1)" name="call-outline" size="big"
+                    <ion-icon *ngIf="placeDataIncludePhone" (click)="callNumber(featurePhone1)" name="call-sharp" size="big"
                       color="secondary">
                     </ion-icon>
-                    <ion-icon (click)="toggleInfo()" name="information-outline" size="big" color="tertiary">
+                    <ion-icon (click)="toggleInfo()" name="information-circle-sharp" size="big" color="tertiary">
                     </ion-icon>
-                    <ion-icon (click)="toggleBookmarks()" name="star-outline" size="big" color="warning">
+                    <ion-icon (click)="toggleBookmarks()" name="star-sharp" size="big" color="warning">
                     </ion-icon>
-                    <ion-icon (click)="setDestinationOSMifAbortCurrent(osmFeatureIdSelected)" name="navigate-outline" size="big"
+                    <ion-icon (click)="setDestinationOSMifAbortCurrent(osmFeatureIdSelected)" name="navigate-circle-sharp" size="big"
                       color="success">
                     </ion-icon>
                   </div>

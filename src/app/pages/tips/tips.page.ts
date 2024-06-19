@@ -71,7 +71,7 @@ export class TipsPage implements OnInit, OnDestroy {
           if (target) target.setAttribute('style', 'color:' + colors[0])
           letterCount += x;
           waiting = false;
-        }, 700);
+        }, 1100);
         self.windowService.attachedTimeOut("tips", "timeOut1", timeOut1);
 
       } else if (letterCount === words[0].length + 1 && waiting === false) {
@@ -80,14 +80,14 @@ export class TipsPage implements OnInit, OnDestroy {
           x = -1;
           letterCount += x;
           waiting = false;
-        }, 700)
+        }, 1100)
         self.windowService.attachedTimeOut("tips", "timeOut2", timeOut2);
 
       } else if (waiting === false) {
         if (target) target.innerHTML = words[0].substring(0, letterCount)
         letterCount += x;
       }
-    }, 30);
+    }, 40);
     this.windowService.attachedInterval("tips", "interval1", interval1);
     const interval2: any = setInterval(function () {
       if (visible === true) {
@@ -99,7 +99,7 @@ export class TipsPage implements OnInit, OnDestroy {
 
         visible = true;
       }
-    }, 10);
+    }, 15);
     this.windowService.attachedInterval("tips", "interval2", interval2);
 
   }

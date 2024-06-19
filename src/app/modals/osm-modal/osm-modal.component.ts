@@ -43,7 +43,7 @@ export class OsmModalComponent {
     this.featurePropsIndexes = this.getPropertyKeys(this.osmFeature?.properties);
     this.featurePropsIndexes.forEach((key: string, index: number) => {
       if (this.osmFeature && this.osmFeature.properties) {
-        if (key !== "category" && key !== "name" && key !== "amenity") {
+        if (key !== "name") {
           const prop = {
             key: key,
             value: this.translateToSpanish(this.osmFeature.properties[key]),
@@ -112,6 +112,18 @@ export class OsmModalComponent {
       return `assets/img/map-icons/${iconName}`;
     }
     return "";
+  }
+
+  getFullAddress() {
+    if (this.osmFeature && this.osmFeature.properties && this.osmFeature.properties['addr:street']) {
+      let address = this.osmFeature.properties['addr:street'];
+      address += ' ' + this.osmFeature.properties['addr:housenumber'];
+      /*address += ', ' + this.osmFeature.properties['addr:city'];
+      address += ', ' + this.osmFeature.properties['addr:country'];
+      address += '.';*/
+      return address;
+    }
+    return "Poca información disponible";
   }
 
   getPropertyKeys(properties: any): string[] {

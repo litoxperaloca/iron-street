@@ -69,6 +69,15 @@ Thumbs.db
 resources/ios/**/*
 resources/android/**/*
 
+www.zip
+www.zip
+package-lock.json
+package-lock.json
+package-lock.json
+package-lock.json
+.env
+package-lock.json
+
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
@@ -90,11 +99,3 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-www.zip
-www.zip
-package-lock.json
-package-lock.json
-package-lock.json
-package-lock.json
-.env
-package-lock.json

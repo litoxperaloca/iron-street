@@ -1,0 +1,20 @@
+type UserGeoData @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userId: ID
+  geoDateTime: AWSDateTime
+  geoTimeStamp: AWSTimestamp
+  geoLat: Float
+  geoLng: Float
+  geoSpeed: Float
+  geoHeading: Float
+  geoJson: AWSJSON
+  snapedDateTime: AWSDateTime
+  snapedTimeStamp: AWSTimestamp
+  snapedLat: Float
+  snapedLng: Float
+  snapedSpeed: Float
+  snapedHeading: Float
+  snapedJson: AWSJSON
+  userCurrentStreetName: String
+  userCurrentStreetMaxSpeed: String
+}

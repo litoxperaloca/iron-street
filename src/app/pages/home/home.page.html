@@ -5,7 +5,7 @@
     <div id="tripDetailsContainer">
       <h4 id="tripDestination">{{tripDestination}}</h4>
       <div class="flexEqualRow">
-        <ion-icon class="buttonIcon" color="danger" (click)="cancelTrip()" name="close-circle-outline"
+        <ion-icon class="buttonIcon" color="danger" (click)="cancelTrip()" name="close-circle-sharp"
           size="big"></ion-icon>
         <div id="estimated">
           <div id="tripDuration">
@@ -15,13 +15,13 @@
             <div class="noteText" color="warning">{{tripDistance}} kms.</div>
           </div>
         </div>
-        <ion-icon class="buttonIcon" color="warning" (click)="simulateTrip()" name="videocam-outline"
+        <ion-icon class="buttonIcon" color="warning" (click)="simulateTrip()" name="videocam-sharp"
           size="big"></ion-icon>
 
-        <ion-icon color="tertiary" class="buttonIcon" (click)="addAnotherStopToTrip()" name="add-circle-outline"
+        <ion-icon color="tertiary" class="buttonIcon" (click)="addAnotherStopToTrip()" name="add-circle-sharp"
           size="big">
         </ion-icon>
-        <ion-icon class="buttonIcon" color="success" (click)="startTrip()" name="navigate-circle-outline"
+        <ion-icon class="buttonIcon" color="success" (click)="startTrip()" name="navigate-circle-sharp"
           size="big"></ion-icon>
 
       </div>
@@ -42,13 +42,13 @@
         <p>{{ 'simulando_viaje...' | translate }}</p>
       </div>
       <div class="flexMiddleRow">
-        <ion-icon color="danger" class="smallButtonIcon" (click)="stopTrip()" name="stop-circle-outline"></ion-icon>
+        <ion-icon color="danger" class="smallButtonIcon" (click)="stopTrip()" name="stop-circle-sharp"></ion-icon>
 
         <ion-icon color="primary" class="noteIcon" name="car-outline"></ion-icon>
         <ion-progress-bar value="{{tripProgressIndex}}"></ion-progress-bar>
         <ion-icon color="success" class="noteIcon" name="location-outline"></ion-icon>
           <ion-icon color="tertiary" class="smallButtonIcon"
-          (click)="addAnotherStopToTrip()" name="add-circle-outline">
+          (click)="addAnotherStopToTrip()" name="add-circle-sharp">
         </ion-icon>
 
       </div>

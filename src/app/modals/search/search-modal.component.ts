@@ -190,7 +190,7 @@ export class SearchModalComponent {
     return Object.keys(this.groupedPlaces[country]);
   }
   iconUrl(icon: string): string {
-    return `assets/img/map-icons/${icon}.svg`;
+    return `assets/img/map-icons/${icon}.png`;
   }
 
   async loadPlaces(category: { name: string, icon: string, type: string, marker: string, labelPropertyIndex: string }) {
@@ -203,7 +203,7 @@ export class SearchModalComponent {
     this.segmentIsLoading[this.currentSegment] = true;
 
     try {
-      this.osmService.getNearPlacesData(bbox, category.type).then((response: HttpResponse) => {
+      await this.osmService.getNearPlacesData(bbox, category.type).then((response: HttpResponse) => {
         const data = response.data;
         this.places = data.features;
         this.mapService.addPlacesPoints(data.elements, category);
@@ -283,8 +283,8 @@ export class SearchModalComponent {
   markerLat: number | null = null;
   markerLng: number | null = null;
 
-  async ngOnInit(): Promise<void> {
-    await this.loadMarkers();
+  ngOnInit(): void {
+    this.loadMarkers();
   }
 
   async loadMarkers(): Promise<void> {

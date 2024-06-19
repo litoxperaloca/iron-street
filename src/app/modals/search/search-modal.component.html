@@ -75,12 +75,16 @@
           <ion-row>
             <ion-col size="6" *ngFor="let category of categories">
               <div class="icon-above-text" (click)="loadPlaces(category)">
-                <ion-icon color="dark" [src]="iconUrl(category.marker)"></ion-icon>
+                <ion-img color="dark" [src]="iconUrl(category.marker)"></ion-img>
                 <span>{{ category.name }}</span>
               </div>
             </ion-col>
           </ion-row>
         </ion-grid>
+          <div *ngIf="segmentIsLoading[currentSegment]">
+            <ion-spinner name="crescent" class="centeredSpinner"></ion-spinner>
+          </div>
+
       </div>
 
       <div *ngIf="currentSegment === 'favoritos'" class="segment-content">
@@ -91,21 +95,21 @@
           </ion-card-header>
           <ion-card-content *ngIf="homeMarker">
             <ion-item>
-              <ion-icon color="success" class="notDefaultColor" name="home-outline" slot="start"></ion-icon>
+              <ion-icon color="success" class="notDefaultColor" name="home-sharp" slot="start"></ion-icon>
               <ion-label>
                 <h2>{{ homeMarker.label }}</h2>
               </ion-label>
               <ion-button size="large" fill="clear" color="primary" (click)="setDestinationFromPlace(homeMarker)">
-                <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-outline"></ion-icon>
+                <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-circle-sharp"></ion-icon>
               </ion-button>
               <ion-button size="large" fill="clear" color="danger" (click)="removeHomeMarker()">
-                <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-outline"></ion-icon>
+                <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-sharp"></ion-icon>
               </ion-button>
             </ion-item>
           </ion-card-content>
           <ion-card-content *ngIf="!homeMarker">
             <ion-item>
-              <ion-icon color="success" class="notDefaultColor" name="home-outline" slot="start"></ion-icon>
+              <ion-icon color="success" class="notDefaultColor" name="home-sharp" slot="start"></ion-icon>
               <ion-label>
                 <h2>Aún no se ha guardado ningún lugar como "Casa".</h2>
               </ion-label>
@@ -119,21 +123,21 @@
           </ion-card-header>
           <ion-card-content *ngIf="workMarker">
             <ion-item>
-              <ion-icon color="secondary" class="notDefaultColor" name="business-outline" slot="start"></ion-icon>
+              <ion-icon color="secondary" class="notDefaultColor" name="business-sharp" slot="start"></ion-icon>
               <ion-label>
                 <h2>{{ workMarker.label }}</h2>
               </ion-label>
               <ion-button size="large" fill="clear" color="primary" (click)="setDestinationFromPlace(workMarker)">
-                <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-outline"></ion-icon>
+                <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-circle-sharp"></ion-icon>
               </ion-button>
               <ion-button size="large" fill="clear" color="danger" (click)="removeWorkMarker()">
-                <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-outline"></ion-icon>
+                <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-sharp"></ion-icon>
               </ion-button>
             </ion-item>
           </ion-card-content>
           <ion-card-content *ngIf="!workMarker">
             <ion-item>
-              <ion-icon color="secondary" class="notDefaultColor" name="business-outline" slot="start"></ion-icon>
+              <ion-icon color="secondary" class="notDefaultColor" name="business-sharp" slot="start"></ion-icon>
               <ion-label>
                 <h2>Aún no se ha guardado ningún lugar como "Trabajo".</h2>
               </ion-label>
@@ -148,22 +152,22 @@
           <ion-card-content *ngIf="favoriteMarkers.length>0">
             <ion-list>
               <ion-item *ngFor="let marker of favoriteMarkers">
-                <ion-icon color="warning" class="notDefaultColor" name="star-outline" slot="start"></ion-icon>
+                <ion-icon color="warning" class="notDefaultColor" name="star-sharp" slot="start"></ion-icon>
                 <ion-label>
                   <h2>{{ marker.label }}</h2>
                 </ion-label>
                 <ion-button size="large" fill="clear" color="primary" (click)="setDestinationFromPlace(marker)">
-                  <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-outline"></ion-icon>
+                  <ion-icon class="bookmarkActionIcon"  color="primary" class="notDefaultColor" slot="icon-only" name="navigate-circle-sharp"></ion-icon>
                 </ion-button>
                 <ion-button size="large" fill="clear" color="danger" (click)="removeFavoriteMarker(marker)">
-                  <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-outline"></ion-icon>
+                  <ion-icon class="bookmarkActionIcon"  color="danger" class="notDefaultColor" slot="icon-only" name="trash-sharp"></ion-icon>
                 </ion-button>
               </ion-item>
             </ion-list>
           </ion-card-content>
           <ion-card-content *ngIf="favoriteMarkers.length==0">
             <ion-item>
-              <ion-icon color="warning" class="notDefaultColor" name="star-outline" slot="start"></ion-icon>
+              <ion-icon color="warning" class="notDefaultColor" name="star-sharp" slot="start"></ion-icon>
               <ion-label>
                 <h2>Tu lista de lugares favoritos está vacía.</h2>
               </ion-label>

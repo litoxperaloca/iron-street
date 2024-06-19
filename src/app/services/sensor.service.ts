@@ -2,8 +2,11 @@ import { Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
 import { RotationRate } from '@capacitor/motion';
 import { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import * as turf from '@turf/turf';
+//import * as turf from '@turf/turf';
 import KalmanFilter from 'kalmanjs';
+//import { MapboxGeoJSONFeature } from 'mapbox-gl';
+import bearing from '@turf/bearing';
+import { point } from '@turf/helpers';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { MapService } from './map.service';
 
@@ -90,10 +93,10 @@ export class SensorService {
 
   getCalculatedBearing() {
     if (this.sensorData.oldLatitude !== 0) {
-      const upstreamPoint = turf.point([this.sensorData.oldLongitude, this.sensorData.oldLatitude]);
-      const downstreamPoint = turf.point([this.sensorData.longitude, this.sensorData.latitude]);
-      const bearing = turf.bearing(upstreamPoint, downstreamPoint)
-      return bearing;
+      const upstreamPoint = point([this.sensorData.oldLongitude, this.sensorData.oldLatitude]);
+      const downstreamPoint = point([this.sensorData.longitude, this.sensorData.latitude]);
+      const bearings = bearing(upstreamPoint, downstreamPoint)
+      return bearings;
     }
     return 0;
   }
@@ -149,10 +152,6 @@ export class SensorService {
       if (acceleration.z && this.sensorData.acceleration) this.sensorData.acceleration.z = acceleration.z;
     }
     /*this.updateMapMarker();*/ // Optionally update the marker based on acceleration
-  }
-
-  private updateMapMarker() {
-    this.mapService.updateMarkerState();
   }
 
   updateSpeedFromAcceleration() {

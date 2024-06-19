@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation, Position } from '@capacitor/geolocation';
-import * as turf from '@turf/turf';
+//import * as turf from '@turf/turf';
+import distance from '@turf/distance';
+import { point } from '@turf/helpers';
 import { Point } from 'geojson';
 import { environment } from 'src/environments/environment';
 import { GeoLocationMockService } from '../mocks/geo-location-mock.service';
 import { HomePage } from '../pages/home/home.page';
 import { AlertService } from './alert.service';
-import { MapService } from './map.service';
-import { SpeedService } from './speed.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,8 +18,6 @@ export class GeoLocationService {
   private lastCurrentLocation: any;
   private lastBboxCalculatedForDataIncome: any = null;
   public mocking: boolean = false;
-
-  private intervalId: any;
 
   async requestPermissions() {
     if (Capacitor.isNativePlatform()) {
@@ -112,8 +110,6 @@ export class GeoLocationService {
 
   constructor(
     private geoLocationMockService: GeoLocationMockService,
-    private mapService: MapService,
-    private speedService: SpeedService,
     private alertService: AlertService
   ) { }
 
@@ -165,18 +161,18 @@ export class GeoLocationService {
     const [[minLongitude, minLatitude], [maxLongitude, maxLatitude]] = bbox;
 
     // Create points for bbox corners
-    const bottomLeft = turf.point([minLongitude, minLatitude]);
-    const bottomRight = turf.point([maxLongitude, minLatitude]);
-    const topLeft = turf.point([minLongitude, maxLatitude]);
-    const topRight = turf.point([maxLongitude, maxLatitude]);
+    const bottomLeft = point([minLongitude, minLatitude]);
+    const bottomRight = point([maxLongitude, minLatitude]);
+    const topLeft = point([minLongitude, maxLatitude]);
+    const topRight = point([maxLongitude, maxLatitude]);
 
     // Calculate distances from the userLocation to each bbox corner
     // For simplicity, using corners, but you can also create lines for bbox edges and calculate accordingly
     const distances = [
-      turf.distance(userLocation, bottomLeft, { units: 'kilometers' }),
-      turf.distance(userLocation, bottomRight, { units: 'kilometers' }),
-      turf.distance(userLocation, topLeft, { units: 'kilometers' }),
-      turf.distance(userLocation, topRight, { units: 'kilometers' })
+      distance(userLocation, bottomLeft, { units: 'kilometers' }),
+      distance(userLocation, bottomRight, { units: 'kilometers' }),
+      distance(userLocation, topLeft, { units: 'kilometers' }),
+      distance(userLocation, topRight, { units: 'kilometers' })
     ];
 
     // Return the minimum distance

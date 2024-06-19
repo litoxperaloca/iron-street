@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
-import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
+import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
+
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -48,6 +49,7 @@ import { ThemeService } from './services/theme-service.service';
 import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
+
 Amplify.configure(awsconfig);
 
 // Función para crear un loader de traducción
@@ -84,6 +86,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     HttpClientModule,
     FormsModule,
     AmplifyAuthenticatorModule,
+
     ServiceWorkerModule.register('ngsw-worker.js',
       {
         enabled: !isDevMode(),
@@ -117,14 +120,13 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       AmazonLocationServiceService,
       ThemeService,
       WordpressService,
-      AuthenticatorService,
       GeoLocationMockService,
       TripSimulatorService,
       AlertService,
       SpeechRecognitionService,
       BookmarksService,
       PreferencesService,
-      TranslateService
+      TranslateService,
     ],
   bootstrap: [AppComponent],
 })

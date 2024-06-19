@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { beforeEach, describe, it } from 'node:test';
 import { TosPage } from './tos.page';
 
 describe('TosPage', () => {

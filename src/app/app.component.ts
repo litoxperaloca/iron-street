@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { PreferencesService } from './services/preferences.service';
-
 @Component({
+  imports: [AmplifyAuthenticatorModule],
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
@@ -56,7 +57,8 @@ export class AppComponent {
   constructor(
     private preferencesService: PreferencesService,
     public platform: Platform,
-    private translate: TranslateService) {
+    private translate: TranslateService,
+    public authenticator: AuthenticatorService) {
 
     // Establece el idioma predeterminado
     this.platform.ready().then(async () => {

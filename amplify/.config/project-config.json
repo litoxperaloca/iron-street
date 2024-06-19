@@ -1,17 +1,17 @@
 {
-  "projectName": "IronStreetV1",
+  "providers": [
+    "awscloudformation"
+  ],
+  "projectName": "ironstreet",
   "version": "3.1",
   "frontend": "javascript",
   "javascript": {
-    "framework": "angular",
+    "framework": "ionic",
     "config": {
       "SourceDir": "src",
-      "DistributionDir": "dist",
+      "DistributionDir": "www",
       "BuildCommand": "npm.cmd run-script build",
-      "StartCommand": "ng serve"
+      "StartCommand": "ionic serve"
     }
-  },
-  "providers": [
-    "awscloudformation"
-  ]
+  }
 }

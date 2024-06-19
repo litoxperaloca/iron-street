@@ -1,13 +1,12 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
-import mapboxgl, { MapboxGeoJSONFeature } from 'mapbox-gl';
+import mapboxgl, { LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl';
 
 //import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { GeoLocationService } from './geo-location.service';
-import { SpeedService } from './speed.service';
 import { WindowService } from "./window.service";
 //import { GeoJSON } from 'mapbox-gl';
 
@@ -18,27 +17,18 @@ import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
-import { VoiceService } from './voice.service';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class MapService {
-  startRoute() {
-    throw new Error('Method not implemented.');
-  }
-  cancelRoute() {
-    throw new Error('Method not implemented.');
-  }
 
   private mapbox!: mapboxgl.Map;
-  private userLocationMarkerPrerequisitesOk: boolean = false;
+  userLocationMarkerPrerequisitesOk: boolean = false;
   isAnimating: boolean = false; // Indicador de si una animación está en curso
   private animationTarget: mapboxgl.LngLat | null = null; // Stores the target for ongoing animation
   mapControls: any = { directions: null };
-  private routeSourceId!: string;
-  private routeLayerId!: string;
   destination!: string;
   destinationAddress!: string;
   destinationPlace!: Place;
@@ -73,14 +63,11 @@ export class MapService {
   firstTouchDone: boolean = false;
   showingMaxSpeedWay: boolean = false;
   showingMaxSpeedWayId: string | null = null;
-  currentStreetChanged = new EventEmitter<mapboxgl.MapboxGeoJSONFeature>();
+  currentStreetChanged: EventEmitter<mapboxgl.MapboxGeoJSONFeature> = new EventEmitter<mapboxgl.MapboxGeoJSONFeature>();
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
-    private speedService: SpeedService,
-    private voiceService: VoiceService,
     private sensorService: SensorService) {
-    //this.windowService.setValueIntoProperty('mapservice', this);
   }
 
   initMap() {
@@ -129,113 +116,87 @@ export class MapService {
       this.windowService.setValueIntoProperty('map', map);
       this.setDefaults();
       this.mapControls.directions.on('route', (event: any) => {
-        //console.log(event);
         const selectedIndex: number = this.mapControls.directions._stateSnapshot.routeIndex;
+        const mapService = ((window as any).mapService as MapService);
+        const homePage = ((window as any).homePage as HomePage);
 
-        ((window as any).mapService as MapService).actualRoute = event.route[selectedIndex];
-        ((window as any).mapService as MapService).currentStep = 0;
-        ((window as any).mapService as MapService).alreadySpoken = false;
-        ((window as any).mapService as MapService).cleanRoutePopups();
+        mapService.actualRoute = event.route[selectedIndex];
+        mapService.currentStep = 0;
+        mapService.alreadySpoken = false;
+        mapService.cleanRoutePopups();
+
+        const setMainRouteStyle = () => {
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 1);
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-width', 12);
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-color', '#2fdf75');
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.7);
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.7);
+        };
+
+        const setAltRouteStyle = () => {
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 0.8);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 8);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
+        };
+        let directionsBounds: LngLatBounds;
+        const routeMain = event.route[selectedIndex];
+
+        const coordinatesMain = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
+        mapService.coordinatesMainRoute = coordinatesMain;
+
         if (event.route.length < 2) {
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 0.8);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 8);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 1);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line', 'line-width', 12);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-origin-point', 'circle-color', '#2fdf75');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.7);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.7);
-          ((window as any).homePage as HomePage).showTrip();
+          setMainRouteStyle();
+          directionsBounds = mapService.calculateBounds([mapService.coordinatesMainRoute]);
 
-          const feature = ((window as any).mapService as MapService).mapControls.directions._stateSnapshot.destination;
-          const popup = ((window as any).mapService as MapService).createDestinationPopup(feature.geometry.coordinates as [number, number]);
-          // Set the popup's content and location
-          /*if (this.checkOverlap(popup)) {
-            console.log(popup, "Overlap detected, adjusting position...");
-            // Implement logic to adjust position
-          }*/
-          popup.addTo(map);
-          ((window as any).mapService as MapService).popUpDestination = popup;
         } else {
-          let altIndex = 0;
-          if (selectedIndex == 0) {
-            altIndex = 1
-          }
-          const routeAlt = event.route[altIndex]; // Obtiene la primera ruta
-          const routeMain = event.route[selectedIndex]; // Obtiene la primera ruta
+          const altIndex = selectedIndex === 0 ? 1 : 0;
+          const routeAlt = event.route[altIndex];
+          //const routeMain = event.route[selectedIndex];
 
-          let mainAnchor = "right";
-          let altAnchor = "left";
-          const routeMainSide = ((window as any).mapService as MapService).compareLinePositions(polyline.decode(routeMain.geometry), polyline.decode(routeAlt.geometry));
-          if (routeMainSide === "right") {
-            mainAnchor = "left";
-            altAnchor = "right";
-          }
-          const coordinates1 = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
-          const coordinates2 = polyline.decode(routeAlt.geometry).map(coord => [coord[1], coord[0]]);
-          let uniqueFromLine2 = this.uniqueCoordinates(coordinates2, coordinates1);
-          if (uniqueFromLine2.length < 3) {
-            uniqueFromLine2 = coordinates2;
-          }
-          const popUpAltRoute = ((window as any).mapService as MapService).createRoutePopUpFromCoords(uniqueFromLine2, routeAlt, 'mapboxgl-popup-alt-route', altIndex, altAnchor);
-          popUpAltRoute.addTo(map);
-          ((window as any).mapService as MapService).popUpAltRoute = popUpAltRoute;
-          //((window as any).mapService as MapService).popups.push(popUpAltRoute);
+          const mainAnchor = mapService.compareLinePositions(polyline.decode(routeMain.geometry), polyline.decode(routeAlt.geometry)) === "right" ? "left" : "right";
+          const altAnchor = mainAnchor === "right" ? "left" : "right";
 
-          // Supongamos que ya tienes una ruta cargada
-          const popUpMainRoute = ((window as any).mapService as MapService).createRoutePopUp(routeMain, 'mapboxgl-popup-main-route', selectedIndex, mainAnchor);
-          /* if (this.checkOverlap(popUpMainRoute)) {
-             console.log(popUpMainRoute, "Overlap detected, adjusting position...");
-             // Implement logic to adjust position
-           }*/
-          popUpMainRoute.addTo(map);
-          ((window as any).mapService as MapService).popUpMainRoute = popUpMainRoute;
-          // ((window as any).mapService as MapService).popups.push(popUpMainRoute);
+          //const coordinatesMain = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
+          const coordinatesAlt = polyline.decode(routeAlt.geometry).map(coord => [coord[1], coord[0]]);
+          mapService.coordinatesAltRoute = coordinatesAlt;
+          const uniqueFromLine2 = this.uniqueCoordinates(coordinatesAlt, coordinatesMain);
+          directionsBounds = mapService.calculateBounds([mapService.coordinatesMainRoute, mapService.coordinatesAltRoute]);
 
+          const popUpAltRoute = mapService.createRoutePopUpFromCoords(uniqueFromLine2.length < 3 ? coordinatesAlt : uniqueFromLine2, routeAlt, 'mapboxgl-popup-alt-route', altIndex, altAnchor);
+          popUpAltRoute.addTo(this.mapbox);
+          mapService.popUpAltRoute = popUpAltRoute;
 
-          // ((window as any).mapService as MapService).popups.push(popup);
+          const popUpMainRoute = mapService.createRoutePopUp(routeMain, 'mapboxgl-popup-main-route', selectedIndex, mainAnchor);
+          popUpMainRoute.addTo(this.mapbox);
+          mapService.popUpMainRoute = popUpMainRoute;
 
-
-          ((window as any).mapService as MapService).mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'visible');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 1);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 8);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-opacity', 0.5);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 1);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line', 'line-width', 11);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-origin-point', 'circle-color', '#2fdf75');
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.7);
-          ((window as any).mapService as MapService).mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.7);
-          ((window as any).homePage as HomePage).showTrip();
-
-
-          const feature = ((window as any).mapService as MapService).mapControls.directions._stateSnapshot.destination;
-          const popup = ((window as any).mapService as MapService).createDestinationPopup(feature.geometry.coordinates as [number, number]);
-          // Set the popup's content and location
-          /*if (this.checkOverlap(popup)) {
-            console.log(popup, "Overlap detected, adjusting position...");
-            // Implement logic to adjust position
-          }*/
-          popup.addTo(map);
-          const distanceMain = this.actualRoute.distance / 1000;
-          const durationMain = this.actualRoute.duration / 60;
-          ((window as any).homePage as HomePage).tripDistance = parseFloat(distanceMain.toFixed(2));
-          ((window as any).homePage as HomePage).tripDuration = parseFloat(durationMain.toFixed(2));
-          ((window as any).mapService as MapService).popUpDestination = popup;
-          const directionsBounds = ((window as any).mapService as MapService).calculateBounds([((window as any).mapService as MapService).coordinatesMainRoute, ((window as any).mapService as MapService).coordinatesAltRoute]);
-          this.trackingUser = false;
-          this.mapEventIsFromTracking = false;
-          const center = directionsBounds.getCenter();
-          const targetPoint: [number, number] = feature.geometry.coordinates; // Arbitrary point for bearing
-          const bearing = this.calculateBearing(center, targetPoint);
-          map.fitBounds(directionsBounds, { padding: 100, bearing: bearing, animate: false });
-          //map.rotateTo(bearing);
+          mapService.mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'visible');
+          setMainRouteStyle();
+          setAltRouteStyle();
         }
+        const feature = mapService.mapControls.directions._stateSnapshot.destination;
+        const popup = mapService.createDestinationPopup(feature.geometry.coordinates as [number, number]);
+        popup.addTo(this.mapbox);
+        mapService.popUpDestination = popup;
+
+        const distanceMain = mapService.actualRoute.distance / 1000;
+        const durationMain = mapService.actualRoute.duration / 60;
+        homePage.tripDistance = parseFloat(distanceMain.toFixed(2));
+        homePage.tripDuration = parseFloat(durationMain.toFixed(2));
+
+        this.trackingUser = false;
+        this.mapEventIsFromTracking = false;
+
+        const center = directionsBounds.getCenter();
+        const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
+        this.mapbox.fitBounds(directionsBounds, { padding: 100, bearing: bearing, animate: false });
+
+        homePage.showTrip();
+
       });
+
 
       this.addLongPressHandler();
       map.on('click', 'directions-destination-point', function (e: any) {
@@ -388,16 +349,6 @@ export class MapService {
     html += '<ion-icon onclick="window.homePage.setDestinationFromCoords()" name = "navigate-circle-outline" size="big" color="success" > </ion-icon>';
 
     html += '</div>';
-    /* html += '<p>Coordenadas: ' + '</p>';
-     html += '<ul>';
-     html += '<li>Latitud: ' + coordinates[1] + '</li>';
-     html += '<li>Longitud: ' + coordinates[0] + '</li>';
-     html += '</ul>';
-     html += '<h6>¿Estás buscando información sobre este lugar o es el destino de tu próximo viaje?</h6>';
-     html += '<div id="destinationActions">';
-     html += '<input type="button" id="cancelTripButtonPopUp" value="Cancelar" onclick="window.homePage.cancelMapPressed()"></input>';
-     html += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta hacia aquí" onclick="window.homePage.searchMapPressed()"></input>';
-     html += '</div>';*/
     ((window as any).homePage as HomePage).openLocationModal(coordinates);
     this.mapbox.flyTo({ center: coordinates });
     //html += '<input id="destinationViewMoreButton" type="button" value="Ver más" onclick="document.getElementById(\'destinationDetails\').style.display=\'block\'; document.getElementById(\'destinationViewMoreButton\').style.display=\'none;\'"></input>';
@@ -687,24 +638,6 @@ export class MapService {
   };
 
 
-  updateUserMarkerPosition(newLocation: [number, number]) {
-    const firstGeolocalizationEvent: boolean = this.isRotating;
-
-    const marker: mapboxgl.Marker = this.getUserMarker();
-    marker.setLngLat(newLocation);
-    const bearing = this.mapbox.getBearing();
-    if (firstGeolocalizationEvent) {
-      marker.addTo(this.mapbox)
-      this.userLocationMarkerPrerequisitesOk = true;
-      this.isRotating = false;
-      ((window as any).homePage as HomePage).alreadyGeoLocated();
-      ((window as any).cameraService as CameraService).updateCameraForUserMarkerFirstGeoEvent(newLocation, bearing);
-    } else {
-      ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newLocation, bearing);
-    }
-  }
-
-
   updateMarkerRotation(alpha: number) {
     const heading: number = this.getUserMarker().getRotation();
     const arrow = document.getElementById('arrowVision');
@@ -740,6 +673,7 @@ export class MapService {
         markerVision.setRotation(headingInit);
       }
       this.isRotating = false;
+      //((window as any).speedService as SpeedService).getSpeedDataFromArround(newLocation);
       this.setupInteractionListeners();
       ((window as any).homePage as HomePage).alreadyGeoLocated();
       ((window as any).cameraService as CameraService).updateCameraForUserMarkerFirstGeoEvent(newLocation, bearing);
@@ -759,37 +693,6 @@ export class MapService {
       }
     }
   }
-
-  /*updateMarkerState(): void {
-    const firstGeolocalizationEvent: boolean = this.isRotating;
-    const newLocation: [number, number] = [this.sensorService.getSensorLongitude(), this.sensorService.getSensorLatitude()];
-    const heading = this.sensorService.getSensorHeadingAbs();
-    const marker: mapboxgl.Marker = this.getUserMarker();
-    const rotation: number = heading ? heading : 0;
-    if (this.mapbox && marker) {
-      if (firstGeolocalizationEvent) {
-        this.mapEventIsFromTracking = true;
-        marker.setLngLat(newLocation).setRotation(rotation);
-        marker.addTo(this.mapbox);
-        this.userLocationMarkerPrerequisitesOk = true;
-        this.isRotating = false;
-        this.setupInteractionListeners();
-        ((window as any).homePage as HomePage).alreadyGeoLocated();
-        ((window as any).cameraService as CameraService).updateCameraForUserMarkerFirstGeoEvent(newLocation, heading);
-        setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay
-      } else {
-        // Always animate the marker regardless of the tracking state
-        this.animateMarker(newLocation, heading);
-        if (this.trackingUser) { // Only call camera service if tracking is active
-          this.mapEventIsFromTracking = true;
-
-          ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newLocation, heading);
-          setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay
-        }
-      }
-    }
-  }*/
-
 
   getUserMarker(): mapboxgl.Marker {
     if (!this.userMarkerInstance) {
@@ -845,102 +748,78 @@ export class MapService {
   }
 
   getSourcesAndLayers(): any {
+    const sourcesToTrack = [
+      'directions',
+      'directions:markers',
+      'maxspeedDataSource',
+      'speedCamerasDataSource',
+      'stopDataSource'
+    ];
+
     this.sourcesAndLayers = {
-      sources: {
-        directions: null,
-        directionsMarkers: null,
-        maxspeedDataSource: null,
-        //userMarkerSource: null
-        //semaphoreDataSource: null,
-        stopDataSource: null,
-        speedCameraDataSource: null
-      },
+      sources: {},
       layers: []
     };
-    this.mapbox.getStyle().layers.forEach((layer: mapboxgl.Layer) => {
-      if (layer.source === "directions"
-        || layer.source === "directions:markers"
-        || layer.source === "maxspeedDataSource"
-        // || layer.source === "semaphoreDataSource"
-        || layer.source === "speedCamerasDataSource"
-        || layer.source === "stopDataSource"
-      ) {
-        const layerLoaded: any = {
+
+    const style = this.mapbox.getStyle();
+
+    sourcesToTrack.forEach(sourceId => {
+      if (style.sources[sourceId]) {
+        this.sourcesAndLayers.sources[sourceId] = style.sources[sourceId];
+      }
+    });
+
+    style.layers.forEach((layer: mapboxgl.Layer) => {
+      if (sourcesToTrack.includes(layer.source as string)) {
+        this.sourcesAndLayers.layers.push({
           sourceId: layer.source,
           layer: layer,
           layerId: layer.id
-        };
-        this.sourcesAndLayers.layers.push(layerLoaded);
+        });
       }
-
     });
-    if (this.mapbox.getStyle().sources["directions"]) {
-      this.sourcesAndLayers.sources.directions = this.mapbox.getStyle().sources["directions"];
-    };
-    if (this.mapbox.getStyle().sources["directions:markers"]) {
-      this.sourcesAndLayers.sources.directionsMarkers = this.mapbox.getStyle().sources["directions:markers"];
-    };
-    if (this.mapbox.getStyle().sources["maxspeedDataSource"]) {
-      this.sourcesAndLayers.sources.maxspeedDataSource = this.mapbox.getStyle().sources["maxspeedDataSource"];
-    };
-    /*if (this.mapbox.getStyle().sources["semaphoreDataSource"]) {
-       this.sourcesAndLayers.sources.semaphoreDataSource = this.mapbox.getStyle().sources["semaphoreDataSource"];
-     };*/
-    if (this.mapbox.getStyle().sources["speedCamerasDataSource"]) {
-      this.sourcesAndLayers.sources.speedCamerasDataSource = this.mapbox.getStyle().sources["speedCamerasDataSource"];
-    };
-    if (this.mapbox.getStyle().sources["stopDataSource"]) {
-      this.sourcesAndLayers.sources.stopDataSource = this.mapbox.getStyle().sources["stopDataSource"];
-    };
+
     return this.sourcesAndLayers;
   }
 
   addAdditionalSourceAndLayer(sourcesAndLayers: any = null) {
-    if (sourcesAndLayers.sources.directions) {
-      if (!this.mapbox.getSource('directions')) this.mapbox.addSource('directions', sourcesAndLayers.sources.directions);
-    };
-    if (sourcesAndLayers.sources.directionsMarkers) {
-      if (!this.mapbox.getSource('directions:markers')) this.mapbox.addSource('directions:markers', sourcesAndLayers.sources.directionsMarkers);
-    };
-    if (sourcesAndLayers.sources.maxspeedDataSource) {
-      if (!this.mapbox.getSource('maxspeedDataSource')) this.mapbox.addSource('maxspeedDataSource', sourcesAndLayers.sources.maxspeedDataSource);
-    };
-    /* if (sourcesAndLayers.sources.semaphoreDataSource) {
-       if (!this.mapbox.getSource('semaphoreDataSource')) this.mapbox.addSource('semaphoreDataSource', sourcesAndLayers.sources.semaphoreDataSource);
-     };*/
-    if (sourcesAndLayers.sources.speedCamerasDataSource) {
-      if (!this.mapbox.getSource('speedCamerasDataSource')) this.mapbox.addSource('speedCamerasDataSource', sourcesAndLayers.sources.speedCamerasDataSource);
-    };
-    if (sourcesAndLayers.sources.stopDataSource) {
-      if (!this.mapbox.getSource('stopDataSource')) this.mapbox.addSource('stopDataSource', sourcesAndLayers.sources.stopDataSource);
-    };
-    this.addImageIfNot("custom-speed-camera-marker", "ironcamera.png");
-    //this.addImageIfNot("custom-semaphore-marker", "ironsemaphore.png");
-    this.addImageIfNot("custom-stop-marker", "ironstop.png");
+    const sourcesToCheck = [
+      'directions',
+      'directions:markers',
+      'maxspeedDataSource',
+      'speedCamerasDataSource',
+      'stopDataSource'
+    ];
+
+    sourcesToCheck.forEach(sourceId => {
+      if (sourcesAndLayers.sources[sourceId] && !this.mapbox.getSource(sourceId)) {
+        this.mapbox.addSource(sourceId, sourcesAndLayers.sources[sourceId]);
+      }
+    });
+
+    this.addImageIfNot('custom-speed-camera-marker', 'ironcamera.png');
+    this.addImageIfNot('custom-stop-marker', 'ironstop.png');
     this.reAddLayers(sourcesAndLayers);
-
-
   }
 
   reAddLayers(sourcesAndLayers: any = null): void {
     if (sourcesAndLayers && sourcesAndLayers.layers) {
       sourcesAndLayers.layers.forEach((layerLoaded: any) => {
-        if (!this.mapbox.getLayer(layerLoaded.layerId)) this.mapbox.addLayer(layerLoaded.layer);
+        if (!this.mapbox.getLayer(layerLoaded.layerId)) {
+          this.mapbox.addLayer(layerLoaded.layer);
+        }
       });
     }
   }
 
   addImageIfNot(imageName: string, imageFileName: string): void {
     if (!this.mapbox.hasImage(imageName)) {
-      this.mapbox.loadImage(
-        '/assets/img/map-icons/' + imageFileName,
-        (error, image) => {
-          if (error) throw error;
-
-          if (image) {
-            if (!this.mapbox.hasImage(imageName)) this.mapbox.addImage(imageName, image);
-          }
-        });
+      this.mapbox.loadImage(`/assets/img/map-icons/${imageFileName}`, (error, image) => {
+        if (error) throw error;
+        if (image && !this.mapbox.hasImage(imageName)) {
+          this.mapbox.addImage(imageName, image);
+        }
+      });
     }
   }
 
@@ -1034,18 +913,6 @@ export class MapService {
     }
   }
 
-  lockCameraAtUserPosition(userLocation: any, currentStep: number) {
-    // Lock the camera at the user's position
-    const route = ((window as any).mapService as MapService).actualRoute;
-    const step = route.legs[0].steps[currentStep];
-    const bearing: number = step.maneuver.bearing_after;
-    this.mapEventIsFromTracking = true;
-    this.trackingUser = true;
-    ((window as any).cameraService as CameraService).lockCameraAtPosition(userLocation, bearing);
-    const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
-    this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
-
-  }
   async addWaypoint(waypoint: Place) {
     //console.log("Adding waypoint:", waypoint);
     if (waypoint.geometry && waypoint.geometry.point)
@@ -1143,42 +1010,6 @@ export class MapService {
   }
 
 
-  /* userStreet(position: Position) {
-     let longitude = position.coords.longitude;
-     let latitude = position.coords.latitude;
-     // Convert the user's coordinates to a point
-     const coordinates = [longitude, latitude];
-     const userPoint = turf.point(coordinates);
-     const bbox = ((window as any).geoLocationService as GeoLocationService).createUserBoundingBox(position);
-     // Query the rendered line features at the user's location
-     const features = ((window as any).mapService as MapService).mapbox.queryRenderedFeatures(undefined, { layers: ["maxspeedDataLayer"] })
-     if (features.length > 0) {
-       var closestFeature: MapboxGeoJSONFeature | null = null;
-       var minDistance = Number.MAX_VALUE;
-       // Iterate through all line features to find the closest one
-       features.forEach(feature => {
-         if (feature.layer.id === 'maxspeedDataLayer' && feature.geometry.type === 'LineString') {
-           //console.log("Feature:", feature);
-           const line = turf.lineString(feature.geometry.coordinates);
-           const distance = turf.pointToLineDistance(userPoint, line);
-           const pointInLine = turf.nearestPointOnLine(line, userPoint);
-           const distancePoints: number = turf.distance(pointInLine, userPoint, { units: 'kilometers' });
-
-           if (distancePoints < minDistance && distancePoints < 1) {
-             minDistance = distancePoints;
-             closestFeature = feature;
-           }
-         }
-       });
-
-       ((window as any).mapService as MapService).userCurrentStreet = closestFeature;
-       const cF: MapboxGeoJSONFeature | null = ((window as any).mapService as MapService).userCurrentStreet;
-       if (cF != null && cF.geometry && cF.geometry.type == 'LineString' && cF.geometry.coordinates && cF.geometry.coordinates.length > 0) {
-         const nearestPoint: NearestPointOnLine = turf.nearestPointOnLine(turf.lineString(cF.geometry.coordinates), userPoint);
-         this.sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, cF, nearestPoint)
-       }
-     }
-   }*/
 
   setDefaults() {
     const map = this.mapbox;
@@ -1561,129 +1392,6 @@ export class MapService {
         ((window as any).homePage as HomePage).setCameraMode('SKY');
       }
     } // Handle errors as needed
-  }
-
-
-  public updateUserSnapedPosition() {
-    const newCoordinates: [number, number] = [this.sensorService.getSensorSnapLongitude(), this.sensorService.getSensorSnapLatitude()];
-    const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
-    const userMarker = this.getUserMarker();
-    const userMarkerVision: mapboxgl.Marker = this.getUserVisionMarker();
-    const map = this.mapbox;
-    const firstGeolocalizationEvent: boolean = this.isRotating;
-    const rotationVision: number = this.sensorService.getSensorHeadingAbs();
-
-    if (userMarker) {
-      if (this.isAnimating) {
-        // Update the target position if an animation is already in progress
-        this.animationTarget = newPosition;
-        return;
-      }
-
-      const startPosition: mapboxgl.LngLat = userMarker.getLngLat();
-
-      // Manually check if positions are the same
-      let positionsAreEqual = this.lastPosition &&
-        this.lastPosition.lng === newPosition.lng &&
-        this.lastPosition.lat === newPosition.lat;
-
-      // Calculate heading from last position to new position if lastPosition is available
-      let newHeading = positionsAreEqual || !this.lastPosition ?
-        userMarker.getRotation() || 0 :
-        turf.bearing(turf.point([this.lastPosition.lng, this.lastPosition.lat]),
-          turf.point([newPosition.lng, newPosition.lat]));
-
-
-      const animationDuration = 800; // Duration in milliseconds
-      const startTime = performance.now();
-      this.isAnimating = true;
-      this.animationTarget = newPosition;
-
-      const animateMarker = (currentTime: number) => {
-
-        if (!this.isAnimating) return; // Exit if animation was prematurely stopped
-
-        const elapsedTime = currentTime - startTime;
-        const progress = elapsedTime / animationDuration;
-
-        if (progress < 1 && this.animationTarget) {
-          const currentLng = startPosition.lng + (this.animationTarget.lng - startPosition.lng) * progress;
-          const currentLat = startPosition.lat + (this.animationTarget.lat - startPosition.lat) * progress;
-          const currentRotation = userMarker.getRotation() + (newHeading - userMarker.getRotation()) * progress;
-
-          userMarker.setLngLat([currentLng, currentLat]);
-          userMarker.setRotation(currentRotation);  // Assuming you have a method to set rotation
-
-          userMarkerVision.setLngLat([currentLng, currentLat]);
-          userMarkerVision.setRotation(currentRotation);
-          if (this.trackingUser) {
-            this.mapEventIsFromTracking = true;
-            ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
-            const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
-            this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
-
-          }
-          const req: any = requestAnimationFrame(animateMarker);
-          this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", req);
-
-        } else {
-          // Complete the animation
-          if (this.animationTarget) {
-            userMarker.setLngLat([this.animationTarget.lng, this.animationTarget.lat]);
-            userMarker.setRotation(newHeading);
-            userMarkerVision.setLngLat([this.animationTarget.lng, this.animationTarget.lat]);
-            userMarkerVision.setRotation(newHeading);
-            this.updateMarkerRotation(rotationVision);
-
-            this.isAnimating = false; // Reset animation flag
-            if (this.trackingUser) {
-              this.mapEventIsFromTracking = true;
-              ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([this.animationTarget.lng, this.animationTarget.lat], newHeading);
-              const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
-              this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
-
-            }
-          }
-        }
-      };
-
-      const req: any = requestAnimationFrame(animateMarker);
-      this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", req);
-
-    } else {
-      let newHeading = 0;
-      // If the marker does not exist, create a new one
-      this.userMarkerInstance = this.getUserMarker()
-        .setLngLat(newCoordinates)
-        .setRotation(newHeading)  // Set initial rotation
-        .addTo(map);
-      if (firstGeolocalizationEvent) {
-        this.trackingUser = true;
-        this.userLocationMarkerPrerequisitesOk = true;
-        this.isRotating = false;
-        this.setupInteractionListeners();
-        ((window as any).homePage as HomePage).alreadyGeoLocated();
-        //this.getUserVisionMarker().setLngLat(newCoordinates).setRotation(rotationVision).addTo(map);
-        this.getUserVisionMarker().setLngLat(newCoordinates).addTo(map);
-        this.updateMarkerRotation(0);
-
-      } else {
-        //this.getUserVisionMarker().setLngLat(newCoordinates).setRotation(0).addTo(map);
-        this.getUserVisionMarker().setLngLat(newCoordinates).addTo(map);
-        this.updateMarkerRotation(0);
-
-      }
-      if (this.trackingUser) {
-        this.mapEventIsFromTracking = true;
-        ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newCoordinates, newHeading);
-        const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
-        this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
-
-      }
-    }
-
-    // Update lastPosition for next move
-    this.lastPosition = newPosition;
   }
 
   private calculateInitialHeading(newPosition: mapboxgl.LngLat): number {

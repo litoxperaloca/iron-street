@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { AuthPageRoutingModule } from './auth-routing.module';
-
+import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthPageRoutingModule } from './auth-routing.module';
 import { AuthPage } from './auth.page';
+
 
 @NgModule({
   imports: [
@@ -15,7 +16,9 @@ import { AuthPage } from './auth.page';
     FormsModule,
     IonicModule,
     AuthPageRoutingModule,
-    TranslateModule
+    TranslateModule,
+    AmplifyAuthenticatorModule
+
   ],
   declarations: [AuthPage]
 })

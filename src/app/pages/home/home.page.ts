@@ -14,7 +14,7 @@ import { ActionSheetService } from '../../services/action-sheet.service';
 import { CameraService } from '../../services/camera.service';
 import { DeviceOrientationService } from '../../services/device-orientation.service';
 import { GeoLocationService } from '../../services/geo-location.service';
-import { IntersectionService } from '../../services/intersection.service';
+//import { IntersectionService } from '../../services/intersection.service';
 import { MapService } from '../../services/map.service';
 import { ModalService } from '../../services/modal.service';
 import { OsmService } from '../../services/osm.service';
@@ -70,7 +70,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     private cameraService: CameraService,
     private menuController: MenuController,
     private tripService: TripService,
-    private intersectionService: IntersectionService,
+    //private intersectionService: IntersectionService,
     private actionSheetService: ActionSheetService,
     private themeService: ThemeService,
     private sensorService: SensorService,
@@ -126,7 +126,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
       //this.geoLocationService.watchPosition((position, error) => {
       self.geoLocationMockService.getNextPosition().then
-        (position => {
+        (async position => {
           if (!position) return;
           if (position.coords.latitude == 0 && position.coords.longitude == 0) {
             this.finishSimulation();
@@ -152,7 +152,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
               ((window as any).mapService as MapService).updateMarkerState();
             } else {
               if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-              self.speedService.locationUpdate();
+              await self.speedService.locationUpdate();
             }
             //((window as any).mapService as MapService).updateUserPosition();
             //((window as any).mapService as MapService).userStreet(position);
@@ -187,9 +187,9 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
       environment.mocking = false;
       this.windowService.unAttachInterval("home", "gpsInterval");
       this.windowService.unAttachWatch("home", "gps");
-      const watchId: any = this.geoLocationService.watchPosition((position) => {
+      const watchId: any = this.geoLocationService.watchPosition(async (position) => {
         //console.log('New position:', position);
-        this.geolock(position)
+        await this.geolock(position)
       });
       this.windowService.attachedWatch("home", "gps", watchId);
     } catch (e) {
@@ -198,7 +198,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  geolock(position: Position | null) {
+  async geolock(position: Position | null) {
     const self = this;
 
 
@@ -224,7 +224,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
       ((window as any).mapService as MapService).updateMarkerState();
     } else {
       if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-      self.speedService.locationUpdate();
+      await self.speedService.locationUpdate();
     }
     const speed = position.coords.speed;
     if (speed) {
@@ -300,7 +300,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     (window as any).speedService = this.speedService;
     (window as any).osmService = this.osmService;
     (window as any).tripService = this.tripService;
-    (window as any).intersectionService = this.intersectionService;
+    //(window as any).intersectionService = this.intersectionService;
     (window as any).cameraService = this.cameraService;
     (window as any).deviceOrientationService = this.deviceOrientationService;
     (window as any).sensorService = this.sensorService;
@@ -355,7 +355,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   }
 
-  public openModal(type: String, extraParam?: any) {
+  public openModal(type: string, extraParam?: any) {
     //this.voiceService.speak(`${type} modal opening`); // Dynamic speaking based on modal type
     this.menuController.close('main-menu');
     this.modalService.openModal(type, extraParam);
