@@ -16,7 +16,7 @@ export class AmazonLocationServiceService {
       "lon",
       "lat"
     ], // Coordinates point to act as the center of the search*/
-    searchIndexName: "IronStreetPublicSearchLocationIndex", // the string name of the search index
+    searchIndexName: "IronStreetPublicSearchLocationIndex-envisbk", // the string name of the search index
   }
 
   searchOptionsWithSearchAreaConstraints = {
@@ -24,11 +24,11 @@ export class AmazonLocationServiceService {
     countries: ["URY"],
     maxResults: 10, // 50 is the max and the default
     //searchAreaConstraints: [4564545, 6565467, 44444, 5654584758], // Bounding box to search inside of
-    searchIndexName: "IronStreetPublicSearchLocationIndex", // the string name of the search index
+    searchIndexName: "IronStreetPublicSearchLocationIndex-envisbk", // the string name of the search index
   }
 
   searchByPlaceIdOptions = {
-    searchIndexName: "IronStreetPublicSearchLocationIndex", // the string name of the search index
+    searchIndexName: "IronStreetPublicSearchLocationIndex-envisbk", // the string name of the search index
   }
 
   searchByTextOptions = {
@@ -37,7 +37,7 @@ export class AmazonLocationServiceService {
     countries: ["URY"],
     maxResults: 10, // 50 is the max and the default
     //searchAreaConstraints: [4564545, 6565467, 44444, 5654584758], // Bounding box to search inside of
-    searchIndexName: "IronStreetPublicSearchLocationIndex", // the string name of the search index
+    searchIndexName: "IronStreetPublicSearchLocationIndex-envisbk", // the string name of the search index
 
   }
 
