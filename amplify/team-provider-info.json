@@ -14,6 +14,13 @@
     "categories": {
       "auth": {
         "ironstreetv1e6430766": {}
+      },
+      "api": {
+        "ironstreet": {}
+      },
+      "geo": {
+        "IronStreetPublicSearchLocationIndex": {},
+        "IronStreetPublicSearchLocationIndex2": {}
       }
     }
   },
