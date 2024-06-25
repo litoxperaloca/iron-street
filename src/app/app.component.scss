@@ -111,38 +111,38 @@ ion-menu.ios {
 
 h4.shortcutsMenu{
     font-weight: 600;
-    font-size: 12pt;
-    color: var(--ion-color-secondary);;
+    font-size: 10pt;
+    color: var(--iron-menu-header-color);;
 }
 
 h4.appMenu{
     font-weight: 600;
-    font-size: 14pt;
-    color: var(--ion-color-success);;
+    font-size: 10pt;
+    color: var(--iron-menu-header-color);;
 }
 
 h4.userMenu{
       font-weight: 600;
-    font-size: 14pt;
-    color: var(--ion-color-success);;
+    font-size: 10pt;
+    color: var(--iron-menu-header-color);;
 }
 
 h4.helpMenu{
       font-weight: 600;
-    font-size: 14pt;
-    color: var(--ion-color-success);;
+    font-size: 10pt;
+    color: var(--iron-menu-header-color);;
 }
 
 h4.infoMenu{
       font-weight: 600;
-    font-size: 14pt;
-    color: var(--ion-color-success);;
+    font-size: 10pt;
+    color: var(--iron-menu-header-color);;
 }
 
 h4.legalMenu{
       font-weight: 600;
-    font-size: 14pt;
-    color: var(--ion-color-success);
+    font-size: 10pt;
+    color: var(--iron-menu-header-color);
 }
 
 #logoIronStreet{
@@ -150,8 +150,8 @@ h4.legalMenu{
     background-repeat: no-repeat;
     background-size: cover;
     position: relative;
-    height: 150px;
-    width: 150px;
+    height: 100px;
+    width: 100px;
     margin: 25px auto;
     display: flex;
     box-shadow: 0 0 10px 3px #fff;

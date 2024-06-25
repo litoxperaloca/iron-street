@@ -4,13 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
-import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Amplify } from 'aws-amplify';
-import { I18n } from 'aws-amplify/utils';
 import { ManeurveModalComponent } from 'src/app/modals/maneurve/maneurve-modal.component';
 import { PermissionModalComponent } from 'src/app/modals/permission/permission-modal.component';
 import { RouteModalComponent } from 'src/app/modals/route/route-modal.component';
@@ -40,8 +38,10 @@ import { SearchReverseModalComponent } from './modals/search-reverse-modal/searc
 import { YourSpeedModalComponent } from './modals/your-speed-modal/your-speed-modal.component';
 import { AlertService } from './services/alert.service';
 import { AmazonLocationServiceService } from './services/amazon-location-service.service';
+import { AuthService } from './services/auth.service';
 import { BookmarksService } from './services/bookmarks.service';
 import { DeviceOrientationService } from './services/device-orientation.service';
+import { FirebaseService } from './services/firebase.service';
 import { MapService } from './services/map.service';
 import { ModalService } from './services/modal.service';
 import { PreferencesService } from './services/preferences.service';
@@ -82,13 +82,12 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       DebugModalComponent
     ],
   imports: [
+
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    AmplifyAuthenticatorModule,
-
     ServiceWorkerModule.register('ngsw-worker.js',
       {
         enabled: !isDevMode(),
@@ -129,8 +128,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       BookmarksService,
       PreferencesService,
       TranslateService,
-      AuthenticatorService,
-      I18n
+      FirebaseService,
+      AuthService
     ],
   bootstrap: [AppComponent],
 })

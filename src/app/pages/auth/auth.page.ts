@@ -1,76 +1,89 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthenticatorService, translations } from '@aws-amplify/ui-angular';
-import { AuthUser } from 'aws-amplify/auth';
-import { I18n } from 'aws-amplify/utils';
-import { PreferencesService } from 'src/app/services/preferences.service';
+import { NavController } from '@ionic/angular';
+import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
 })
 export class AuthPage implements OnInit {
-  userLogged: AuthUser | undefined;
-  userIsLogged: boolean = false;
+  email!: string;
+  password!: string;
+  confirmPassword!: string;
+  errorMessage!: string;
+  loading = false;
+  authSegment = 'login';
+  agreedToTerms = false;
 
-
-  constructor(private preferencesService: PreferencesService, public authenticator: AuthenticatorService) {
-    this.authenticator.subscribe(state => {
-      if (state.user) {
-        this.userLogged = state.user;
-        this.userIsLogged = true;
-      } else {
-        this.userIsLogged = false;
-        this.userLogged = undefined;
-      }
-    })
-    this.preferencesService.languageChanged.subscribe(lang => {
-      this.setTranslations(lang);
-    });
+  constructor(private authService: AuthService, private navCtrl: NavController) {
   }
 
-  async ngOnInit() {
-    if (this.authenticator.user) {
-      this.userLogged = this.authenticator.user;
-      this.userIsLogged = true;
-    } else {
-      this.userIsLogged = false;
-      this.userLogged = undefined;
+
+  ngOnInit(): void {
+    if (this.authService.getUser()) {
+      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
     }
-    await this.preferencesService.getLanguage().then(lang => {
-      this.setTranslations(lang);
-    });
-
 
   }
 
-  private setTranslations(lang: string) {
-    I18n.putVocabularies(translations);
-    I18n.setLanguage(lang);
-  }
-  async signOut() {
+  async login() {
+    this.loading = true;
     try {
-      this.authenticator.signOut();
-      this.userLogged = undefined;
-      this.userIsLogged = false;
-    } catch (error) {
-      console.log('error signing out: ', error);
+      await this.authService.login(this.email, this.password);
+      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+    } catch (err) {
+      this.handleAuthError(err);
+    } finally {
+      this.loading = false;
     }
   }
 
-  async viewNotifications() {
+  async signUp() {
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
 
+    this.loading = true;
+    try {
+      await this.authService.signUp(this.email, this.password);
+      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+    } catch (err) {
+      this.handleAuthError(err);
+    } finally {
+      this.loading = false;
+    }
   }
 
-  async viewDrivingStats() {
-
+  async googleLogin() {
+    this.loading = true;
+    try {
+      await this.authService.googleLogin();
+      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+    } catch (err) {
+      this.handleAuthError(err);
+    } finally {
+      this.loading = false;
+    }
   }
 
-  async viewTripsHistory() {
-
+  async facebookLogin() {
+    this.loading = true;
+    try {
+      await this.authService.facebookLogin();
+      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+    } catch (err) {
+      this.handleAuthError(err);
+    } finally {
+      this.loading = false;
+    }
   }
 
-  async verifyEmail() { }
-
-  async editProfile() { }
-
+  handleAuthError(err: any) {
+    if (err.code === 'auth/cancelled-popup-request') {
+      this.errorMessage = 'Multiple authentication popups detected. Please try again.';
+    } else {
+      this.errorMessage = 'Authentication failed: ' + err.message;
+    }
+  }
 }

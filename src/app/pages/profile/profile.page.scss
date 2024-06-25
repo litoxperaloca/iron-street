@@ -1,6 +1,6 @@
-/* src/app/pages/auth/auth.page.scss */
+/* src/app/pages/profile/profile.page.scss */
 :host {
-  ion-content.auth-content {
+  ion-content {
     --background: var(--ion-background-color);
     display: flex;
     justify-content: center;
@@ -8,7 +8,7 @@
     height: 100%;
   }
 
-  .auth-container {
+  .profile-container {
     width: 100%;
     max-width: 400px;
     padding: 20px;
@@ -17,7 +17,7 @@
   ion-card {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    animation: fadeInUp 0.8s ease-in-out;
+    animation: fadeInUp 0.5s ease-in-out;
   }
 
   ion-item {
@@ -26,7 +26,7 @@
     --padding-start: 16px;
     --padding-end: 16px;
     border-radius: 8px;
-    transition: transform 0.8s ease-in-out;
+    transition: transform 0.2s ease-in-out;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
@@ -37,7 +37,7 @@
   ion-button {
     margin-top: 10px;
     border-radius: 8px;
-    transition: transform 0.8s ease-in-out;
+    transition: transform 0.2s ease-in-out;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
@@ -52,22 +52,6 @@
   ion-card-title {
     font-size: 1.5rem;
     font-weight: bold;
-  }
-
-  ion-spinner {
-    display: block;
-    margin: 20px auto;
-  }
-
-  ion-item[lines="none"] {
-    --min-height: 0;
-    --padding-start: 0;
-    --padding-end: 0;
-  }
-
-  ion-label a {
-    text-decoration: none;
-    color: var(--ion-color-primary);
   }
 
   @keyframes fadeInUp {
@@ -124,4 +108,41 @@
     --background: #fff;
     --color: #000;
   }
+}
+
+.profile-container {
+  --background: #f4f4f4;
+}
+
+.profile-card {
+  max-width: 400px;
+  margin: auto;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-content {
+  padding: 20px;
+}
+
+ion-item {
+  --background: #fff;
+  --ion-item-text-color: #333;
+  --ion-color-base: #007bff;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+ion-button {
+  margin-top: 20px;
+  --ion-color-base: #dc3545;
+  --ion-color-base-rgb: 220, 53, 69;
+  --ion-color-contrast: #fff;
+  --ion-color-contrast-rgb: 255, 255, 255;
+  --border-radius: 10px;
+}
+
+ion-segment-button {
+  text-transform: capitalize;
 }

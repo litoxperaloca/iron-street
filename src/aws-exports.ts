@@ -52,7 +52,7 @@ const awsmobile = {
           "IronStreetPublicSearchLocationIndex-envisbk",
           "IronStreetPublicSearchLocationIndex2-envisbk"
         ],
-        "default": "IronStreetPublicSearchLocationIndex2-envisbk"
+        "default": "IronStreetPublicSearchLocationIndex-envisbk"
       }
     }
   }
@@ -60,3 +60,4 @@ const awsmobile = {
 
 
 export default awsmobile;
+

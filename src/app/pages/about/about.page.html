@@ -209,13 +209,14 @@
 <ion-footer [translucent]="false">
 <ion-toolbar>
   <ion-buttons slot="start">
-    <ion-button color="success" size="large" (click)="openMap()">
-      <ion-icon slot="start" name="car"></ion-icon>{{ "INICIAR" | translate }}</ion-button>
-  </ion-buttons>
-  <ion-buttons slot="end">
     <ion-button color="secondary" size="large" (click)="feedback()">{{ "OPINIONES" | translate }}
-      <ion-icon slot="end" name="chatbubble"></ion-icon>
+      <ion-icon slot="start" name="chatbubble"></ion-icon>
     </ion-button>
   </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button color="success" size="large" (click)="openMap()">
+        <ion-icon slot="end" name="car"></ion-icon>{{ "INICIAR" | translate }}
+      </ion-button>
+    </ion-buttons>
 </ion-toolbar>
 </ion-footer>

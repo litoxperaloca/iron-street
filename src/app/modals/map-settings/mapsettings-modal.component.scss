@@ -94,12 +94,12 @@ h6{
 }
 
 h4{
-    color: var(--ion-color-secondary)
+    color: var(--iron-menu-header-color);
 }
 
 ion-icon{
     font-size: 30pt;
-    margin: 0 auto;
+    margin: 20px auto;
     /* position: relative; */
     display: flex;
 }

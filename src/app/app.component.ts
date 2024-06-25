@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { AuthenticatorService, translations } from '@aws-amplify/ui-angular';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-import { I18n } from 'aws-amplify/utils';
+import { FirebaseService } from './services/firebase.service';
 import { PreferencesService } from './services/preferences.service';
 
 @Component({
@@ -59,25 +58,24 @@ export class AppComponent {
     private preferencesService: PreferencesService,
     public platform: Platform,
     private translate: TranslateService,
-    public Auth: AuthenticatorService) {
+    private firebaseService: FirebaseService) {
 
     // Establece el idioma predeterminado
     this.platform.ready().then(async () => {
+      this.firebaseService.startApp();
       //this.translate.addLangs(this.languages);
       await this.preferencesService.loadStoredTheme();
       await this.preferencesService.loadStoredLanguage();
       this.preferencesService.languageChanged.subscribe(lang => {
         this.language = lang;
         this.initializePages();
-        I18n.putVocabularies(translations);
-        I18n.setLanguage(lang);
+
       })
       //this.initializePages();
       await this.preferencesService.getLanguage().then(lang => {
         this.language = lang;
         this.initializePages();
-        I18n.putVocabularies(translations);
-        I18n.setLanguage(lang);
+
       });
     });
   }

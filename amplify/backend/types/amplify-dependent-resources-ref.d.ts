@@ -10,6 +10,8 @@ export type AmplifyDependentResourcesAttributes = {
     "ironstreetv1e6430766": {
       "AppClientID": "string",
       "AppClientIDWeb": "string",
+      "FacebookWebClient": "string",
+      "GoogleWebClient": "string",
       "HostedUIDomain": "string",
       "IdentityPoolId": "string",
       "IdentityPoolName": "string",

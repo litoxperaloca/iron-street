@@ -86,5 +86,31 @@
       "providerPlugin": "awscloudformation",
       "service": "PlaceIndex"
     }
+  },
+  "parameters": {
+    "AMPLIFY_auth_ironstreetv1e6430766_facebookAppId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "ironstreetv1e6430766"
+        }
+      ]
+    },
+    "AMPLIFY_auth_ironstreetv1e6430766_googleClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "ironstreetv1e6430766"
+        }
+      ]
+    },
+    "AMPLIFY_function_ironstreetv1e6430766PostConfirmation_GROUP": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "ironstreetv1e6430766PostConfirmation"
+        }
+      ]
+    }
   }
 }

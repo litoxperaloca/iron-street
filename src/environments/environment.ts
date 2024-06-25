@@ -162,14 +162,14 @@ export const environment = {
     autocomplete: true
   },
   firebaseConfig: {
-    apiKey: "AIzaSyDuG_jOO-S3kO3_h3HKML-6FT5EzJQKH80",
-    authDomain: "iron-street.firebaseapp.com",
-    databaseURL: "https://iron-street-default-rtdb.firebaseio.com",
-    projectId: "iron-street",
-    storageBucket: "iron-street.appspot.com",
-    messagingSenderId: "648927307257",
-    appId: "1:648927307257:web:e21a086fad397f92590928",
-    measurementId: "G-DXLP88QG6G"
+    apiKey: "AIzaSyDBjRvntQjArNGIWjboRX7jFYUUMCAkj_4",
+    authDomain: "key-scarab-426901-c0.firebaseapp.com",
+    databaseURL: "https://key-scarab-426901-c0-default-rtdb.firebaseio.com",
+    projectId: "key-scarab-426901-c0",
+    storageBucket: "key-scarab-426901-c0.appspot.com",
+    messagingSenderId: "86900265970",
+    appId: "1:86900265970:web:4d7214adffc007642c916b",
+    measurementId: "G-K1X1ZY79X2"
   },
   recaptcha: {
     key: '6LcUFakmAAAAADV6XQHjGkpkkPj4MsCpm_g3fdVm',

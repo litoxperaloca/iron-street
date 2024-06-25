@@ -13,7 +13,10 @@
     },
     "categories": {
       "auth": {
-        "ironstreetv1e6430766": {}
+        "ironstreetv1e6430766": {
+          "facebookAppId": "281112434320240",
+          "googleClientId": "86900265970-rhsehan22khfa3ei1dp1sdl5ds36vd7h.apps.googleusercontent.com"
+        }
       },
       "api": {
         "ironstreet": {}
@@ -21,6 +24,12 @@
       "geo": {
         "IronStreetPublicSearchLocationIndex": {},
         "IronStreetPublicSearchLocationIndex2": {}
+      },
+      "function": {
+        "ironstreetUpdateUserGeo": {},
+        "ironstreetv1e6430766PostConfirmation": {
+          "GROUP": "IronStreetDrivers"
+        }
       }
     }
   },
