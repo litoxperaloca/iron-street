@@ -70,9 +70,10 @@ const routes: Routes = [
   {
     path: 'post/:id',
     loadChildren: () => import('./pages/post/post.module').then(m => m.PostPageModule)
-  },  {
+  },
+  {
     path: 'profile',
-    loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfilePageModule)
   }
 
 

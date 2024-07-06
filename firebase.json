@@ -1,116 +1,27 @@
 {
+  "functions":
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ,
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "hosting": {
     "public": "www",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-  "rewrites": [
-       {
-        "source": "/assets/**",
-        "destination": "/assets"
-      },
-      {
-        "source": "/assets/img/**",
-        "destination": "/assets/img/**"
-      },
-      {
-        "source": "/assets/img/icons/**",
-        "destination": "/assets/img/icons"
-      },
-      {
-        "source": "/assets/img/map-icons/**",
-        "destination": "/assets/img/map-icons/**"
-      },
-      {
-        "source": "/assets/img/map-controls/**",
-        "destination": "/assets/img/map-controls"
-      },
-      {
-        "source": "/assets/img/map-styles/**",
-        "destination": "/assets/img/map-styles"
-      },
-      {
-        "source": "/assets/fonts/**",
-        "destination": "/assets/fonts"
-      },
-      {
-        "source": "/assets/about/**",
-        "destination": "/assets/about"
-      },
-      {
-        "source": "/welcome",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/folder/**",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/home",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/blog",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/auth",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/conf",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/rewards",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/about",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/driving",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/help",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/privacy",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/tos",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/contact",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/subscribe",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/tips",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/post/**",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/profile",
-        "destination": "/index.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
   }
 }

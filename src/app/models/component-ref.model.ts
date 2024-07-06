@@ -1,6 +1,7 @@
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
+import { IronBotModalComponent } from '../modals/iron-bot-modal/iron-bot-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from '../modals/max-speed-details-modal/max-speed-details-modal.component';
@@ -106,6 +107,14 @@ export const ComponentRef = {
     cssClass: 'bottom-sheet-modal',
     breakpoints: [0, 0.5, 0.75, 1],
     initialBreakpoint: 0.75,
+    backdropBreakpoint: 1,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.IronBot]: {
+    component: IronBotModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.5, 0.75, 1],
+    initialBreakpoint: 0.5,
     backdropBreakpoint: 1,
     props: {} // Añade las propiedades que necesites
   },

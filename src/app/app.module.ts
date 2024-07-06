@@ -29,6 +29,7 @@ import { GeoLocationMockService } from './mocks/geo-location-mock.service';
 import { BookmarkModalComponent } from './modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from './modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from './modals/debug-modal/debug-modal.component';
+import { IronBotModalComponent } from './modals/iron-bot-modal/iron-bot-modal.component';
 import { LocationModalComponent } from './modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from './modals/max-speed-details-modal/max-speed-details-modal.component';
@@ -79,7 +80,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       ConfModalComponent,
       MaxSpeedDetailsModalComponent,
       YourSpeedModalComponent,
-      DebugModalComponent
+      DebugModalComponent,
+      IronBotModalComponent
     ],
   imports: [
 

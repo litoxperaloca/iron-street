@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-auth',
@@ -15,13 +15,13 @@ export class AuthPage implements OnInit {
   authSegment = 'login';
   agreedToTerms = false;
 
-  constructor(private authService: AuthService, private navCtrl: NavController) {
+  constructor(private authService: AuthService, private router: Router) {
   }
 
 
   ngOnInit(): void {
     if (this.authService.getUser()) {
-      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+      this.router.navigateByUrl('/profile', { replaceUrl: true });
     }
 
   }
@@ -30,7 +30,7 @@ export class AuthPage implements OnInit {
     this.loading = true;
     try {
       await this.authService.login(this.email, this.password);
-      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+      this.router.navigateByUrl('/profile', { replaceUrl: true });
     } catch (err) {
       this.handleAuthError(err);
     } finally {
@@ -47,7 +47,7 @@ export class AuthPage implements OnInit {
     this.loading = true;
     try {
       await this.authService.signUp(this.email, this.password);
-      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+      this.router.navigateByUrl('/profile', { replaceUrl: true });
     } catch (err) {
       this.handleAuthError(err);
     } finally {
@@ -59,7 +59,7 @@ export class AuthPage implements OnInit {
     this.loading = true;
     try {
       await this.authService.googleLogin();
-      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+      this.router.navigateByUrl('/profile', { replaceUrl: true });
     } catch (err) {
       this.handleAuthError(err);
     } finally {
@@ -71,7 +71,7 @@ export class AuthPage implements OnInit {
     this.loading = true;
     try {
       await this.authService.facebookLogin();
-      this.navCtrl.navigateForward('/profile'); // Navigate to your home page
+      this.router.navigateByUrl('/profile', { replaceUrl: true });
     } catch (err) {
       this.handleAuthError(err);
     } finally {

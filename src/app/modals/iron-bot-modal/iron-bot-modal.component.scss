@@ -1,0 +1,76 @@
+.iron-bot-modal {
+  background: #1e1e1e;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  margin: 0 auto;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 8px;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      font-size: 1.5em;
+      ion-icon {
+        margin-right: 8px;
+      }
+    }
+
+    .close-icon {
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #f44336;
+    }
+  }
+
+  .modal-content {
+    margin-top: 16px;
+
+    .input-textarea {
+      background: #2a2a2a;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ask-button {
+      --background: #2979ff;
+      --color: #fff;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .response-container, .history-container {
+      margin-top: 16px;
+      padding: 16px;
+      background: #2a2a2a;
+      border-radius: 8px;
+
+      h3 {
+        display: flex;
+        align-items: center;
+        ion-icon {
+          margin-right: 8px;
+        }
+      }
+    }
+
+    .history-item {
+      background: transparent;
+      border-bottom: 1px solid #444;
+      padding: 8px 0;
+      ion-label {
+        color: #ccc;
+      }
+    }
+  }
+}

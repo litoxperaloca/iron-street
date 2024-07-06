@@ -1,17 +1,17 @@
 {
-  "compileOnSave": true,
-  "include": [
-    "src"
-  ],
   "compilerOptions": {
     "module": "commonjs",
-    "noImplicitReturns": true,
+    "target": "es2020",
     "outDir": "lib",
-    "sourceMap": true,
+    "rootDir": "src",
     "strict": true,
-    "target": "es2017",
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "noUnusedLocals": true
-  }
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

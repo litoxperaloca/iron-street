@@ -1,0 +1,32 @@
+<div class="iron-bot-modal">
+  <div class="modal-header">
+    <h2><ion-icon name="chatbubbles-outline"></ion-icon> IronBot Assistant</h2>
+    <ion-icon name="close-outline" (click)="endInteraction()" class="close-icon"></ion-icon>
+  </div>
+
+  <div class="modal-content">
+    <ion-textarea [(ngModel)]="userInput" placeholder="Ask IronBot anything..." autoGrow="true" rows="1"
+      class="input-textarea"></ion-textarea>
+
+    <ion-button expand="full" (click)="askIronBot()" color="primary" class="ask-button">
+      <ion-icon slot="start" name="send-outline"></ion-icon> Ask
+    </ion-button>
+
+    <div *ngIf="response" class="response-container">
+      <h3><ion-icon name="chatbox-ellipses-outline"></ion-icon> Response:</h3>
+      <p>{{ response }}</p>
+    </div>
+
+    <div *ngIf="interactionHistory.length" class="history-container">
+      <h3><ion-icon name="time-outline"></ion-icon> Interaction History:</h3>
+      <ion-list>
+        <ion-item *ngFor="let inter of interactionHistory" lines="none" class="history-item">
+          <ion-label>
+            <strong>Q:</strong> {{ inter.question }}<br>
+            <strong>A:</strong> {{ inter.answer }}
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</div>

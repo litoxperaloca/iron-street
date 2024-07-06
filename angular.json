@@ -82,11 +82,12 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-            "builder": "@angular-builders/custom-webpack:dev-server",           "options": {
-            "host": "0.0.0.0",
-            "port": 8100,
-            "ssl": true
-           },
+            "builder": "@angular-builders/custom-webpack:dev-server",
+            "options": {
+              "host": "0.0.0.0",
+              "port": 8100,
+              "ssl": true
+            },
           "configurations": {
             "production": {
               "buildTarget": "app:build:production"

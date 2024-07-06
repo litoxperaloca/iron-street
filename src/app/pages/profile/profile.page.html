@@ -9,15 +9,15 @@
 
 <ion-content class="profile-container">
   <ion-card class="profile-card">
-    <ion-item *ngIf="user">
+    <!--<ion-item *ngIf="user">
       <ion-avatar *ngIf="!user.photoURL" slot="start">
         <img alt="Generic Avatar" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
       </ion-avatar>
-      <ion-avatar *ngIf="user.photoURL" slot="start">
-        <img alt="User Photo" [src]="user.photoURL" />
+      <ion-avatar *ngIf="user.providerData['photoURL']" slot="start">
+        <img alt="User Photo" [src]="user.providerData['photoURL']" />
       </ion-avatar>
-      <ion-label *ngIf="user.displayName">{{user.displayName}}</ion-label>
-    </ion-item>
+      <ion-label *ngIf="user.providerData['displayName']">{{user.providerData['displayName']}}</ion-label>
+    </ion-item>-->
 
     <ion-segment [(ngModel)]="profileSegment" color="primary">
 

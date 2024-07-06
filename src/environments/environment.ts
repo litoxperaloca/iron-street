@@ -175,6 +175,7 @@ export const environment = {
     key: '6LcUFakmAAAAADV6XQHjGkpkkPj4MsCpm_g3fdVm',
     secret: '6LcUFakmAAAAAB11GNciqZEOTh5zpQkry-m-nt1w',
   },
+  firebaseFunctionsUrl: 'https://us-central1-key-scarab-426901-c0.cloudfunctions.net',
   openai: {
     key: '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',
     organization: 'IronPlatform',

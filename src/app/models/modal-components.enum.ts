@@ -10,13 +10,15 @@ export enum ModalComponents {
   Conf = 'Conf',
   MaxSpeed = 'MaxSpeed',
   YourSpeed = 'YourSpeed',
-  Debug = 'Debug'
+  Debug = 'Debug',
+  IronBot = 'IronBot'
 }
 
 
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
+import { IronBotModalComponent } from '../modals/iron-bot-modal/iron-bot-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 // Importa los componentes modales
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
@@ -41,7 +43,8 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.Conf]: ConfModalComponent,
   [ModalComponents.MaxSpeed]: MaxSpeedDetailsModalComponent,
   [ModalComponents.YourSpeed]: YourSpeedModalComponent,
-  [ModalComponents.Debug]: DebugModalComponent
+  [ModalComponents.Debug]: DebugModalComponent,
+  [ModalComponents.IronBot]: IronBotModalComponent
 
 
 

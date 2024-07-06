@@ -14,8 +14,54 @@ const config: CapacitorConfig = {
       'https://*.ironstreet.com.uy',
       'https://*.osm.com',
       'https://*.mapbox.com',
-      'https://*.api.mapbox.com',
-      'https://main.dsldx96mlwnk.amplifyapp.com']
+      'https://*.amplifyapp.com',
+      // Firebase URLs
+      "https://*.firebaseapp.com",
+      "https://*.cloudfunctions.net",
+      "https://firestore.googleapis.com",
+      "https://firebasestorage.googleapis.com",
+      "https://*.firebaseio.com",
+      "https://firebasehosting.googleapis.com",
+      "https://*.web.app",
+
+
+      // Mapbox URLs
+      "https://api.mapbox.com",
+      "https://*.tiles.mapbox.com",
+
+      // OpenStreetMap URLs
+      "https://*.tile.openstreetmap.org",
+
+      // AWS Location Service URLs
+      "https://*.amazonaws.com",
+
+      // Nominatim URLs
+      "https://nominatim.openstreetmap.org",
+
+      // Google APIs
+      "https://*.googleapis.com",
+
+      // Ionic URLs
+      "https://api.ionicjs.com",
+      "https://apps.ionic.io",
+      "https://api.ionicframework.com",
+
+      // Google Authentication
+      "https://accounts.google.com",
+      "https://*.googleusercontent.com",
+
+      // Apple Authentication
+      "https://appleid.apple.com",
+
+      // Facebook Authentication
+      "https://www.facebook.com",
+      "https://*.facebook.com",
+
+      // Google Cloud Services
+      "https://storage.googleapis.com",
+      "https://pubsub.googleapis.com"
+
+    ]
   },
   plugins: {
     CapacitorHttp: {
