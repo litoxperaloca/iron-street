@@ -141,7 +141,6 @@ export class CameraService {
     map.flyTo({
       center: location.geometry.coordinates,
       zoom: 17,
-      minZoom: 17,
       speed: 1,
       pitch: 55,
       bearing: bearing,

@@ -3,5 +3,6 @@
     "@ionic/angular/common",
     "@ionic/angular/standalone"
   ],
-  "aws.telemetry": false
+  "aws.telemetry": false,
+  "amazonQ.telemetry": false
 }

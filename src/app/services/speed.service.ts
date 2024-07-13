@@ -100,7 +100,7 @@ export class SpeedService {
     }
 
     const userPoint = point([position.coords.longitude, position.coords.latitude]);
-    const features = map.querySourceFeatures('maxspeedDataSource', { sourceLayer: 'export_1-12rpm8' });
+    const features:MapboxGeoJSONFeature[] = map.querySourceFeatures('maxspeedDataSource', { sourceLayer: 'export_1-12rpm8' }) as MapboxGeoJSONFeature[];
 
     if (features.length > 0) {
       const closestFeature = await this.findClosestFeature(features, userPoint);
@@ -142,8 +142,8 @@ export class SpeedService {
     let minDistance = Number.MAX_VALUE;
 
     features.forEach(feature => {
-      if (feature.geometry.type === 'LineString') {
-        const line = lineString(feature.geometry.coordinates);
+      if (feature.geometry!.type === 'LineString') {
+        const line = lineString(feature.geometry!.coordinates);
         const pointInLine = nearestPointOnLine(line, userPoint);
         const distancePoints = distance(pointInLine, userPoint, { units: 'kilometers' });
 
@@ -164,8 +164,8 @@ export class SpeedService {
 
   private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any): void {
     const sensorService = ((window as any).sensorService as SensorService);
-    if (closestFeature && closestFeature.geometry.type === 'LineString') {
-      const nearestPoint: NearestPointOnLine = nearestPointOnLine(lineString(closestFeature.geometry.coordinates), userPoint);
+    if (closestFeature && closestFeature.geometry!.type === 'LineString') {
+      const nearestPoint: NearestPointOnLine = nearestPointOnLine(lineString(closestFeature.geometry!.coordinates), userPoint);
       sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint);
     }
   }

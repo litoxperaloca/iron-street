@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
-import mapboxgl, { LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl';
+import mapboxgl, { LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';
 
 //import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from '@capacitor/geolocation';
@@ -191,7 +191,7 @@ export class MapService {
 
         const center = directionsBounds.getCenter();
         const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
-        this.mapbox.fitBounds(directionsBounds, { padding: 100, bearing: bearing, animate: false });
+        this.mapbox.fitBounds(directionsBounds, { padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: false });
 
         homePage.showTrip();
 
@@ -549,10 +549,10 @@ export class MapService {
   }
 
   checkOverlap(newPopup: mapboxgl.Popup): boolean {
-    const newRect = newPopup.getElement().getBoundingClientRect();
+    const newRect = newPopup.getElement()!.getBoundingClientRect();
 
     for (let existingPopup of this.popups) {
-      const existingRect = existingPopup.getElement().getBoundingClientRect();
+      const existingRect = existingPopup.getElement()!.getBoundingClientRect();
       if (this.rectOverlap(newRect, existingRect)) {
         return true;
       }
@@ -764,12 +764,12 @@ export class MapService {
     const style = this.mapbox.getStyle();
 
     sourcesToTrack.forEach(sourceId => {
-      if (style.sources[sourceId]) {
-        this.sourcesAndLayers.sources[sourceId] = style.sources[sourceId];
+      if (style!.sources[sourceId]) {
+        this.sourcesAndLayers.sources[sourceId] = style!.sources[sourceId];
       }
     });
 
-    style.layers.forEach((layer: mapboxgl.Layer) => {
+    style!.layers.forEach((layer: mapboxgl.Layer) => {
       if (sourcesToTrack.includes(layer.source as string)) {
         this.sourcesAndLayers.layers.push({
           sourceId: layer.source,
@@ -830,7 +830,7 @@ export class MapService {
   * @param coordinates Coordenadas donde se colocará el marcador.
   * @param options Opciones para el marcador.
   */
-  addMarker(coordinates: mapboxgl.LngLatLike, options?: mapboxgl.MarkerOptions): mapboxgl.Marker {
+  addMarker(coordinates: mapboxgl.LngLatLike, options?:any): mapboxgl.Marker {
     const marker = new mapboxgl.Marker(options)
       .setLngLat(coordinates)
       .addTo(this.mapbox);
@@ -1000,7 +1000,7 @@ export class MapService {
     const userEvents = ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'];
 
     userEvents.forEach(event => {
-      this.mapbox.on(event, () => {
+      this.mapbox.on(event as MapEvent, () => {
         if (!this.mapEventIsFromTracking) {
           //console.log(`User interaction detected: ${event}`);
           this.trackingUser = false;
@@ -1030,12 +1030,12 @@ export class MapService {
         if (this.showingMaxSpeedWay && this.showingMaxSpeedWayId != this.userCurrentStreet.properties['@id']) {
           this.mapbox.setFilter('maxspeedRenderLayer', ['==', ['get', '@id'], this.userCurrentStreet.properties['@id']]);
           this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
-          if (this.userCurrentStreet.geometry.type === "LineString") {
+          if (this.userCurrentStreet.geometry!.type === "LineString") {
             if (this.popUpMaxSpeedWay) {
               this.popUpMaxSpeedWay.remove();
               this.popUpMaxSpeedWay = null;
             }
-            const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry.coordinates);
+            const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry!.coordinates);
             this.popUpMaxSpeedWay = maxSpeedPopUp;
             this.popUpMaxSpeedWay.addTo(this.mapbox);
           }
@@ -1122,8 +1122,8 @@ export class MapService {
         this.mapbox.setFilter('maxspeedRenderLayer', ['==', ['get', '@id'], this.userCurrentStreet.properties['@id']]);
         this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
         this.showingMaxSpeedWay = true;
-        if (this.userCurrentStreet.geometry.type === "LineString") {
-          const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry.coordinates);
+        if (this.userCurrentStreet.geometry!.type === "LineString") {
+          const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry!.coordinates);
           this.popUpMaxSpeedWay = maxSpeedPopUp;
           this.popUpMaxSpeedWay.addTo(this.mapbox);
         }

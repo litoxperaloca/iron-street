@@ -37,7 +37,8 @@
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
               },
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/assets"
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
             "scripts": [],
@@ -46,6 +47,7 @@
           "configurations": {
             "production": {
               "optimization": true,
+              "aot": true,
               "buildOptimizer": true,
               "budgets": [
                 {
@@ -126,7 +128,8 @@
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
               },
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/assets"
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
             "scripts": []
