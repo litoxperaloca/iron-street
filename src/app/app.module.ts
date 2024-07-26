@@ -51,6 +51,7 @@ import { ThemeService } from './services/theme-service.service';
 import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
+import { VertexAIService } from './services/vertex-ai.service';
 
 
 Amplify.configure(awsconfig);
@@ -131,7 +132,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       PreferencesService,
       TranslateService,
       FirebaseService,
-      AuthService
+      AuthService,
+      VertexAIService
     ],
   bootstrap: [AppComponent],
 })

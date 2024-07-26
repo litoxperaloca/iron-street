@@ -1,0 +1,54 @@
+{
+  "id": "00000000-0000-0000-0000-000000000007",
+  "name": "projects/ironbotagent/agent/intents/00000000-0000-0000-0000-000000000007",
+  "displayName": "Destination Query Intent",
+  "priority": 500000,
+  "webhookState": "WEBHOOK_STATE_ENABLED",
+  "mlDisabled": false,
+  "messages": [
+    {
+      "text": {
+        "text": [
+          "Buscando información sobre $destination_description..."
+        ]
+      }
+    }
+  ],
+  "events": [],
+  "trainingPhrases": [
+    {
+      "parts": [
+        {
+          "text": "Quiero ir a la Plaza Independencia"
+        }
+      ],
+      "type": "EXAMPLE"
+    },
+    {
+      "parts": [
+        {
+          "text": "¿Dónde está el Museo Nacional?"
+        }
+      ],
+      "type": "EXAMPLE"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "destination_description",
+      "displayName": "destination_description",
+      "value": "$destination_description",
+      "entityTypeDisplayName": "@sys.any",
+      "mandatory": true,
+      "prompts": [
+        {
+          "lang": "es",
+          "value": "Por favor, describe el destino que buscas."
+        }
+      ]
+    }
+  ],
+  "rootFollowupIntentName": "",
+  "parentFollowupIntentName": "",
+  "followupIntentInfo": []
+}

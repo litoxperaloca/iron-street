@@ -1000,7 +1000,7 @@ export class MapService {
     const userEvents = ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'];
 
     userEvents.forEach(event => {
-      this.mapbox.on(event as MapEvent, () => {
+      this.mapbox.on(event as any, () => {
         if (!this.mapEventIsFromTracking) {
           //console.log(`User interaction detected: ${event}`);
           this.trackingUser = false;

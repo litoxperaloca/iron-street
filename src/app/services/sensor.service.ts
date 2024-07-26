@@ -70,13 +70,13 @@ export class SensorService {
       source: '',
       sourceLayer: '',
       state: { selected: false },
-      _vectorTileFeature: undefined,
-      _x: 0,
-      _y: 0,
-      _z: 0,
-      toJSON: function ():any {
-        throw new Error('Function not implemented.');
-      }
+      //_vectorTileFeature: undefined,
+      //_x: 0,
+      //_y: 0,
+      //_z: 0,
+      //toJSON: function ():any {
+      //  throw new Error('Function not implemented.');
+      //}
     }
 
 

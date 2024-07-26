@@ -8,6 +8,8 @@ import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service';
 import { OsmService } from './osm.service';
 import { SensorService } from './sensor.service';
+import KalmanFilter from 'kalmanjs';
+import { retry } from 'rxjs';
 //import distance from '@turf/distance';
 interface Way {
   id: number,
@@ -40,7 +42,11 @@ export class SpeedService {
   dataLoaded: boolean = false;
   data: any = [];
   lastCurrentStreet!: MapboxGeoJSONFeature | null;
-
+  private kalmanFilter: KalmanFilter = new KalmanFilter();;
+  private positionChangeThreshold: number = 0.0001; // Define un umbral para considerar el cambio significativo
+/*La medida 0.0001 en positionChangeThreshold corresponde aproximadamente a 11.1 metros.
+Si deseas un umbral de 5 metros, puedes usar el valor 0.000045.
+Ajusta positionChangeThreshold según la distancia mínima que desees considerar como significativa para actualizar la posición del usuario. */
   constructor(
     private mapService: MapService,
     private geoLocationService: GeoLocationService,
@@ -82,12 +88,54 @@ export class SpeedService {
     if (userPosition === this.lastPosition) {
       return;
     }
-    this.lastPosition = userPosition;
-    this.updateUserStreet(userPosition);
-    const userCurrentStreet = await this.updateUserStreet(userPosition);
-    if (userCurrentStreet && userCurrentStreet.properties) {
-      (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
+    if(this.lastPosition){
+      let speed = userPosition.coords.speed;
+      if(speed){
+        speed = Math.round(speed * 60 * 60 / 1000);
+        if(speed<5){
+          return;
+        }
+      }
+      const filteredLat = this.kalmanFilter.filter(userPosition.coords.latitude);
+      const filteredLng = this.kalmanFilter.filter(userPosition.coords.longitude);
+      const distanceFromLastPosition = this.calculateDistance(filteredLat, filteredLng, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
+      if (distanceFromLastPosition > this.positionChangeThreshold) {
+        
+        this.lastPosition = userPosition;
+        
+        this.updateUserStreet(userPosition);
+        const userCurrentStreet = await this.updateUserStreet(userPosition);
+        if (userCurrentStreet && userCurrentStreet.properties) {
+          (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
+        }
+      }
+    }else{
+      this.lastPosition = userPosition;
+        
+        this.updateUserStreet(userPosition);
+        const userCurrentStreet = await this.updateUserStreet(userPosition);
+        if (userCurrentStreet && userCurrentStreet.properties) {
+          (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
+        }
     }
+    
+  }
+
+
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371e3; // Radio de la Tierra en metros
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distanceFromLastPosition = R * c; // en metros
+    return distanceFromLastPosition;
   }
 
   async updateUserStreet(position: Position): Promise<MapboxGeoJSONFeature | undefined> {

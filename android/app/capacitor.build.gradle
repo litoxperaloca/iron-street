@@ -31,6 +31,7 @@ dependencies {
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
     implementation project(':capacitor-toast')
+    implementation project(':jcesarmobile-ssl-skip')
 
 }
 
