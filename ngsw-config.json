@@ -11,8 +11,9 @@
           "/index.html",
           "/manifest.webmanifest",
           "/*.css",
-          "/*.js"
-        ]
+          "/*.js",
+          "/assets/utils/threebox.js",
+          "/assets/utils/threebox.css"        ]
       }
     },
     {
@@ -22,6 +23,9 @@
       "resources": {
         "files": [
           "/assets/**",
+          "/assets/models/**",
+          "/assets/models/*.glb",
+          "/assets/models/*.gltf",
           "/assets/img/**",
           "/assets/img/icons/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
           "/assets/img/map-icons/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
@@ -29,7 +33,7 @@
           "/assets/img/map-styles/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
           "/assets/fonts/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
           "/assets/about/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
-          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2|glb|gltf)"
         ]
       }
     }

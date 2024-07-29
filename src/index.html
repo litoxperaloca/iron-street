@@ -14,8 +14,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.3.0/mapbox-gl-directions.css" type="text/css"/>
-  <link href="https://unpkg.com/threebox-plugin/dist/threebox.css" rel="stylesheet"/>
-  <link rel="manifest" href="manifest.webmanifest" />
+	<script src="assets/utils/threebox/threebox.js" type="text/javascript"></script>
+	<link href="assets/utils/threebox/threebox.css" rel="stylesheet" />
+    <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#1976d2" />
   <style>
     .map-button:hover circle {
@@ -71,6 +72,22 @@
   <script>
     function selectRoute(routeIndex) {
       window.mapService.selectRoute(routeIndex);
+    }
+
+    window.setUtils = function(map, mbxContext){
+      //THREEBOX
+      window.tb = new Threebox(
+							map,
+							mbxContext,
+							{
+								defaultLights: true,
+                enableSelectingObjects: false,
+                enableSelectingFeatures: false, //change this to false to disable fill-extrusion features selection
+                enableDraggingObjects: false, //change this to false to disable 3D objects drag & move once selected
+                enableRotatingObjects: false, //change this to false to disable 3D objects rotation once selected
+                enableTooltips: false // change this to false to disable default tooltips on fill-extrusion and 3D models
+							}
+						);
     }
   </script>
 

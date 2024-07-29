@@ -32,7 +32,7 @@ export class TripService {
       units: 'kilometres',
       maxReRouteDistance: 1,
       maxSnapToLocation: 0.4,
-      warnUserTime: 12
+      warnUserTime: 50
     });
     // Periodically check user's location and update current step
     const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location

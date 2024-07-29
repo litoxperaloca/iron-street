@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
-import mapboxgl, { LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';
+import mapboxgl, { AnyLayer, LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';
 
 //import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from '@capacitor/geolocation';
@@ -17,13 +17,16 @@ import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
-
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MapService {
-
+  private tb!: any;
+  private carModel: any;
+  private modelTransform: any;
   private mapbox!: mapboxgl.Map;
   userLocationMarkerPrerequisitesOk: boolean = false;
   isAnimating: boolean = false; // Indicador de si una animación está en curso
@@ -64,6 +67,10 @@ export class MapService {
   showingMaxSpeedWay: boolean = false;
   showingMaxSpeedWayId: string | null = null;
   currentStreetChanged: EventEmitter<mapboxgl.MapboxGeoJSONFeature> = new EventEmitter<mapboxgl.MapboxGeoJSONFeature>();
+  scene: any;
+  renderer: any;
+  camera: any;
+  usetCurrentStreetHeading: number = 0;
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
@@ -88,8 +95,11 @@ export class MapService {
       attributionControl: environment.mapboxMapConfig.attributionControl,
       maxPitch: environment.mapboxMapConfig.maxPitch,
       maxZoom: environment.mapboxMapConfig.maxZoom,
-      projection: 'globe' as any
+      projection: 'globe' as any,
+      antialias:true
     });
+
+
 
 
     const MapboxDirections: any = require('@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions');
@@ -115,6 +125,7 @@ export class MapService {
       this.windowService.attachedTimeOut("home", "mapService_introTime", timeOutIntroTime);
       this.windowService.setValueIntoProperty('map', map);
       this.setDefaults();
+
       this.mapControls.directions.on('route', (event: any) => {
         const selectedIndex: number = this.mapControls.directions._stateSnapshot.routeIndex;
         const mapService = ((window as any).mapService as MapService);
@@ -216,7 +227,7 @@ export class MapService {
 
     const self = this;
     map.on('style.load', (event) => {
-
+      
       self.addAdditionalSourceAndLayer(self.sourcesAndLayers);
       if (self.isStandardMap) {
         const defaultLightPreset = this.light;
@@ -227,8 +238,82 @@ export class MapService {
         self.mapbox.setConfigProperty('basemap', 'showPlaceLabels', true);
       }
       self.mapbox.resize();
+       // eslint-disable-next-line no-undef
 
-    });
+      self.set3D();
+    }); 
+  }
+
+  set3D(){
+    const self = this;
+    this.mapbox.addLayer({
+      id: 'custom_layer',
+      type: 'custom',
+      renderingMode: '3d',
+      onAdd: function (map, mbxContext) {
+        (window as any).setUtils(self.mapbox, self.mapbox.getCanvas().getContext('webgl'));
+        self.tb = (window as any).tb;
+
+         var options = {
+          type: 'gltf',
+          obj: '/assets/models/car.glb',
+          scale: 2,
+          units: 'meters',
+          anchor: "top",
+          rotation: { x: 90, y: 0, z: 0 }, //rotation to postiion the truck and heading properly
+
+        }
+
+        self.tb.loadObj(options, function (model:any) {
+          let origin=[0,0];
+          if(self.geoLocationService.getLastCurrentLocation())origin = [self.geoLocationService.getLastCurrentLocation().coords.longitude,self.geoLocationService.getLastCurrentLocation().coords.latitude];
+          self.carModel = model.setCoords(origin);
+          self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+          self.tb.add(self.carModel);
+        })
+
+      },
+
+      render: function (gl:any, matrix:any) {
+        self.tb.update();
+      }
+  });
+  }
+
+  updateModelRotation(degBasedOnMapNorth:number){
+    let degInvertedOrientation:number = 360-degBasedOnMapNorth;
+    let rad = this.toRad(degInvertedOrientation);
+    let zAxis = new THREE.Vector3(0, 0, 1);
+    //this.carModel.setRotation({ x: 90, y: -90, z: rotationVision });
+    this.carModel.setRotationFromAxisAngle(zAxis,rad);
+    //this.mapbox.triggerRepaint();
+  }
+
+  toDeg(rad:number) {
+    return rad / Math.PI * 180;
+  }
+
+  toRad(deg:number) {
+    return deg * Math.PI / 180;
+  }
+
+  onModelChanged(e:any) {
+    let model = e.detail.object; //here's the object already modified
+    let action = e.detail.action; //here's the action that changed the object
+    //console.log(model);
+  }
+
+
+  updateModelPosition(coords: [number, number]) {
+    if (this.carModel) {
+      /*const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
+        coords,
+        0
+      );*/
+      this.carModel.setCoords(coords);
+      //this.tb.add(this.carModel);
+      //this.mapbox.triggerRepaint();
+    }
   }
 
   addLongPressHandler() {
@@ -694,6 +779,7 @@ export class MapService {
     }
   }
 
+
   getUserMarker(): mapboxgl.Marker {
     if (!this.userMarkerInstance) {
       const el = document.createElement('div');
@@ -1019,10 +1105,38 @@ export class MapService {
     this.addSymbolTileVectorLayer(map, "ironcamera.png", "custom-speed-camera-marker", "speedCamerasDataSource", "litoxperaloca.c1pj6s0f", 0.60, "speedCamerasDataLayer", "speed_cameras_uruguay-9ef5og", 12, 22);
   }
 
+  getOSMStreetHeading(street:mapboxgl.MapboxGeoJSONFeature): number {
+    if(!street.properties || !street.properties["oneway"] || street.geometry.type!="LineString")return 0;
+    const oneway = street.properties["oneway"];
+    const coordinates = street.geometry.coordinates;
+
+    // Asegúrate de que la línea tenga al menos dos puntos
+    if (coordinates.length < 2) return 0;
+
+    // Usar los dos primeros puntos de la línea para calcular el heading
+    const [start, end] = oneway === '-1' ? [coordinates[1], coordinates[0]] : [coordinates[0], coordinates[1]];
+
+    // Calcular las diferencias de longitud y latitud
+    const deltaX = end[0] - start[0];
+    const deltaY = end[1] - start[1];
+
+    // Calcular el ángulo en radianes
+    const angleInRadians = Math.atan2(deltaY, deltaX);
+
+    // Convertir a grados
+    let angleInDegrees = angleInRadians * 180 / Math.PI;
+
+    // Ajustar el rango a [0, 360)
+    angleInDegrees = (angleInDegrees + 360) % 360;
+
+    return angleInDegrees;
+  } 
+  
   setUserCurrentStreet(currentStreet: mapboxgl.MapboxGeoJSONFeature | null) {
     this.userCurrentStreet = currentStreet;
     if (this.userCurrentStreet) {
       this.currentStreetChanged.emit(this.userCurrentStreet);
+      this.usetCurrentStreetHeading=this.getOSMStreetHeading(this.userCurrentStreet);
     }
 
     if (this.showingMaxSpeedWay) {
@@ -1444,14 +1558,16 @@ export class MapService {
       const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), newHeading, progress);
 
       userMarker.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+      this.updateModelPosition(interpolatedPosition as [number,number]);
       userMarkerVision.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+      this.updateModelRotation(interpolatedRotation);
 
       if (progress < 1) {
         let frame = requestAnimationFrame(animateMarker);
         this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
 
       } else {
-        this.completeAnimation(newPosition, newHeading, rotationVision);
+        this.completeAnimation(newPosition, newHeading);
       }
     };
 
@@ -1462,7 +1578,11 @@ export class MapService {
   private createAndPositionUserMarker(newPosition: mapboxgl.LngLat, rotation: number) {
     const userMarker = this.getUserMarker().setLngLat(newPosition).setRotation(rotation).addTo(this.mapbox);
     this.getUserVisionMarker().setLngLat(newPosition).addTo(this.mapbox);
-    this.updateMarkerRotation(0);
+    this.updateModelPosition(newPosition.toArray());
+
+    this.updateMarkerRotation(rotation);
+    this.updateModelRotation(rotation);
+
 
     if (this.isRotating) {
       this.trackingUser = true;
@@ -1502,13 +1622,14 @@ export class MapService {
     return startRotation + (targetRotation - startRotation) * progress;
   }
 
-  private completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number, rotationVision: number) {
+  private completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number) {
     const userMarker = this.getUserMarker();
     const userMarkerVision = this.getUserVisionMarker();
 
     userMarker.setLngLat(newPosition).setRotation(newHeading);
+    this.updateModelPosition(newPosition.toArray());
     userMarkerVision.setLngLat(newPosition).setRotation(newHeading);
-    this.updateMarkerRotation(rotationVision);
+    this.updateModelRotation(newHeading);
 
     this.isAnimating = false;
     this.lastPosition = newPosition;

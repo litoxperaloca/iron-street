@@ -195,6 +195,7 @@ ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
     content: "";
     position: absolute;
     box-shadow: 0px 0px 10px 3px #E91E63;
+    display: none;
 }
 
 .mapboxgl-user-puk{
@@ -206,6 +207,7 @@ ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
     top: -10px;
     background-repeat: no-repeat;
     background-size: 100% 100%;
+    display: none;
 }
 
 #userMarkerVisionRadio{
@@ -226,6 +228,7 @@ ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
     opacity: 0.3;
     border-top-left-radius: 50%;
     border-top-right-radius: 50%;
+    display: none;
 }
 
 .markerVision {
@@ -233,6 +236,7 @@ ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
     height: 1px;
     background-color: transparent;
     position: absolute;
+    display: none;
 }
 
 .arrowVision {
@@ -251,6 +255,7 @@ ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
     border-top-left-radius: 50%;
     border-top-right-radius: 50%;
     opacity: 0.3;
+    display: none;
 }
 
 .mapboxgl-user-location.mapboxgl-marker{
