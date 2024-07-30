@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-padding">{{ "Localizador" | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+
+
+  <div>
+
+    <div>
+          <ion-icon name="car-outline" size="big" color="danger">
+          </ion-icon>
+          <h4 class="ion-padding">Selecciona un diseño para el marcador que representa tu posición:</h4>
+
+  
+          <ion-grid *ngIf="!isLoading">
+            <ion-row>
+              <ion-col size="6" *ngFor="let locator of locators">
+                <div class="icon-above-text" (click)="setLocator(locator)">
+                  <ion-img color="dark" [src]="locator.img"></ion-img>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+            <div *ngIf="isLoading">
+              <ion-spinner name="crescent" class="centeredSpinner"></ion-spinner>
+            </div>
+     
+    </div>
+
+
+  </div>
+
+</ion-content>

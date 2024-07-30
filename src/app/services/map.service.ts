@@ -280,6 +280,22 @@ export class MapService {
   });
   }
 
+  setLocator(locator:any){
+    const options = locator.options;
+    const self:MapService = this;
+    let origin=self.carModel.coordinates;
+    let rotation = self.carModel.rotation;
+    this.tb.remove(self.carModel);
+    this.tb.loadObj(options, function (model:any) {
+      self.carModel = model.setCoords(origin);
+      self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+      self.tb.add(self.carModel);
+      self.tb.update();
+      self.tb.carModel.setRotation(rotation);
+      self.tb.update();
+    })
+  }
+
   updateModelRotation(degBasedOnMapNorth:number){
     let degInvertedOrientation:number = 360-degBasedOnMapNorth;
     let rad = this.toRad(degInvertedOrientation);

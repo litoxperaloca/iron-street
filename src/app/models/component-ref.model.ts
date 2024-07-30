@@ -10,6 +10,7 @@ import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-m
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
 import { SettingsModalComponent } from '../modals/settings/settings-modal.component'; // Importa el resto de tus componentes
+import { UserMarkerSettingsModalComponent } from '../modals/user-marker-settings-modal/user-marker-settings-modal.component';
 import { YourSpeedModalComponent } from '../modals/your-speed-modal/your-speed-modal.component';
 import { ModalComponents } from './modal-components.enum'; // Import the ModalComponents enum
 
@@ -112,6 +113,14 @@ export const ComponentRef = {
   },
   [ModalComponents.IronBot]: {
     component: IronBotModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.5, 0.75, 1],
+    initialBreakpoint: 0.5,
+    backdropBreakpoint: 1,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.UserMarkerSettings]: {
+    component: UserMarkerSettingsModalComponent,
     cssClass: 'bottom-sheet-modal',
     breakpoints: [0, 0.5, 0.75, 1],
     initialBreakpoint: 0.5,

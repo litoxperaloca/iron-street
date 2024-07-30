@@ -52,6 +52,7 @@ import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
 import { VertexAIService } from './services/vertex-ai.service';
+import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
 
 
 Amplify.configure(awsconfig);
@@ -82,7 +83,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       MaxSpeedDetailsModalComponent,
       YourSpeedModalComponent,
       DebugModalComponent,
-      IronBotModalComponent
+      IronBotModalComponent,
+      UserMarkerSettingsModalComponent
     ],
   imports: [
 

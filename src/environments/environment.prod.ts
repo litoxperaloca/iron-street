@@ -1,4 +1,34 @@
 export const environment = {
+  locators: [
+    {
+      img: '/assets/img/cars/car.png',
+      name: 'Auto rojo',
+      id: 'car',
+      type: '3D',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/car.glb',
+        scale: 2,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 90, y: 0, z: 0 }
+      }
+    },
+    {
+      img: '/assets/img/cars/1949_-_cadillac_series_62.png',
+      name: 'Cadillac',
+      id: '1949_-_cadillac_series_62',
+      type: '3D',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/1949_-_cadillac_series_62.glb',
+        scale: 4,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 90, y: 0, z: 0 }
+      }
+    }
+  ],
   production: true,
   mocking: false,
   blogConfig: {

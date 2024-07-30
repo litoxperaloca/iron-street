@@ -11,7 +11,8 @@ export enum ModalComponents {
   MaxSpeed = 'MaxSpeed',
   YourSpeed = 'YourSpeed',
   Debug = 'Debug',
-  IronBot = 'IronBot'
+  IronBot = 'IronBot',
+  UserMarkerSettings = 'UserMarkerSettingsModal'
 }
 
 
@@ -28,6 +29,7 @@ import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-m
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
 import { SettingsModalComponent } from '../modals/settings/settings-modal.component';
+import { UserMarkerSettingsModalComponent } from '../modals/user-marker-settings-modal/user-marker-settings-modal.component';
 import { YourSpeedModalComponent } from '../modals/your-speed-modal/your-speed-modal.component';
 // Mapeo de tipos de modal a componentes
 export const ModalComponentMap: { [key in ModalComponents]: any } = {
@@ -44,7 +46,9 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.MaxSpeed]: MaxSpeedDetailsModalComponent,
   [ModalComponents.YourSpeed]: YourSpeedModalComponent,
   [ModalComponents.Debug]: DebugModalComponent,
-  [ModalComponents.IronBot]: IronBotModalComponent
+  [ModalComponents.IronBot]: IronBotModalComponent,
+  [ModalComponents.UserMarkerSettings]: UserMarkerSettingsModalComponent
+
 
 
 
