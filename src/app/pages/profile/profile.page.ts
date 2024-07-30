@@ -70,7 +70,7 @@ export class ProfilePage implements OnInit {
     try {
       await this.authService.updateUserInfo(this.userInfo);
       // Mostrar mensaje de éxito
-      console.log('Información actualizada exitosamente.');
+      //console.log('Información actualizada exitosamente.');
     } catch (error) {
       // Manejar errores
       console.error('Error al actualizar la información:', error);
@@ -97,7 +97,7 @@ export class ProfilePage implements OnInit {
     try {
       await this.authService.updateUserInfo(this.userInfo);
       // Mostrar mensaje de éxito
-      console.log('Información actualizada exitosamente.');
+      //console.log('Información actualizada exitosamente.');
     } catch (error) {
       // Manejar errores
       console.error('Error al actualizar la información:', error);

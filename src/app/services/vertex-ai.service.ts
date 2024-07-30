@@ -29,7 +29,7 @@ async run() {
 
   const result = await model.generateContent(prompt);
   const text = result.response.text();
-  console.log(text);
+  //console.log(text);
 }
 
 //ADD A FUNCTION TO SEND A REQUEST TO A CHAT GENERATIVE AI including chat history

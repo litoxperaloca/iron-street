@@ -279,6 +279,9 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
           if (speed) {
             self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
             //self.currentSpeedometerNeedleRotation = self.needleRotation();
+            if(self.currentSpeed<5){
+              self.currentSpeed=0;
+            }
           } else {
             self.currentSpeed = 0;
           }

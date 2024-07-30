@@ -109,7 +109,7 @@ export class SearchModalComponent {
       if (searchMpde == "strContains") {
         this.groupedPlaces = {};
         await this.amazonLocationServiceService.searchByText(this.searchTerm).then((response: Place[] | undefined) => {
-          console.log(response);
+          //console.log(response);
           if (response) this.suggestions = response;
           this.suggestions.forEach(place => {
             const countryCode: string = place.country;
@@ -126,7 +126,7 @@ export class SearchModalComponent {
 
         });
         await this.osmService.searchByText(this.searchTerm).then((response: any) => {
-          console.log(response);
+          //console.log(response);
           const osmData = this.formatOSMResponse(response.data.features);//this.suggestions.join = response;
           osmData.forEach(place => {
             if (place) {
@@ -144,7 +144,7 @@ export class SearchModalComponent {
           });
         });
         this.segmentIsLoading[this.currentSegment] = false;
-        console.log(this.groupedPlaces);
+        //console.log(this.groupedPlaces);
 
       } else {
         await this.amazonLocationServiceService.suggestPlace(this.searchTerm).then((response: SearchForSuggestionsResults) => {

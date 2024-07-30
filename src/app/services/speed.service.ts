@@ -174,7 +174,7 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
         closestFeature = way;
       }
     });
-    console.log(closestFeature);
+    //console.log(closestFeature);
     return closestFeature;
   }
 
