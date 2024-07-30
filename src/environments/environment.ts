@@ -5,6 +5,7 @@ export const environment = {
       name: 'Auto rojo',
       id: 'car',
       type: '3D',
+      vehicleType: 'car',
       options: {
         type: 'gltf',
         obj: '/assets/models/car.glb',
@@ -19,10 +20,71 @@ export const environment = {
       name: 'Cadillac',
       id: '1949_-_cadillac_series_62',
       type: '3D',
+      vehicleType: 'car',
       options: {
         type: 'gltf',
         obj: '/assets/models/1949_-_cadillac_series_62.glb',
-        scale: 4,
+        scale: 8,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 90, y: 0, z: 0 }
+      }
+    },
+    {
+      img: '/assets/img/cars/bumble_bee.png',
+      name: 'Fusca',
+      id: 'bumble_bee',
+      type: '3D',
+      vehicleType: 'car',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/bumble_bee.glb',
+        scale: 8,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 90, y: 0, z: 0 }
+      }
+    },
+    {
+      img: '/assets/img/cars/izh-2715-pickup.png',
+      name: 'Pickup',
+      id: 'izh-2715-pickup',
+      type: '3D',
+      vehicleType: 'car',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/izh-2715-pickup.glb',
+        scale: 8,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 90, y: 0, z: 0 }
+      }
+    },
+    {
+      img: '/assets/img/motorbikes/moto_vespa.png',
+      name: 'Vespa',
+      id: 'moto_vespa',
+      type: '3D',
+      vehicleType: 'motorbike',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/moto_vespa.glb',
+        scale: 8,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 90, y: 0, z: 0 }
+      }
+    },
+    {
+      img: '/assets/img/motorbikes/motorcycle_harley_davidson_fat_boy.png',
+      name: 'Harley',
+      id: 'motorcycle_harley_davidson_fat_boy',
+      type: '3D',
+      vehicleType: 'motorbike',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/motorcycle_harley_davidson_fat_boy.glb',
+        scale: 8,
         units: 'meters',
         anchor: "top",
         rotation: { x: 90, y: 0, z: 0 }

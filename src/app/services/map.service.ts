@@ -70,7 +70,7 @@ export class MapService {
   scene: any;
   renderer: any;
   camera: any;
-  usetCurrentStreetHeading: number = 0;
+  userCurrentStreetHeading: number = 0;
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
@@ -1152,7 +1152,7 @@ export class MapService {
     this.userCurrentStreet = currentStreet;
     if (this.userCurrentStreet) {
       this.currentStreetChanged.emit(this.userCurrentStreet);
-      this.usetCurrentStreetHeading=this.getOSMStreetHeading(this.userCurrentStreet);
+      this.userCurrentStreetHeading=this.getOSMStreetHeading(this.userCurrentStreet);
     }
 
     if (this.showingMaxSpeedWay) {
@@ -1536,7 +1536,7 @@ export class MapService {
     return 0; // Default heading si no hay suficiente info
   }
 
-  public updateUserMarkerSnapedPosition() {
+  public updateUserMarkerSnapedPosition(useStreetHeading:boolean) {
     const newCoordinates: [number, number] = [
       this.sensorService.getSensorSnapLongitude(),
       this.sensorService.getSensorSnapLatitude()
@@ -1544,7 +1544,10 @@ export class MapService {
     const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
     const userMarker = this.getUserMarker();
     const userMarkerVision = this.getUserVisionMarker();
-    const rotationVision = this.sensorService.getSensorHeadingAbs();
+    let rotationVision = this.sensorService.getSensorHeadingAbs();
+    if(useStreetHeading){
+      rotationVision=this.userCurrentStreetHeading;
+    }
     const animationDuration = 800;
 
     // If the user marker doesn't exist, create it

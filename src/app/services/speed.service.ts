@@ -90,12 +90,12 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     }
     if(this.lastPosition){
       let speed = userPosition.coords.speed;
-      if(speed){
+      /*if(speed){
         speed = Math.round(speed * 60 * 60 / 1000);
         if(speed<5){
           return;
         }
-      }
+      }*/
       const filteredLat = this.kalmanFilter.filter(userPosition.coords.latitude);
       const filteredLng = this.kalmanFilter.filter(userPosition.coords.longitude);
       const distanceFromLastPosition = this.calculateDistance(filteredLat, filteredLng, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
@@ -103,17 +103,25 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
         
         this.lastPosition = userPosition;
         
-        this.updateUserStreet(userPosition);
-        const userCurrentStreet = await this.updateUserStreet(userPosition);
+        //this.updateUserStreet(userPosition);
+        const userCurrentStreet = await this.updateUserStreet(userPosition,false);
         if (userCurrentStreet && userCurrentStreet.properties) {
           (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
+        }
+      }else{
+        if(!this.lastCurrentStreet){
+          //this.updateUserStreet(userPosition);
+          const userCurrentStreet = await this.updateUserStreet(userPosition,true);
+          if (userCurrentStreet && userCurrentStreet.properties) {
+            (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
+          }
         }
       }
     }else{
       this.lastPosition = userPosition;
         
-        this.updateUserStreet(userPosition);
-        const userCurrentStreet = await this.updateUserStreet(userPosition);
+        //this.updateUserStreet(userPosition);
+        const userCurrentStreet = await this.updateUserStreet(userPosition,true);
         if (userCurrentStreet && userCurrentStreet.properties) {
           (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
         }
@@ -138,7 +146,7 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     return distanceFromLastPosition;
   }
 
-  async updateUserStreet(position: Position): Promise<MapboxGeoJSONFeature | undefined> {
+  async updateUserStreet(position: Position,useStreetHeading:boolean): Promise<MapboxGeoJSONFeature | undefined> {
     const mapService = ((window as any).mapService as MapService)
     const map = mapService.getMap();
 
@@ -153,7 +161,8 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     if (features.length > 0) {
       const closestFeature = await this.findClosestFeature(features, userPoint);
       mapService.setUserCurrentStreet(closestFeature);
-      this.updateSnapToRoadPosition(closestFeature, userPoint);
+      this.updateSnapToRoadPosition(closestFeature, userPoint,useStreetHeading);
+      this.lastCurrentStreet=closestFeature;
       if (closestFeature) return closestFeature;
     }
     return;
@@ -210,11 +219,11 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     return closestFeature;
   }
 
-  private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any): void {
+  private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any, useStreetHeading:boolean): void {
     const sensorService = ((window as any).sensorService as SensorService);
     if (closestFeature && closestFeature.geometry!.type === 'LineString') {
       const nearestPoint: NearestPointOnLine = nearestPointOnLine(lineString(closestFeature.geometry!.coordinates), userPoint);
-      sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint);
+      sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint,useStreetHeading);
     }
   }
 

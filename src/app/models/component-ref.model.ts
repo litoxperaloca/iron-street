@@ -122,8 +122,8 @@ export const ComponentRef = {
   [ModalComponents.UserMarkerSettings]: {
     component: UserMarkerSettingsModalComponent,
     cssClass: 'bottom-sheet-modal',
-    breakpoints: [0, 0.5, 0.75, 1],
-    initialBreakpoint: 0.5,
+    breakpoints: [0, 1],
+    initialBreakpoint: 1,
     backdropBreakpoint: 1,
     props: {} // Añade las propiedades que necesites
   },

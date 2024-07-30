@@ -172,12 +172,12 @@ export class SensorService {
     }
   }
 
-  updateSnapToRoadPosition(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any) {
+  updateSnapToRoadPosition(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any, useStreetHeading:boolean) {
     this.sensorData.snapLatitude = coordinates[1];
     this.sensorData.snapLongitude = coordinates[0];
     this.sensorData.closestStreetFeatureLine = feature;
     this.sensorData.closestPoint = nearestPoint;
-    ((window as any).mapService as MapService).updateUserMarkerSnapedPosition();
+    ((window as any).mapService as MapService).updateUserMarkerSnapedPosition(useStreetHeading);
   }
 
   getLastCurrentLocationPredicted(): [number, number] {
