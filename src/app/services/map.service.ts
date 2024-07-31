@@ -17,8 +17,6 @@ import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 @Injectable({
   providedIn: 'root'
@@ -280,26 +278,26 @@ export class MapService {
   });
   }
 
-  setLocator(locator:any){
+  async setLocator(locator:any){
     const options = locator.options;
     const self:MapService = this;
-    let origin=self.carModel.coordinates;
-    let rotation = self.carModel.rotation;
+    const origin=this.carModel.coordinates;
+    const rotation = this.carModel.rotation;
     this.tb.remove(self.carModel);
-    this.tb.loadObj(options, function (model:any) {
+    await this.tb.loadObj(options, function (model:any) {
       self.carModel = model.setCoords(origin);
       self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
       self.tb.add(self.carModel);
-      self.tb.update();
-      self.tb.carModel.setRotation(rotation);
-      self.tb.update();
-    })
+    });
+    this.carModel.setRotation(rotation);
+    this.tb.update();
+
   }
 
   updateModelRotation(degBasedOnMapNorth:number){
     let degInvertedOrientation:number = 360-degBasedOnMapNorth;
     let rad = this.toRad(degInvertedOrientation);
-    let zAxis = new THREE.Vector3(0, 0, 1);
+    let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
     //this.carModel.setRotation({ x: 90, y: -90, z: rotationVision });
     this.carModel.setRotationFromAxisAngle(zAxis,rad);
     //this.mapbox.triggerRepaint();
@@ -1131,21 +1129,12 @@ export class MapService {
 
     // Usar los dos primeros puntos de la línea para calcular el heading
     const [start, end] = oneway === '-1' ? [coordinates[1], coordinates[0]] : [coordinates[0], coordinates[1]];
-
-    // Calcular las diferencias de longitud y latitud
-    const deltaX = end[0] - start[0];
-    const deltaY = end[1] - start[1];
-
-    // Calcular el ángulo en radianes
-    const angleInRadians = Math.atan2(deltaY, deltaX);
-
-    // Convertir a grados
-    let angleInDegrees = angleInRadians * 180 / Math.PI;
-
-    // Ajustar el rango a [0, 360)
-    angleInDegrees = (angleInDegrees + 360) % 360;
-
-    return angleInDegrees;
+    let coordsFrom:mapboxgl.LngLat = new mapboxgl.LngLat(start[0], start[1]);
+    let coordsTo:mapboxgl.LngLat = new mapboxgl.LngLat(end[0], end[1]);
+    return turf.bearing(
+      turf.point([coordsFrom.lng, coordsFrom.lat]),
+      turf.point([coordsTo.lng, coordsTo.lat])
+    );
   } 
   
   setUserCurrentStreet(currentStreet: mapboxgl.MapboxGeoJSONFeature | null) {
@@ -1618,14 +1607,14 @@ export class MapService {
     }
   }
 
-  private calculateHeading(startPosition: mapboxgl.LngLat, newPosition: mapboxgl.LngLat, currentRotation: number): number {
-    if (!this.lastPosition) return currentRotation || 0;
+  calculateHeading(startPosition: mapboxgl.LngLat, newPosition: mapboxgl.LngLat, currentRotation: number): number {
+    //if (!this.lastPosition) return currentRotation || 0;
 
     const positionsAreEqual = startPosition.lat == newPosition.lat && startPosition.lng == newPosition.lng;
-    if (positionsAreEqual) return currentRotation || 0;
+    if (positionsAreEqual) return currentRotation;
 
     return turf.bearing(
-      turf.point([this.lastPosition.lng, this.lastPosition.lat]),
+      turf.point([startPosition.lng, startPosition.lat]),
       turf.point([newPosition.lng, newPosition.lat])
     );
   }

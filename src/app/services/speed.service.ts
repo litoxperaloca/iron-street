@@ -88,43 +88,20 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     if (userPosition === this.lastPosition) {
       return;
     }
+    let useStreetHeading = true;
     if(this.lastPosition){
-      let speed = userPosition.coords.speed;
-      /*if(speed){
-        speed = Math.round(speed * 60 * 60 / 1000);
-        if(speed<5){
-          return;
-        }
-      }*/
       const filteredLat = this.kalmanFilter.filter(userPosition.coords.latitude);
       const filteredLng = this.kalmanFilter.filter(userPosition.coords.longitude);
       const distanceFromLastPosition = this.calculateDistance(filteredLat, filteredLng, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
+
       if (distanceFromLastPosition > this.positionChangeThreshold) {
-        
-        this.lastPosition = userPosition;
-        
-        //this.updateUserStreet(userPosition);
-        const userCurrentStreet = await this.updateUserStreet(userPosition,false);
-        if (userCurrentStreet && userCurrentStreet.properties) {
-          (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
-        }
-      }else{
-        if(!this.lastCurrentStreet){
-          //this.updateUserStreet(userPosition);
-          const userCurrentStreet = await this.updateUserStreet(userPosition,true);
-          if (userCurrentStreet && userCurrentStreet.properties) {
-            (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
-          }
-        }
+        useStreetHeading=false;
       }
-    }else{
-      this.lastPosition = userPosition;
-        
-        //this.updateUserStreet(userPosition);
-        const userCurrentStreet = await this.updateUserStreet(userPosition,true);
-        if (userCurrentStreet && userCurrentStreet.properties) {
-          (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
-        }
+    }
+    this.lastPosition = userPosition;
+    const userCurrentStreet = await this.updateUserStreet(userPosition,useStreetHeading);
+    if (userCurrentStreet && userCurrentStreet.properties) {
+      (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
     }
     
   }

@@ -2,5 +2,32 @@
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d
 RewriteRule ^ - [L]
+
 # If the requested resource doesn't exist, use index.html
 RewriteRule ^ /index.html
+
+# Configuración de cookies
+Header always edit Set-Cookie (.*) "$1; SameSite=None; Secure"
+
+# Encabezados de seguridad
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' https://trusted.cdn.com; style-src 'self' https://trusted.cdn.com;"
+Header always append X-Frame-Options SAMEORIGIN
+Header always set X-Content-Type-Options nosniff
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+# Configuración de caché
+<FilesMatch "\.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|ttf|otf)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+<Files "manifest.json">
+    Header set Cache-Control "max-age=86400, public"
+</Files>
+
+<Files "service-worker.js">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+</Files>
+
+# Redirige a una página de error personalizada si no se encuentra la página
+ErrorDocument 404 /offline.html
