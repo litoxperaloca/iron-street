@@ -114,7 +114,7 @@ export const environment = {
       {
         maneuverType: 'turn',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, manténgase a la {modifier} y {instruction}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
         announcement: '{instruction}.',
@@ -130,7 +130,7 @@ export const environment = {
       {
         maneuverType: 'end of road',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, llegando al final de esta calle, manténgase a la {modifier}, {instruction}.',
+        preAnnouncement: 'En {distance} metros, llegando al final de esta calle, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
         announcement: '{instruction}.',
@@ -338,7 +338,7 @@ export const environment = {
       {
         maneuverType: 'arrive',
         preAnnounce: true,
-        preAnnouncement: 'Último paso: en {distance} metros, {instruction}.',
+        preAnnouncement: 'Buenas noticias: en {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
         announcement: '{instruction}. Viaje completado',

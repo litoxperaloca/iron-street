@@ -950,6 +950,10 @@ export class MapService {
     this.destination = "";
 
     this.isTripStarted = false;
+    if (environment.mocking) {
+      environment.mocking = false;
+      this.geoLocationService.mocking = false;
+    }
     this.mapControls.directions.removeRoutes();
     this.mapControls.directions.actions.clearDestination();
     this.mapControls.directions.actions.clearOrigin();
@@ -960,10 +964,7 @@ export class MapService {
     ((window as any).mapService as MapService).currentStep = 0;
     ((window as any).mapService as MapService).alreadySpoken = false;
     ((window as any).tripService as TripService).cancelTrip();
-    if (environment.mocking) {
-      environment.mocking = false;
-      this.geoLocationService.mocking = false;
-    }
+
   }
 
   cancelTripSimulation(): void {

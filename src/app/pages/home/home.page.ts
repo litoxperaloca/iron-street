@@ -459,8 +459,11 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     if (poste) { poste.style.display = "none"; }*/
     if (this.simulation) {
       this.cancelTripSimulation();
+      this.startWatchingPosition();
+    }else{
+      this.mapService.cancelTrip();
+
     }
-    this.mapService.cancelTrip();
     this.setCameraMode('SKY');
   }
 
