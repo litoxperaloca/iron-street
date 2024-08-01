@@ -22,7 +22,7 @@ import { SensorService } from '../../services/sensor.service';
 import { SpeechRecognitionService } from '../../services/speech-recognition.service';
 import { SpeedService } from '../../services/speed.service';
 import { ToastService } from '../../services/toast.service';
-import { TripService } from '../../services/trip.service';
+import { TripService } from '../../services/trip.service'
 import { VoiceService } from '../../services/voice.service';
 
 @Component({

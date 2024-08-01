@@ -17,7 +17,6 @@ import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -352,7 +351,7 @@ export class MapService {
             }
             const coordinates = e.lngLat;
             this.addMarkerWithPopup(coordinates);
-          }, 1500); // 1000ms for a long press
+          }, 3000); // 1000ms for a long press
           this.windowService.attachedTimeOut("home", "mapService_longPressTimer", longPressTimer);
 
         }
@@ -707,6 +706,16 @@ export class MapService {
     ((window as any).homePage as HomePage).tripDuration = parseFloat(durationMain.toFixed(2));
   }
 
+  changeRoute(route:any){
+    this.actualRoute=route;
+    const distanceMain = this.actualRoute.distance / 1000;
+    const durationMain = this.actualRoute.duration / 60;
+    //((window as any).homePage as HomePage).tripDistance = parseFloat(distanceMain.toFixed(2));
+    //((window as any).homePage as HomePage).tripDuration = parseFloat(durationMain.toFixed(2));
+    (this.mapbox.getSource('route') as mapboxgl.GeoJSONSource).setData(route.geometry);
+
+  }
+
   getMap(): mapboxgl.Map {
     return this.mapbox;
   }
@@ -1007,7 +1016,7 @@ export class MapService {
           // Set initial step index to 0
           let currentStepIndex = 0;
           // Speak the instruction associated with the first step
-          ((window as any).tripService as TripService).startTrip(route.legs[0]);
+          ((window as any).tripService as TripService).startTrip(route);
         }
       }
     }

@@ -53,6 +53,8 @@ import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
 import { VertexAIService } from './services/vertex-ai.service';
 import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
+import { MapboxService } from './services/mapbox.service';
+import { TrafficAlertServiceService } from './services/traffic-alert-service.service';
 
 
 Amplify.configure(awsconfig);
@@ -135,7 +137,9 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       TranslateService,
       FirebaseService,
       AuthService,
-      VertexAIService
+      VertexAIService,
+      MapboxService,
+      TrafficAlertServiceService
     ],
   bootstrap: [AppComponent],
 })
