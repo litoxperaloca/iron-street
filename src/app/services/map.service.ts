@@ -1562,7 +1562,10 @@ export class MapService {
     }
 
     const startPosition = userMarker.getLngLat();
-    const newHeading = this.calculateHeading(startPosition, newPosition, userMarker.getRotation());
+    let newHeading = this.calculateHeading(startPosition, newPosition, userMarker.getRotation());
+    if(useStreetHeading){
+      newHeading=this.userCurrentStreetHeading;
+    }
     const startTime = performance.now();
 
     this.isAnimating = true;

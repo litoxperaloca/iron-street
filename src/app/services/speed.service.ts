@@ -94,9 +94,9 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
       const filteredLng = this.kalmanFilter.filter(userPosition.coords.longitude);
       const distanceFromLastPosition = this.calculateDistance(filteredLat, filteredLng, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
 
-      if (distanceFromLastPosition > this.positionChangeThreshold) {
+      /*if (distanceFromLastPosition > this.positionChangeThreshold) {
         useStreetHeading=false;
-      }
+      }*/
     }
     this.lastPosition = userPosition;
     const userCurrentStreet = await this.updateUserStreet(userPosition,useStreetHeading);
