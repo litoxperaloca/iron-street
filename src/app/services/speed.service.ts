@@ -10,6 +10,7 @@ import { OsmService } from './osm.service';
 import { SensorService } from './sensor.service';
 import KalmanFilter from 'kalmanjs';
 import { retry } from 'rxjs';
+import { MapboxService } from './mapbox.service';
 //import distance from '@turf/distance';
 interface Way {
   id: number,
@@ -43,15 +44,14 @@ export class SpeedService {
   data: any = [];
   lastCurrentStreet!: MapboxGeoJSONFeature | null;
   private kalmanFilter: KalmanFilter = new KalmanFilter();;
-  private positionChangeThreshold: number = 0.0001; // Define un umbral para considerar el cambio significativo
-/*La medida 0.0001 en positionChangeThreshold corresponde aproximadamente a 11.1 metros.
-Si deseas un umbral de 5 metros, puedes usar el valor 0.000045.
-Ajusta positionChangeThreshold según la distancia mínima que desees considerar como significativa para actualizar la posición del usuario. */
+  private positionChangeThreshold: number = 10; // metros.
+
   constructor(
     private mapService: MapService,
     private geoLocationService: GeoLocationService,
     private sensorService: SensorService,
-    private osmService: OsmService
+    private osmService: OsmService,
+    private mapboxService: MapboxService,
   ) { }
 
 
@@ -89,17 +89,22 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
       return;
     }
     let useStreetHeading = true;
+    let userMoved = false;
     if(this.lastPosition){
-      const filteredLat = this.kalmanFilter.filter(userPosition.coords.latitude);
-      const filteredLng = this.kalmanFilter.filter(userPosition.coords.longitude);
-      const distanceFromLastPosition = this.calculateDistance(filteredLat, filteredLng, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
+      const filteredLat = (userPosition.coords.latitude);
+      const filteredLng = (userPosition.coords.longitude);
+      /*const distanceFromLastPosition = this.calculateDistance(filteredLat, filteredLng, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
+      console.log(distanceFromLastPosition);*/
+      const distanceFromLastPosition = this.mapboxService.calculateDistance([filteredLng, filteredLat], [this.lastPosition.coords.longitude, this.lastPosition.coords.latitude]);
+      //console.log(distanceFromLastPosition);
 
-      /*if (distanceFromLastPosition > this.positionChangeThreshold) {
+      if (distanceFromLastPosition > this.positionChangeThreshold) {
         useStreetHeading=false;
-      }*/
+        userMoved=true;
+      }
     }
     this.lastPosition = userPosition;
-    const userCurrentStreet = await this.updateUserStreet(userPosition,useStreetHeading);
+    const userCurrentStreet = await this.updateUserStreet(userPosition,useStreetHeading,userMoved);
     if (userCurrentStreet && userCurrentStreet.properties) {
       (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
     }
@@ -123,7 +128,7 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     return distanceFromLastPosition;
   }
 
-  async updateUserStreet(position: Position,useStreetHeading:boolean): Promise<MapboxGeoJSONFeature | undefined> {
+  async updateUserStreet(position: Position,useStreetHeading:boolean,userMoved:boolean): Promise<MapboxGeoJSONFeature | undefined> {
     const mapService = ((window as any).mapService as MapService)
     const map = mapService.getMap();
 
@@ -138,7 +143,7 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     if (features.length > 0) {
       const closestFeature = await this.findClosestFeature(features, userPoint);
       mapService.setUserCurrentStreet(closestFeature);
-      this.updateSnapToRoadPosition(closestFeature, userPoint,useStreetHeading);
+      this.updateSnapToRoadPosition(closestFeature, userPoint,useStreetHeading,userMoved);
       this.lastCurrentStreet=closestFeature;
       if (closestFeature) return closestFeature;
     }
@@ -196,11 +201,11 @@ Ajusta positionChangeThreshold según la distancia mínima que desees considerar
     return closestFeature;
   }
 
-  private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any, useStreetHeading:boolean): void {
+  private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any, useStreetHeading:boolean,userMoved:boolean): void {
     const sensorService = ((window as any).sensorService as SensorService);
     if (closestFeature && closestFeature.geometry!.type === 'LineString') {
       const nearestPoint: NearestPointOnLine = nearestPointOnLine(lineString(closestFeature.geometry!.coordinates), userPoint);
-      sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint,useStreetHeading);
+      sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint,useStreetHeading,userMoved);
     }
   }
 

@@ -43,7 +43,7 @@
  */
 //(window as any).__Zone_disable_requestAnimationFrame = true; // disable patch requestAnimationFrame
 
-(window as any).__Zone_disable_requestAnimationFrame = true;
+//(window as any).__Zone_disable_requestAnimationFrame = true;
 //(window as any).__Zone_disable_on_property = true;
 //(window as any).__zone_symbol__UNPATCHED_EVENTS = ['scroll', 'mousemove'];
 //(window as any).__Zone_enable_cross_context_check = true;
@@ -54,10 +54,10 @@ import './zone-flags';
  */
 import 'zone.js'; // Included with Angular CLI.
 
-(window as any).global = window;
+/*(window as any).global = window;
 (window as any).process = {
   env: { DEBUG: undefined, NODE_ENV: "production" }
-};
+};*/
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */

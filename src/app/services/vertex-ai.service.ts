@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ChatSession, Content, GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from 'src/environments/environment';
-import {} from '@google-cloud/aiplatform';
 
 @Injectable({
   providedIn: 'root'

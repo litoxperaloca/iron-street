@@ -169,8 +169,11 @@ export class TripService {
       coords
     );
     //this.tripProgress = (distanceCovered / totalDistance) * 100;
-    this.tripProgress = (distanceCovered / totalDistance);
-    ((window as any).homePage as HomePage).tripProgressIndex = 1 - this.tripProgress;
+    this.tripProgress = (distanceCovered / totalDistance) * 100;
+    console.log(this.tripProgress);
+    console.log(distanceCovered);
+    console.log(totalDistance);
+    ((window as any).homePage as HomePage).tripProgressIndex = 1 * this.tripProgress/100;
 
   }
 

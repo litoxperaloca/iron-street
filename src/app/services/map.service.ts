@@ -1567,7 +1567,7 @@ export class MapService {
     return 0; // Default heading si no hay suficiente info
   }
 
-  public updateUserMarkerSnapedPosition(useStreetHeading:boolean) {
+  public updateUserMarkerSnapedPosition(useStreetHeading:boolean,userMoved:boolean) {
     const newCoordinates: [number, number] = [
       this.sensorService.getSensorSnapLongitude(),
       this.sensorService.getSensorSnapLatitude()
@@ -1616,16 +1616,16 @@ export class MapService {
       this.updateModelRotation(interpolatedRotation);
 
       if (progress < 1) {
-        let frame = requestAnimationFrame(animateMarker);
-        this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
+        requestAnimationFrame(animateMarker);
+        //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
 
       } else {
-        this.completeAnimation(newPosition, newHeading);
+        this.completeAnimation(newPosition, newHeading, userMoved);
       }
     };
 
-    let frame = requestAnimationFrame(animateMarker);
-    this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
+    requestAnimationFrame(animateMarker);
+    //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
   }
 
   private createAndPositionUserMarker(newPosition: mapboxgl.LngLat, rotation: number) {
@@ -1675,7 +1675,7 @@ export class MapService {
     return startRotation + (targetRotation - startRotation) * progress;
   }
 
-  private completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number) {
+  private completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number,userMoved:boolean) {
     const userMarker = this.getUserMarker();
     const userMarkerVision = this.getUserVisionMarker();
 
@@ -1686,8 +1686,8 @@ export class MapService {
 
     this.isAnimating = false;
     this.lastPosition = newPosition;
-    this.windowService.unAttachAnimationFrameRequest("home", "mapService_updateUserSnapedPosition");
-    if (this.trackingUser) {
+    //this.windowService.unAttachAnimationFrameRequest("home", "mapService_updateUserSnapedPosition");
+    if (this.trackingUser&&userMoved) {
       this.mapEventIsFromTracking = true;
       ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([newPosition.lng, newPosition.lat], newHeading);
       this.resetMapEventTrackingFlag();
