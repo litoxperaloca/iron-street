@@ -68,6 +68,7 @@ export class MapService {
   renderer: any;
   camera: any;
   userCurrentStreetHeading: number = 0;
+  userCurrentStreetHeadingNotFound:boolean=false;
 
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
@@ -1129,23 +1130,54 @@ export class MapService {
     this.addSymbolTileVectorLayer(map, "ironcamera.png", "custom-speed-camera-marker", "speedCamerasDataSource", "litoxperaloca.c1pj6s0f", 0.60, "speedCamerasDataLayer", "speed_cameras_uruguay-9ef5og", 12, 22);
   }
 
-  getOSMStreetHeading(street:mapboxgl.MapboxGeoJSONFeature): number {
-    if(!street.properties || !street.properties["oneway"] || street.geometry.type!="LineString")return 0;
+  getOSMStreetHeading(street: mapboxgl.MapboxGeoJSONFeature): number {
+    // Reiniciar el estado antes de cada cálculo
+    this.userCurrentStreetHeadingNotFound = false;
+
+    // Validar las propiedades de la calle y su geometría
+    if (!street.properties || street.geometry.type !== "LineString") {
+      this.userCurrentStreetHeadingNotFound = true;
+      return 0;
+    }
+
+    // Obtener la propiedad "oneway"
     const oneway = street.properties["oneway"];
     const coordinates = street.geometry.coordinates;
 
-    // Asegúrate de que la línea tenga al menos dos puntos
-    if (coordinates.length < 2) return 0;
+    // Asegurarse de que la línea tenga al menos dos puntos
+    if (coordinates.length < 2) {
+      this.userCurrentStreetHeadingNotFound = true;
+      return 0;
+    }
 
-    // Usar los dos primeros puntos de la línea para calcular el heading
-    const [start, end] = oneway === '-1' ? [coordinates[1], coordinates[0]] : [coordinates[0], coordinates[1]];
-    let coordsFrom:mapboxgl.LngLat = new mapboxgl.LngLat(start[0], start[1]);
-    let coordsTo:mapboxgl.LngLat = new mapboxgl.LngLat(end[0], end[1]);
-    return turf.bearing(
-      turf.point([coordsFrom.lng, coordsFrom.lat]),
-      turf.point([coordsTo.lng, coordsTo.lat])
-    );
-  } 
+    // Manejo de calles unidireccionales
+    if (oneway && oneway !== 'no' && oneway !== 'false') {
+      // Si "oneway" es '-1', invierte la dirección de los puntos
+      const [start, end] = oneway === '-1' ? [coordinates[1], coordinates[0]] : [coordinates[0], coordinates[1]];
+      const coordsFrom = new mapboxgl.LngLat(start[0], start[1]);
+      const coordsTo = new mapboxgl.LngLat(end[0], end[1]);
+      return turf.bearing(
+        turf.point([coordsFrom.lng, coordsFrom.lat]),
+        turf.point([coordsTo.lng, coordsTo.lat])
+      );
+    }
+
+    // Manejo de calles de doble sentido
+    if (!oneway || oneway === 'no' || oneway === 'false') {
+      // Para calles de doble sentido, devolver el heading del primer segmento
+      const [start, end] = [coordinates[0], coordinates[1]];
+      const coordsFrom = new mapboxgl.LngLat(start[0], start[1]);
+      const coordsTo = new mapboxgl.LngLat(end[0], end[1]);
+      return turf.bearing(
+        turf.point([coordsFrom.lng, coordsFrom.lat]),
+        turf.point([coordsTo.lng, coordsTo.lat])
+      );
+    }
+
+    // Si no se pudo determinar la dirección
+    this.userCurrentStreetHeadingNotFound = true;
+    return 0;
+  }
   
   setUserCurrentStreet(currentStreet: mapboxgl.MapboxGeoJSONFeature | null) {
     this.userCurrentStreet = currentStreet;
@@ -1544,7 +1576,7 @@ export class MapService {
     const userMarker = this.getUserMarker();
     const userMarkerVision = this.getUserVisionMarker();
     let rotationVision = this.sensorService.getSensorHeadingAbs();
-    if(useStreetHeading){
+    if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
       rotationVision=this.userCurrentStreetHeading;
     }
     const animationDuration = 800;
@@ -1563,7 +1595,7 @@ export class MapService {
 
     const startPosition = userMarker.getLngLat();
     let newHeading = this.calculateHeading(startPosition, newPosition, userMarker.getRotation());
-    if(useStreetHeading){
+    if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
       newHeading=this.userCurrentStreetHeading;
     }
     const startTime = performance.now();

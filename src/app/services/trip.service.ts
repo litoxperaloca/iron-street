@@ -81,8 +81,8 @@ export class TripService {
       );
 
       if (distanceToCurrentStep > environment.tripserviceConf.deviationThreshold) {
-        this.recalculateRoute(coords);
-        return;
+        //this.recalculateRoute(coords);
+       // return;
       }
     }
 
