@@ -1,6 +1,21 @@
 export const environment = {
   locators: [
     {
+      img: '/assets/img/cars/car_arrow.png',
+      name: 'Fecla roja',
+      id: 'redarrow',
+      type: '3D',
+      vehicleType: 'arrow',
+      options: {
+        type: 'gltf',
+        obj: '/assets/models/car_arrow.glb',
+        scale: 2,
+        units: 'meters',
+        anchor: "top",
+        rotation: { x: 270, y: 0, z: 0 }
+      }
+    },
+    {
       img: '/assets/img/cars/car.png',
       name: 'Auto rojo',
       id: 'car',

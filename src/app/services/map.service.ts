@@ -254,7 +254,7 @@ export class MapService {
 
          var options = {
           type: 'gltf',
-          obj: '/assets/models/car.glb',
+          obj: '/assets/models/car_arrow.glb',
           scale: 2,
           units: 'meters',
           anchor: "top",
