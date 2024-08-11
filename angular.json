@@ -41,7 +41,7 @@
             "scripts": [],
             "optimization": true,
             "sourceMap": false,
-            "namedChunks": false,
+            "namedChunks": true,
             "vendorChunk": false,
             "buildOptimizer": true,
             "aot": true,
@@ -65,7 +65,7 @@
           "configurations": {
             "production": {
               "sourceMap": false,
-              "namedChunks": false,
+              "namedChunks": true,
               "vendorChunk": false,
               "buildOptimizer": true,
               "aot": true,

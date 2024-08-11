@@ -32,7 +32,7 @@ export class CameraService {
 
         center: [position.coords.longitude,
         position.coords.latitude],
-        zoom: 15,
+        zoom: 17,
         speed: 1,
         //curve: 1,
         easing(t: number) {

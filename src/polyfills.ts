@@ -17,7 +17,17 @@
 /***************************************************************************************************
  * BROWSER POLYFILLS
  */
-
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
+import 'whatwg-fetch';
+import 'proxy-polyfill/proxy.min.js';
+import 'intersection-observer';
+import 'intl';
+import 'cross-fetch/polyfill';
+import 'event-source-polyfill';
+import 'first-input-delay';
+import 'web-animations-js';
+import 'classlist.js';
 /**
  * By default, zone.js will patch all possible macroTask and DomEvents
  * user can disable parts of macroTask/DomEvents patch by setting following flags

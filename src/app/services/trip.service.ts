@@ -148,7 +148,9 @@ export class TripService {
         this.alerts$.next(announcement);
         this.announcedManeuvers.add(this.currentStepIndex);
         this.trafficAlertService.showAlert(announcement,"maneuver",this.maneurveIcon(step),true);
-
+        if(step.maneuver.type==="arrive"){
+          this.currentStepIndex = this.route.legs[0].steps.length
+        }
     }
   }
 
@@ -170,9 +172,9 @@ export class TripService {
     );
     //this.tripProgress = (distanceCovered / totalDistance) * 100;
     this.tripProgress = (distanceCovered / totalDistance) * 100;
-    console.log(this.tripProgress);
-    console.log(distanceCovered);
-    console.log(totalDistance);
+    //console.log(this.tripProgress);
+    //console.log(distanceCovered);
+    //console.log(totalDistance);
     ((window as any).homePage as HomePage).tripProgressIndex = 1 * this.tripProgress/100;
 
   }

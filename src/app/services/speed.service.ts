@@ -8,9 +8,10 @@ import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service';
 import { OsmService } from './osm.service';
 import { SensorService } from './sensor.service';
-import KalmanFilter from 'kalmanjs';
 import { retry } from 'rxjs';
 import { MapboxService } from './mapbox.service';
+import { TrafficAlertServiceService } from './traffic-alert-service.service';
+import { HomePage } from '../pages/home/home.page';
 //import distance from '@turf/distance';
 interface Way {
   id: number,
@@ -43,7 +44,6 @@ export class SpeedService {
   dataLoaded: boolean = false;
   data: any = [];
   lastCurrentStreet!: MapboxGeoJSONFeature | null;
-  private kalmanFilter: KalmanFilter = new KalmanFilter();;
   private positionChangeThreshold: number = 3; // metros.
 
   constructor(
@@ -52,6 +52,7 @@ export class SpeedService {
     private sensorService: SensorService,
     private osmService: OsmService,
     private mapboxService: MapboxService,
+    private trafficAlertService: TrafficAlertServiceService
   ) { }
 
 
@@ -59,6 +60,19 @@ export class SpeedService {
     const bbox = this.calculateBbox(pos[1], pos[0], 0.5);
     let closestFeature: any;
     await this.osmService.getMaxSpeedData(bbox).then((data) => {
+      const maxspeedData = data.data.elements;
+      closestFeature = this.findClosestOsmWayFeature(maxspeedData, pos);
+      /* await this.saveMaxSpeedData(maxspeed);
+       this.dataLoaded = true;
+       const dataSaved = this.loadStoredMaxSpeedData();*/
+    });
+    return closestFeature;
+  }
+
+  async getSpeedDataFromArroundAvailable(pos: [number, number]): Promise<any> {
+    const bbox = this.calculateBbox(pos[1], pos[0], 20);
+    let closestFeature: any;
+    await this.osmService.getMaxSpeedDataAvailable(bbox).then((data) => {
       const maxspeedData = data.data.elements;
       closestFeature = this.findClosestOsmWayFeature(maxspeedData, pos);
       /* await this.saveMaxSpeedData(maxspeed);
@@ -90,6 +104,7 @@ export class SpeedService {
     }
     let useStreetHeading = true;
     let userMoved = false;
+    let setInitialStreetsConfData= false;
     if(this.lastPosition){
       const filteredLat = (userPosition.coords.latitude);
       const filteredLng = (userPosition.coords.longitude);
@@ -104,12 +119,19 @@ export class SpeedService {
       }
     }
     this.lastPosition = userPosition;
-    if(!this.lastCurrentStreet&&!userMoved){
-      userMoved=true; //Es la primera vez que ubicare al usuario en una calle, entonces actualizo camara
+    if(!this.lastCurrentStreet){
+      setInitialStreetsConfData=true;
+      if(!userMoved){
+        userMoved=true; //Es la primera vez que ubicare al usuario en una calle, entonces actualizo camara
+      }
     }
     const userCurrentStreet = await this.updateUserStreet(userPosition,useStreetHeading,userMoved);
     if (userCurrentStreet && userCurrentStreet.properties) {
       (window as any).homePage.currentMaxSpeed = Number.parseInt(userCurrentStreet.properties["maxspeed"]);
+      if(setInitialStreetsConfData){
+        await this.trafficAlertService.setCamerasStreetName();
+      }
+      this.trafficAlertService.checkAlertableObjectsOnNewUserPosition(userPosition);
     }
     
   }
@@ -146,7 +168,13 @@ export class SpeedService {
     if (features.length > 0) {
       const closestFeature = await this.findClosestFeature(features, userPoint);
       mapService.setUserCurrentStreet(closestFeature);
-      this.updateSnapToRoadPosition(closestFeature, userPoint,useStreetHeading,userMoved);
+      const homePage = (window as any).homePage as HomePage;
+      let instantUpdate:boolean=false;
+      if(homePage.shouldEndSimulation){
+        instantUpdate=true;
+        homePage.shouldEndSimulation=false;
+      }
+      this.updateSnapToRoadPosition(closestFeature, userPoint,useStreetHeading,userMoved,instantUpdate);
       this.lastCurrentStreet=closestFeature;
       if (closestFeature) return closestFeature;
     }
@@ -191,7 +219,7 @@ export class SpeedService {
         if(this.lastCurrentStreet 
           && this.lastCurrentStreet.properties
           && feature.properties 
-          &&feature.properties['name']===this.lastCurrentStreet.properties['name']){
+          &&feature.properties['name']===this.lastCurrentStreet.properties['name'] && distancePoints < 0.05){
             if(distancePoints < minDistance && distancePoints < 0.05){
               minDistance = distancePoints;
             closestFeature = feature;
@@ -212,7 +240,8 @@ export class SpeedService {
         closestFeature = this.wayToGeoJsonFeature(closestFeature) as MapboxGeoJSONFeature;
       }
     }
-    if(closestFeature){
+    let homePage = ((window as any).homePage as HomePage);
+    if(closestFeature && !homePage.shouldEndSimulation){
       closestFeature = this.chooseBestClosestFeatureForSnap(closestFeature,minDistance,alternativesWithSameName);
     }
     return closestFeature;
@@ -227,21 +256,31 @@ export class SpeedService {
           let street = alternative[0];
           let distance = alternative[1];
           let difference = distance-minDistance;
-          if(difference<=0.003&&difference<chosenOneClosestDistance){
-            chosenOne = street;
-            chosenOneClosestDistance=difference;
-          }
+          if(closestFeature.properties
+            &&street.properties
+            &&street.properties['name']===closestFeature.properties['name']){
+              if(distance<minDistance && distance<chosenOneClosestDistance){
+                chosenOne = street;
+                chosenOneClosestDistance=distance;
+              }
+            }else{
+              if(difference<=0.003&&distance<chosenOneClosestDistance){
+                chosenOne = street;
+                chosenOneClosestDistance=distance;
+              }
+            }
+
         }
       });
     }
     return chosenOne;
   }
 
-  private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any, useStreetHeading:boolean,userMoved:boolean): void {
+  private updateSnapToRoadPosition(closestFeature: MapboxGeoJSONFeature | null, userPoint: any, useStreetHeading:boolean,userMoved:boolean, instantUpdate:boolean): void {
     const sensorService = ((window as any).sensorService as SensorService);
     if (closestFeature && closestFeature.geometry!.type === 'LineString') {
       const nearestPoint: NearestPointOnLine = nearestPointOnLine(lineString(closestFeature.geometry!.coordinates), userPoint);
-      sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint,useStreetHeading,userMoved);
+      sensorService.updateSnapToRoadPosition(nearestPoint.geometry.coordinates, closestFeature, nearestPoint,useStreetHeading,userMoved,instantUpdate);
     }
   }
 

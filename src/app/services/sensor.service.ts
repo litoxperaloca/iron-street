@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
 import { RotationRate } from '@capacitor/motion';
 //import * as turf from '@turf/turf';
-import KalmanFilter from 'kalmanjs';
 //import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import bearing from '@turf/bearing';
 import { point } from '@turf/helpers';
@@ -82,7 +81,6 @@ export class SensorService {
 
   };
 
-  private kalmanFilter = new KalmanFilter({ R: 0.01, Q: 3 });
   getSensorSnapLatitude(): number { return this.sensorData.snapLatitude; }
   getSensorSnapLongitude(): number { return this.sensorData.snapLongitude; }
   getSensorLatitude() { return this.sensorData.latitude; }
@@ -142,7 +140,7 @@ export class SensorService {
   }
 
   updateCompass(heading: number) {
-    const filteredHeading = this.kalmanFilter.filter(heading);
+    const filteredHeading = heading;
     this.sensorData.compassHeading = filteredHeading;
   }
 
@@ -172,12 +170,12 @@ export class SensorService {
     }
   }
 
-  updateSnapToRoadPosition(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any, useStreetHeading:boolean,userMoved:boolean) {
+  updateSnapToRoadPosition(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any, useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean) {
     this.sensorData.snapLatitude = coordinates[1];
     this.sensorData.snapLongitude = coordinates[0];
     this.sensorData.closestStreetFeatureLine = feature;
     this.sensorData.closestPoint = nearestPoint;
-    ((window as any).mapService as MapService).updateUserMarkerSnapedPosition(useStreetHeading,userMoved);
+    ((window as any).mapService as MapService).updateUserMarkerSnapedPosition(useStreetHeading,userMoved,instantUpdate);
   }
 
   getLastCurrentLocationPredicted(): [number, number] {

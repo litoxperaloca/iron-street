@@ -24,6 +24,7 @@ import { SpeedService } from '../../services/speed.service';
 import { ToastService } from '../../services/toast.service';
 import { TripService } from '../../services/trip.service'
 import { VoiceService } from '../../services/voice.service';
+import { TrafficAlertServiceService } from 'src/app/services/traffic-alert-service.service';
 
 @Component({
   selector: 'app-home',
@@ -56,6 +57,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   getMock: boolean = true;
   isNative: boolean = false;
   speedChanged = new EventEmitter<number>();
+  isShowingSpeedWayOnMap:boolean=false;
 
   constructor(
     private translateService: TranslateService,
@@ -80,7 +82,8 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     private speechRecognitionService: SpeechRecognitionService,
     private bookmarkService: BookmarksService,
     private windowService: WindowService,
-    private alertService: AlertService) {
+    private alertService: AlertService,
+  private trafficAlertService:TrafficAlertServiceService) {
     // Existing constructor code...
     this.isNative = Capacitor.isNativePlatform()
     this.audioOn = this.voiceService.isSpeakerOn();
@@ -320,6 +323,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     (window as any).actionSheetService = this.actionSheetService;
     (window as any).toastService = this.ToastService;
     (window as any).speechRecognitionService = this.speechRecognitionService;
+    (window as any).trafficAlertService = this.trafficAlertService;
 
     (window as any).homePage = this;
     this.waitAndRenderPage();
@@ -472,6 +476,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     this.geoLocationService.mocking = false;
     environment.mocking = false;
     this.simulation = false;
+    this.shouldEndSimulation=true;
     this.geoLocationMockService.index = 0;
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
     if (tripDetailsContainer) {
@@ -620,10 +625,16 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   }
 
-  openMaxSpeedModal(): void {
+  async openMaxSpeedModal(): Promise<void> {
 
-    this.openModal("MaxSpeed");
-
+    //this.openModal("MaxSpeed");
+    if(!this.isShowingSpeedWayOnMap){
+      await this.mapService.showUserCurrentStreetMaxSpeedWay();
+      this.isShowingSpeedWayOnMap = true;
+    }else{
+      await this.mapService.hideUserCurrentStreetMaxSpeedWay();
+      this.isShowingSpeedWayOnMap = false;  
+    }
   }
 
   openCurrentSpeedModal() {

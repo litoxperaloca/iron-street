@@ -8,6 +8,8 @@ import { environment } from 'src/environments/environment';
 })
 export class OsmService {
 
+  private data:HttpResponse|null=null;
+  
   constructor(private http: HttpClient) { }
 
 
@@ -41,6 +43,18 @@ export class OsmService {
     var query = environment.osmApiConfig.maxspeedsQuerySelector;
     query += '(' + bbox[0][1] + ',' + bbox[0][0] + ',' + bbox[1][1] + ',' + bbox[1][0] + ');' + environment.osmApiConfig.outputQueryGeom;
     return this.getJsonDataFromOverpassApi(query)
+  }
+
+  async getMaxSpeedDataAvailable(bbox: [[number, number], [number, number]]): Promise<HttpResponse> {
+    if(this.data){
+      return this.data;
+    }
+    var query = environment.osmApiConfig.maxspeedsQuerySelector;
+    query += '(' + bbox[0][1] + ',' + bbox[0][0] + ',' + bbox[1][1] + ',' + bbox[1][0] + ');' + environment.osmApiConfig.outputQueryGeom;
+    let data:HttpResponse = await this.getJsonDataFromOverpassApi(query);
+    this.data=data;
+    return data;
+
   }
 
   async getNearPlacesData(bbox: [[number, number], [number, number]], categoriesStr: string): Promise<HttpResponse> {

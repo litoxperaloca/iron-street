@@ -1,5 +1,14 @@
 export const environment = {
+  locatorDefault: {
+    type: 'gltf',
+    obj: '/assets/models/bumble_bee.glb',
+    scale: 9,
+    units: 'meters',
+    anchor: "top",
+    rotation: { x: 90, y: 0, z: 0 }
+  },
   locators: [
+    
     {
       img: '/assets/img/cars/car_arrow.png',
       name: 'Fecla roja',
@@ -9,7 +18,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/car_arrow.glb',
-        scale: 2,
+        scale: 5,
         units: 'meters',
         anchor: "top",
         rotation: { x: 270, y: 0, z: 0 }
@@ -39,7 +48,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/1949_-_cadillac_series_62.glb',
-        scale: 8,
+        scale: 9,
         units: 'meters',
         anchor: "top",
         rotation: { x: 90, y: 0, z: 0 }
@@ -54,7 +63,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/bumble_bee.glb',
-        scale: 8,
+        scale: 9,
         units: 'meters',
         anchor: "top",
         rotation: { x: 90, y: 0, z: 0 }
@@ -69,7 +78,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/izh-2715-pickup.glb',
-        scale: 8,
+        scale: 9,
         units: 'meters',
         anchor: "top",
         rotation: { x: 90, y: 0, z: 0 }
@@ -84,10 +93,10 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/moto_vespa.glb',
-        scale: 8,
+        scale: 14,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 0, z: 0 }
+        rotation: { x: 90, y: 180, z: 0 }
       }
     },
     {
@@ -99,7 +108,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/motorcycle_harley_davidson_fat_boy.glb',
-        scale: 8,
+        scale: 14,
         units: 'meters',
         anchor: "top",
         rotation: { x: 90, y: 0, z: 0 }
@@ -108,6 +117,26 @@ export const environment = {
   ],
   production: true,
   mocking: false,
+  trafficAlertServiceConf: {
+    alertables:[
+      {
+        type: 'camera',
+        preAnnounce: true,
+        preAnnouncement: 'Atención: En {distance}, cámara de velocidad. Máximo {modifier} kilómetros por hora.',
+        preAnnouncementDistance: 500,
+        announce: true,
+        announcement: 'Cuidado, cámara de velocidad cerca',
+        announcementDistance: 80,
+        announceAsNextInmediatly: false,
+        announceAsNextInmediatlyAnnouncement: '',
+        announceAsNextInmediatlyAnnouncementDistance: 0,
+        icon: '/assets/img/map-icons/ironcamera2.png',
+        speak: true,
+        screenAlert: true,
+        priority: 1
+      }
+    ]
+  },
   tripserviceConf: {
     maneuvers: [
       {
@@ -224,8 +253,8 @@ export const environment = {
       },
       {
         maneuverType: 'fork',
-        preAnnounce: false,
-        preAnnouncement: '',
+        preAnnounce: true,
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 0,
         announce: true,
         announcement: '{instruction}.',
@@ -415,7 +444,8 @@ export const environment = {
     attributionControl: true,
     maxZoom: 20,
     maxPitch: 55,
-    projection: 'globe'
+    projection: 'globe',
+    antialias: false
   },
   mapboxStylesURLs: {
     '3DMapboxStandard': 'mapbox://styles/mapbox/standard',
