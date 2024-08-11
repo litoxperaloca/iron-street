@@ -17,12 +17,17 @@
 /***************************************************************************************************
  * BROWSER POLYFILLS
  */
+(window as any).global = window;
+(window as any).process = {
+  env: { DEBUG: undefined, NODE_ENV: "production" }
+};
+window.global = window;
+
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import 'whatwg-fetch';
 import 'proxy-polyfill/proxy.min.js';
 import 'intersection-observer';
-import 'intl';
 import 'cross-fetch/polyfill';
 import 'event-source-polyfill';
 import 'first-input-delay';
@@ -64,10 +69,7 @@ import './zone-flags';
  */
 import 'zone.js'; // Included with Angular CLI.
 
-/*(window as any).global = window;
-(window as any).process = {
-  env: { DEBUG: undefined, NODE_ENV: "production" }
-};*/
+
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */

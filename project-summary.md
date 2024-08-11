@@ -1,0 +1,164 @@
+## Capacitor Plugins
+
+- 🟩 [@capacitor-community/speech-recognition@6.0.1](https://github.com/capacitor-community/speech-recognition.git)
+- 🟩 [@capacitor-community/text-to-speech@4.1.0](https://github.com/capacitor-community/text-to-speech.git)
+- 🟩 [@capacitor/action-sheet@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/app@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/app-launcher@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/browser@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/camera@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/device@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/dialog@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/filesystem@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/geolocation@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/haptics@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/keyboard@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/local-notifications@6.1.0](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/network@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/preferences@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/push-notifications@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/screen-orientation@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/share@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/splash-screen@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/status-bar@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@capacitor/toast@6.0.2](https://github.com/ionic-team/capacitor-plugins.git)
+## Cordova Plugins
+
+## Dependencies
+
+- 🟩 [@angular-devkit/build-angular@18.1.4](https://github.com/angular/angular-cli.git)
+- 🟩 [@angular-eslint/builder@18.2.0](https://github.com/angular-eslint/angular-eslint.git)
+- 🟩 [@angular-eslint/eslint-plugin@18.2.0](https://github.com/angular-eslint/angular-eslint.git)
+- 🟩 [@angular-eslint/eslint-plugin-template@18.2.0](https://github.com/angular-eslint/angular-eslint.git)
+- 🟩 [@angular-eslint/schematics@18.2.0](https://github.com/angular-eslint/angular-eslint.git)
+- 🟩 [@angular-eslint/template-parser@18.2.0](https://github.com/angular-eslint/angular-eslint.git)
+- 🟩 [@angular/animations@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/cli@18.1.4](https://github.com/angular/angular-cli.git)
+- 🟩 [@angular/common@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/compiler@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/compiler-cli@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/core@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/forms@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/language-service@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/platform-browser@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/platform-browser-dynamic@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/router@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@angular/service-worker@18.1.4](https://github.com/angular/angular.git)
+- 🟩 [@aws-amplify/geo@3.0.42](https://github.com/aws-amplify/amplify-js.git)
+- 🟩 [@aws/amazon-location-utilities-auth-helper@1.0.7](https://github.com/aws-geospatial/amazon-location-utilities-auth-helper-js.git)
+- 🟩 [@aws/amazon-location-utilities-datatypes@1.0.5](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js.git)
+- 🟩 [@babel/cli@7.24.8](https://github.com/babel/babel.git)
+- 🟩 [@babel/core@7.25.2](https://github.com/babel/babel.git)
+- 🟩 [@babel/plugin-proposal-decorators@7.24.7](https://github.com/babel/babel.git)
+- 🟩 [@babel/preset-env@7.25.3](https://github.com/babel/babel.git)
+- 🟩 [@babel/preset-typescript@7.24.7](https://github.com/babel/babel.git)
+- 🟩 [@capacitor/android@6.1.2](https://github.com/ionic-team/capacitor.git)
+- 🟩 [@capacitor/cli@6.1.2](https://github.com/ionic-team/capacitor.git)
+- 🟩 [@capacitor/core@6.1.2](https://github.com/ionic-team/capacitor.git)
+- 🟩 [@capacitor/ios@6.1.2](https://github.com/ionic-team/capacitor.git)
+- 🟩 [@capacitor/motion@6.0.1](https://github.com/ionic-team/capacitor-plugins.git)
+- 🟩 [@ionic/angular@8.2.6](https://github.com/ionic-team/ionic-framework.git)
+- 🟩 [@ionic/angular-toolkit@11.0.1](https://github.com/ionic-team/angular-toolkit.git)
+- 🟩 [@ionic/core@8.2.6](https://github.com/ionic-team/ionic-framework.git)
+- 🟩 [@mapbox/mapbox-gl-directions@4.3.1](https://github.com/mapbox/mapbox-gl-directions.git)
+- 🟩 [@mapbox/polyline@1.2.1](https://github.com/mapbox/polyline.git)
+- 🟧 @ngx-translate/core@15.0.0 - May be unmaintained (1.3 years since last release)
+- 🟧 @ngx-translate/http-loader@8.0.0 - May be unmaintained (1.3 years since last release)
+- 🟧 [@turf/bearing@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/destination@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/difference@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/distance@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/helpers@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/invariant@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/length@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/line-slice@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/meta@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/nearest-point-on-line@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟧 [@turf/turf@6.5.0](https://github.com/Turfjs/turf.git) - (Latest 7.1.0) - Is behind 1 major version.
+- 🟩 [@types/jasmine@5.1.4](https://github.com/DefinitelyTyped/DefinitelyTyped.git)
+- 🟩 [@types/mapbox-gl@3.4.0](https://github.com/DefinitelyTyped/DefinitelyTyped.git)
+- 🟩 [@types/mapbox__polyline@1.0.5](https://github.com/DefinitelyTyped/DefinitelyTyped.git)
+- 🟩 [@types/node@22.2.0](https://github.com/DefinitelyTyped/DefinitelyTyped.git)
+- 🟩 [@types/three@0.167.1](https://github.com/DefinitelyTyped/DefinitelyTyped.git)
+- 🟩 [@typescript-eslint/eslint-plugin@8.0.1](https://github.com/typescript-eslint/typescript-eslint.git)
+- 🟩 [@typescript-eslint/parser@8.0.1](https://github.com/typescript-eslint/typescript-eslint.git)
+- 🟩 [aws-amplify@6.5.0](https://github.com/aws-amplify/amplify-js.git)
+- 🟩 [aws-sdk@2.1672.0](https://github.com/aws/aws-sdk-js.git)
+- 🟥 [classlist.js@1.1.20150312](https://github.com/eligrey/classList.js.git) - Unmaintained (8.8 years since last release)
+- 🟩 [core-js@3.38.0](https://github.com/zloirock/core-js.git)
+- 🟧 [cross-fetch@4.0.0](https://github.com/lquixada/cross-fetch.git) - May be unmaintained (1.1 years since last release)
+- 🟩 [eslint@9.9.0](https://github.com/eslint/eslint.git)
+- 🟩 [eslint-plugin-import@2.29.1](https://github.com/import-js/eslint-plugin-import.git)
+- 🟩 [eslint-plugin-jsdoc@50.0.0](https://github.com/gajus/eslint-plugin-jsdoc.git) - (Latest 50.0.1)
+- 🟥 [eslint-plugin-prefer-arrow@1.2.3](https://github.com/TristonJ/eslint-plugin-prefer-arrow.git) - Unmaintained (3.5 years since last release)
+- 🟧 [event-source-polyfill@1.0.31](https://github.com/Yaffle/EventSource.git) - May be unmaintained (2 years since last release)
+- 🟩 [express@4.19.2](https://github.com/expressjs/express.git)
+- 🟩 [firebase@10.12.5](https://github.com/firebase/firebase-js-sdk.git)
+- 🟥 [first-input-delay@0.1.3](https://github.com/GoogleChromeLabs/first-input-delay.git) - Unmaintained (5.9 years since last release)
+- 🟩 [fs-extra@11.2.0](https://github.com/jprichardson/node-fs-extra.git)
+- 🟥 [geojson@0.5.0](http://github.com/caseycesari/geojson.js.git) - Unmaintained (7 years since last release)
+- 🟩 [glob@11.0.0](https://github.com/isaacs/node-glob.git)
+- 🟥 [i18n-extract@0.6.7](https://github.com/oliviertassinari/i18n-extract.git) - Unmaintained (4.8 years since last release)
+- 🟩 [image-minimizer-webpack-plugin@4.1.0](https://github.com/webpack-contrib/image-minimizer-webpack-plugin.git)
+- 🟥 [intersection-observer@0.12.2](https://github.com/GoogleChromeLabs/intersection-observer.git) - Unmaintained (2.2 years since last release)
+- 🟥 [intl@1.2.5](https://github.com/andyearnshaw/Intl.js.git) - Unmaintained (7.9 years since last release)
+- 🟩 [ionicons@7.4.0](https://github.com/ionic-team/ionicons.git)
+- 🟩 [jasmine-core@5.2.0](https://github.com/jasmine/jasmine.git)
+- 🟥 [jasmine-spec-reporter@7.0.0](https://github.com/bcaudan/jasmine-spec-reporter.git) - Unmaintained (3.3 years since last release)
+- 🟩 [karma@6.4.4](https://github.com/karma-runner/karma.git)
+- 🟧 [karma-chrome-launcher@3.2.0](https://github.com/karma-runner/karma-chrome-launcher.git) - May be unmaintained (1.3 years since last release)
+- 🟧 [karma-coverage@2.2.1](https://github.com/karma-runner/karma-coverage.git) - May be unmaintained (1.1 years since last release)
+- 🟥 [karma-jasmine@5.1.0](https://github.com/karma-runner/karma-jasmine.git) - Unmaintained (2.2 years since last release)
+- 🟧 [karma-jasmine-html-reporter@2.1.0](https://github.com/dfederm/karma-jasmine-html-reporter.git) - May be unmaintained (1.2 years since last release)
+- 🟩 [mapbox-gl@3.5.2](https://github.com/mapbox/mapbox-gl-js.git)
+- 🟩 [node-fetch@3.3.2](https://github.com/node-fetch/node-fetch.git)
+- 🟥 [proxy-polyfill@0.3.2](https://github.com/GoogleChrome/proxy-polyfill.git) - Unmaintained (4.1 years since last release)
+- 🟩 [regenerator-runtime@0.14.1](https://github.com/facebook/regenerator.git#main)
+- 🟩 [rxjs@7.8.1](https://github.com/reactivex/rxjs.git)
+- 🟧 [save@2.9.0](git@github.com:serby/save) - May be unmaintained (1.9 years since last release)
+- 🟥 [setimmediate@1.0.5](https://github.com/yuzujs/setImmediate.git) - Unmaintained (7.9 years since last release)
+- 🟩 [svgo@3.3.2](https://github.com/svg/svgo.git)
+- 🟩 [swiper@11.1.9](https://github.com/nolimits4web/Swiper.git)
+- 🟩 [terser-webpack-plugin@5.3.10](https://github.com/webpack-contrib/terser-webpack-plugin.git)
+- 🟥 [threebox-plugin@2.2.7](https://github.com/jscastro76/threebox.git) - Unmaintained (2.2 years since last release)
+- 🟩 [tslib@2.6.3](https://github.com/Microsoft/tslib.git)
+- 🟩 [typescript@5.5.4](https://github.com/Microsoft/TypeScript.git)
+- 🟩 [undici@6.19.7](https://github.com/nodejs/undici.git)
+- 🟩 [vite@5.4.0](https://github.com/vitejs/vite.git)
+- 🟥 [web-animations-js@2.3.2](https://github.com/web-animations/web-animations-js.git) - Unmaintained (5.1 years since last release)
+- 🟩 [webpack-bundle-analyzer@4.10.2](https://github.com/webpack-contrib/webpack-bundle-analyzer.git)
+- 🟩 [whatwg-fetch@3.6.20](https://github.com/github/fetch.git)
+- 🟩 [zod@3.23.8](https://github.com/colinhacks/zod.git)
+- 🟩 [zone.js@0.14.10](https://github.com/angular/angular.git)
+### Maintenance Score
+94 out of 126 dependencies were up to date without issues.
+
+
+
+## Nonstandard naming
+The following files and folders do not follow the standard naming convention:
+
+- /assets/fonts/6809-chargen/6809 Chargen.otf
+- /assets/fonts/Bazaronite/Bazaronite.ttf
+- /assets/fonts/Bazaronite/bazaronite.regular.ttf
+- /assets/fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf
+- /assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf
+- /assets/fonts/Pixelify_Sans/static/PixelifySans-Medium.ttf
+- /assets/fonts/Pixelify_Sans/static/PixelifySans-Regular.ttf
+- /assets/fonts/Pixelify_Sans/static/PixelifySans-SemiBold.ttf
+- /assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf
+- /assets/fonts/android-insomnia/Android Insomnia Regular.ttf
+- /assets/fonts/charles-in-charge/Charles In Charge.otf
+- /assets/fonts/control-freak/CONTFO__.ttf
+- /assets/fonts/control-freak/CONTFU__.ttf
+- /assets/fonts/control-freak/CONTF___.ttf
+- /assets/fonts/cuomotype/Cuomotype.otf
+- /assets/fonts/lady-starlight/Lady Starlight.otf
+- /assets/fonts/measurements/Measurements.ttf
+- /assets/fonts/monofett/Monofett.ttf
+- /assets/fonts/monofett/OFL.txt
+- /assets/fonts/neuropol/Neuropol.otf
+- /assets/fonts/octoville/Octoville.otf
+- /assets/fonts/screaming-neon/Screaming_Neon_by_Michael_W_Moss.txt
+- /assets/img/icons/Caution.gif
+- /assets/img/icons/cadillacBack.png

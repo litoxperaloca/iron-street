@@ -61,6 +61,8 @@ export class MapService {
   private lastPosition: mapboxgl.LngLat | null = null;
   mapPressedMarkerInstance: mapboxgl.Marker | null = null;
   popUpMapPressed: mapboxgl.Popup | null = null;
+  private isLongPress: boolean = false;
+  private longPressTimeout: any;
   firstTouchDone: boolean = false;
   showingMaxSpeedWay: boolean = false;
   showingMaxSpeedWayId: string | null = null;
@@ -267,7 +269,7 @@ export class MapService {
           let origin=[0,0];
           if(self.geoLocationService.getLastCurrentLocation())origin = [self.geoLocationService.getLastCurrentLocation().coords.longitude,self.geoLocationService.getLastCurrentLocation().coords.latitude];
           self.carModel = model.setCoords(origin);
-          self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+          //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
           self.tb.add(self.carModel);
         })
 
@@ -287,7 +289,7 @@ export class MapService {
     this.tb.remove(self.carModel);
     await this.tb.loadObj(options, function (model:any) {
       self.carModel = model.setCoords(origin);
-      self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+      //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
       self.tb.add(self.carModel);
     });
     this.carModel.setRotation(rotation);
@@ -330,10 +332,41 @@ export class MapService {
       //this.mapbox.triggerRepaint();
     }
   }
+  onTouchStart(e: TouchEvent) {
+    this.isLongPress = false;
+    this.longPressTimeout = setTimeout(() => {
+      this.isLongPress = true;
+      this.onLongPress(e);
+    }, 2000); // 500ms threshold for long press
+  }
+
+  onTouchEnd(e: TouchEvent) {
+    clearTimeout(this.longPressTimeout);
+  }
+
+  onTouchMove(e: TouchEvent) {
+    clearTimeout(this.longPressTimeout); // Cancel long press if touch moves
+  }
+
+  onLongPress(e: TouchEvent) {
+    if (this.isLongPress) {
+      const coords = this.mapbox.unproject([e.touches[0].clientX, e.touches[0].clientY]);
+      console.log('Long press detected at:', coords);
+      // Add your long press logic here, e.g., add a marker at the press location
+      if (this.popUpMapPressed) {
+        this.popUpMapPressed.remove();
+      }
+      this.addMarkerWithPopup(coords);
+    }
+  }
 
   addLongPressHandler() {
+    const mapContainer = this.mapbox.getCanvasContainer();
 
-    this.mapbox.on('touchstart', (e) => {
+    mapContainer.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
+    mapContainer.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
+    mapContainer.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: true });
+    /*this.mapbox.on('touchstart', (e) => {
       //console.log(e);
       this.trackingUser = false;
       this.mapEventIsFromTracking = false;
@@ -364,11 +397,12 @@ export class MapService {
 
     this.mapbox.on('touchend', (e) => {
       // console.log(e);
-
+      //e.preventDefault();
       this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
       this.firstTouchDone = false;
 
     });
+    */
   }
 
   addMarkerWithPopup(coordinates: mapboxgl.LngLat) {

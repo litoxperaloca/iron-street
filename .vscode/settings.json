@@ -4,5 +4,6 @@
     "@ionic/angular/standalone"
   ],
   "aws.telemetry": false,
-  "amazonQ.telemetry": false
+  "amazonQ.telemetry": false,
+  "ionic.buildForProduction": true
 }
