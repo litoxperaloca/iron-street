@@ -292,7 +292,9 @@ export class MapService {
       //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
       self.tb.add(self.carModel);
     });
-    this.carModel.setRotation(rotation);
+    if(this.carModel){
+      this.carModel.setRotation(rotation);
+    }
     this.tb.update();
 
   }
@@ -337,7 +339,7 @@ export class MapService {
     this.longPressTimeout = setTimeout(() => {
       this.isLongPress = true;
       this.onLongPress(e);
-    }, 2000); // 500ms threshold for long press
+    }, 2500); // 500ms threshold for long press
   }
 
   onTouchEnd(e: TouchEvent) {
@@ -897,8 +899,8 @@ export class MapService {
       'directions',
       'directions:markers',
       'maxspeedDataSource',
-      'speedCamerasDataSource',
-      'stopDataSource'
+      'speedCamerasDataSource'
+      //'stopDataSource'
     ];
 
     this.sourcesAndLayers = {
@@ -932,8 +934,8 @@ export class MapService {
       'directions',
       'directions:markers',
       'maxspeedDataSource',
-      'speedCamerasDataSource',
-      'stopDataSource'
+      'speedCamerasDataSource'
+      //'stopDataSource'
     ];
 
     sourcesToCheck.forEach(sourceId => {
@@ -943,7 +945,7 @@ export class MapService {
     });
 
     this.addImageIfNot('custom-speed-camera-marker', 'ironcamera.png');
-    this.addImageIfNot('custom-stop-marker', 'ironstop.png');
+   //this.addImageIfNot('custom-stop-marker', 'ironstop.png');
     this.reAddLayers(sourcesAndLayers);
   }
 
@@ -1161,7 +1163,7 @@ export class MapService {
     const map = this.mapbox;
     this.addLineTileVectorLayer(map, "maxspeedDataSource", "litoxperaloca.apypi869", "maxspeedDataLayer", "export_1-12rpm8", 12, 22, "hsl(0, 90%, 45%)", 0.2, 0.2);
     //this.addSymbolTileVectorLayer(map, "ironsemaphore.png", "custom-semaphore-marker", "semaphoreDataSource", "litoxperaloca.3deav1ng", 0.40, "semaphoreDataLayer", "semaphores_uruguay-6l99vu", 14, 22);
-    this.addSymbolTileVectorLayer(map, "ironstop.png", "custom-stop-marker", "stopDataSource", "litoxperaloca.dlnykr8f", 0.50, "stopDataLayer", "stop_uruguay-6tysu4", 14, 22);
+    //this.addSymbolTileVectorLayer(map, "ironstop.png", "custom-stop-marker", "stopDataSource", "litoxperaloca.dlnykr8f", 0.50, "stopDataLayer", "stop_uruguay-6tysu4", 14, 22);
     this.addSymbolTileVectorLayer(map, "ironcamera.png", "custom-speed-camera-marker", "speedCamerasDataSource", "litoxperaloca.clzls3eaq0vit1ml7v290ziao-124rh", 0.60, "speedCamerasDataLayer", "camerasaUY", 12, 22);
   }
 
@@ -1692,6 +1694,7 @@ export class MapService {
       this.resetMapEventTrackingFlag();
     }
   }
+  
 
   calculateHeading(startPosition: mapboxgl.LngLat, newPosition: mapboxgl.LngLat, currentRotation: number): number {
     //if (!this.lastPosition) return currentRotation || 0;
@@ -1752,6 +1755,73 @@ export class MapService {
   private resetMapEventTrackingFlag() {
     const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500);
     this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+  }
+
+
+  public updateUserMarkerSnapedPositionOsrm(useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean, newHeading:number) {
+    const newCoordinates: [number, number] = [
+      this.sensorService.getSensorSnapLongitude(),
+      this.sensorService.getSensorSnapLatitude()
+    ];
+    const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
+    const userMarker = this.getUserMarker();
+    const userMarkerVision = this.getUserVisionMarker();
+    let rotationVision = this.sensorService.getSensorHeadingAbs();
+    if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
+      rotationVision=this.userCurrentStreetHeading;
+    }
+    const startPosition = userMarker.getLngLat();
+    if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
+      newHeading=this.userCurrentStreetHeading;
+    }
+    if(instantUpdate){
+      this.updateUserMarkerNoAnimation(newPosition,newHeading,userMoved);
+      return;
+    }
+    const animationDuration = 600;
+
+    // If the user marker doesn't exist, create it
+    if (!userMarker) {
+      this.createAndPositionUserMarker(newPosition, rotationVision);
+      return;
+    }
+
+    // If already animating, update the animation target and exit
+    
+    if (this.isAnimating) {
+      this.animationTarget = newPosition;
+      return;
+    }
+
+
+    const startTime = performance.now();
+
+    this.isAnimating = true;
+    this.animationTarget = newPosition;
+
+    const animateMarker = (currentTime: number) => {
+      if (!this.isAnimating) return;
+
+      const progress = Math.min((currentTime - startTime) / animationDuration, 1);
+      const interpolatedPosition = this.interpolatePosition(startPosition, newPosition, progress);
+      const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), newHeading, progress);
+
+      userMarker.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+      this.updateModelPosition(interpolatedPosition as [number,number]);
+      userMarkerVision.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+      this.updateModelRotation(interpolatedRotation);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateMarker);
+        //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
+
+      } else {
+        this.completeAnimation(newPosition, newHeading, userMoved);
+      }
+    };
+
+    requestAnimationFrame(animateMarker);
+    //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
   }
 
 }

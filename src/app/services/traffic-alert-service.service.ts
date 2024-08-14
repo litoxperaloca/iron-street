@@ -190,25 +190,34 @@ export class TrafficAlertServiceService {
     const speedCamerasArround:MapboxGeoJSONFeature[] = map.querySourceFeatures('speedCamerasDataSource', { sourceLayer: 'camerasaUY' }) as MapboxGeoJSONFeature[];
 
     if (speedCamerasArround.length > 0) {
-      speedCamerasArround.forEach(camera => {
-        if(camera.geometry.type=="Point"){
-          this.snapCameraToRoad([camera.geometry.coordinates[0],camera.geometry.coordinates[1]]).then((street)=>{
-            if(street && street.properties){
-              const streetName = street.properties["name"];
-              if(!this.streetsObjects[streetName]){
-                this.streetsObjects[streetName]=[];
-              }
-              this.streetsObjects[streetName].push({type:"camera",feature:camera});
+      const speedService = ((window as any).speedService) as SpeedService;
+      const speedCamerasArroundObjOne=speedCamerasArround[0];
+      if(speedCamerasArroundObjOne.geometry.type==="Point"){
+        speedService.getSpeedDataFromArroundOnce([speedCamerasArroundObjOne.geometry.coordinates[0],speedCamerasArroundObjOne.geometry.coordinates[1]]).then(data=>{
+          speedCamerasArround.forEach(camera => {
+            if(camera.geometry.type=="Point"){
+              this.snapCameraToRoad([camera.geometry.coordinates[0],camera.geometry.coordinates[1]],data).then((street)=>{
+                if(street && street.properties){
+                  const streetName = street.properties["name"];
+                  if(!this.streetsObjects[streetName]){
+                    this.streetsObjects[streetName]=[];
+                  }
+                  this.streetsObjects[streetName].push({type:"camera",feature:camera});
+                }
+              });
             }
           });
-        }
-      });
-      this.streetsCamerasConfigured=true;
-      console.log(this.streetsObjects);
+          this.streetsCamerasConfigured=true;
+          console.log(this.streetsObjects);
+        });
+
+      }
+
+
     }
   }
 
-  async snapCameraToRoad(position:[number,number]): Promise<MapboxGeoJSONFeature | undefined> {
+  async snapCameraToRoad(position:[number,number],data:any): Promise<MapboxGeoJSONFeature | undefined> {
     const mapService = ((window as any).mapService as MapService);
     const map = mapService.getMap();
 
@@ -217,16 +226,17 @@ export class TrafficAlertServiceService {
     }
 
     const cameraPoint = point([position[0], position[1]]);
+    
     const features:MapboxGeoJSONFeature[] = map.querySourceFeatures('maxspeedDataSource', { sourceLayer: 'export_1-12rpm8' }) as MapboxGeoJSONFeature[];
 
     if (features.length > 0) {
-      const closestFeature = await this.findClosestRoad(features, cameraPoint);
+      const closestFeature = await this.findClosestRoad(features, cameraPoint,data);
       if (closestFeature) return closestFeature;
     }
     return;
   }
 
-  private async findClosestRoad(features: MapboxGeoJSONFeature[], cameraPoint: any): Promise<MapboxGeoJSONFeature | null> {
+  private async findClosestRoad(features: MapboxGeoJSONFeature[], cameraPoint: any, data:any): Promise<MapboxGeoJSONFeature | null> {
     let closestFeature: MapboxGeoJSONFeature | null = null;
     let minDistance = Number.MAX_VALUE;
     features.forEach(feature => {
@@ -243,7 +253,7 @@ export class TrafficAlertServiceService {
     });
     if (closestFeature == null) {
       const speedService = ((window as any).speedService) as SpeedService;
-      closestFeature = await speedService.getSpeedDataFromArroundAvailable(cameraPoint.geometry.coordinates);
+      closestFeature = await speedService.getSpeedDataFromArroundAvailable(cameraPoint.geometry.coordinates,data);
       if (closestFeature) {
         closestFeature = speedService.wayToGeoJsonFeature(closestFeature) as MapboxGeoJSONFeature;
       }

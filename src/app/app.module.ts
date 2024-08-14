@@ -54,6 +54,7 @@ import { WordpressService } from './services/wordpress-service.service';
 import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
 import { MapboxService } from './services/mapbox.service';
 import { TrafficAlertServiceService } from './services/traffic-alert-service.service';
+import { SnapService } from './services/snap.service';
 
 
 Amplify.configure(awsconfig);
@@ -137,7 +138,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       FirebaseService,
       AuthService,
       MapboxService,
-      TrafficAlertServiceService
+      TrafficAlertServiceService,
+      SnapService
     ],
   bootstrap: [AppComponent],
 })

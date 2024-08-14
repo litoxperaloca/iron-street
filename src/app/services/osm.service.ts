@@ -18,10 +18,13 @@ export class OsmService {
     return this.http.get(url, { responseType: 'text' });
   }
 
+  getOSRMdata(url:string) {
+    return this.http.get(url, { responseType: 'text' });
+  }
   async doGet(url: string, params: Record<string, string>): Promise<HttpResponse> {
     const options = {
       url: url,
-      headers: { 'X-Fake-Header': 'Fake-Value' },
+      headers: { },
       params: params,
     };
 

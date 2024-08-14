@@ -25,6 +25,8 @@ import { ToastService } from '../../services/toast.service';
 import { TripService } from '../../services/trip.service'
 import { VoiceService } from '../../services/voice.service';
 import { TrafficAlertServiceService } from 'src/app/services/traffic-alert-service.service';
+import { SnapService } from 'src/app/services/snap.service';
+import { MapboxService } from 'src/app/services/mapbox.service';
 
 @Component({
   selector: 'app-home',
@@ -83,7 +85,9 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     private bookmarkService: BookmarksService,
     private windowService: WindowService,
     private alertService: AlertService,
-  private trafficAlertService:TrafficAlertServiceService) {
+  private trafficAlertService:TrafficAlertServiceService,
+private snapService:SnapService,
+private mapboxService:MapboxService) {
     // Existing constructor code...
     this.isNative = Capacitor.isNativePlatform()
     this.audioOn = this.voiceService.isSpeakerOn();
@@ -154,8 +158,10 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
             if (((window as any).mapService as MapService).isRotating) {
               ((window as any).mapService as MapService).updateMarkerState();
             } else {
-              if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-              await self.speedService.locationUpdate();
+              //await self.speedService.locationUpdate();
+               self.snapService.locationUpdate();
+               if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
+
             }
             //((window as any).mapService as MapService).updateUserPosition();
             //((window as any).mapService as MapService).userStreet(position);
@@ -229,8 +235,10 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     if (((window as any).mapService as MapService).isRotating) {
       ((window as any).mapService as MapService).updateMarkerState();
     } else {
+      //await self.speedService.locationUpdate();
+      self.snapService.locationUpdate();
       if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-      await self.speedService.locationUpdate();
+
     }
     const speed = position.coords.speed;
     if (speed) {
@@ -247,7 +255,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   }
 
-  geolockUsingIntervals() {
+ async geolockUsingIntervals() {
     const self = this;
     this.windowService.unAttachInterval("home", "locationInterval");
     this.simulation = false;
@@ -281,8 +289,10 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
           if (((window as any).mapService as MapService).isRotating) {
             ((window as any).mapService as MapService).updateMarkerState();
           } else {
+            //self.speedService.locationUpdate();
+            self.snapService.locationUpdate();
             if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-            self.speedService.locationUpdate();
+
           }
           const speed = position.coords.speed;
           if (speed) {
@@ -324,6 +334,8 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     (window as any).toastService = this.ToastService;
     (window as any).speechRecognitionService = this.speechRecognitionService;
     (window as any).trafficAlertService = this.trafficAlertService;
+    (window as any).snapService = this.snapService;
+    (window as any).mapboxService=this.mapboxService;
 
     (window as any).homePage = this;
     this.waitAndRenderPage();

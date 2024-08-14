@@ -1,4 +1,15 @@
 export const environment = {
+  snapServiceConf:{
+    maxValidAccuracy:15,
+    distanceToConsiderMovementInMeters:5,
+    maxValidHeadingChangeInDeg: 35,
+    speedThreeholdForHeadingTop: 50,
+    maxValidHeadingChangeInDegForTopSpeedThreehold: 30,
+    speedThreeholdForHeadingBottom:10,
+    maxValidHeadingChangeInDegForBottomSpeedThreehold: 10,
+    maxValidHeadingChangeDefault:20,
+    minValidSpeedForMovement: 5
+  },
   locatorDefault: {
     type: 'gltf',
     obj: '/assets/models/bumble_bee.glb',

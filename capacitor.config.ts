@@ -23,6 +23,7 @@ const config: CapacitorConfig = {
       "https://*.firebaseio.com",
       "https://firebasehosting.googleapis.com",
       "https://*.web.app",
+      "https://api.ironstreet.com.uy",
 
 
       // Mapbox URLs

@@ -178,6 +178,16 @@ export class SensorService {
     ((window as any).mapService as MapService).updateUserMarkerSnapedPosition(useStreetHeading,userMoved,instantUpdate);
   }
 
+  updateSnapToRoadPositionOSRM(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any, useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean,newHeading:number) {
+    this.sensorData.snapLatitude = coordinates[1];
+    this.sensorData.snapLongitude = coordinates[0];
+    this.sensorData.closestStreetFeatureLine = feature;
+    this.sensorData.closestPoint = nearestPoint;
+    this.sensorData.headingAbs=newHeading;
+    this.sensorData.heading=newHeading;
+    ((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm(useStreetHeading,userMoved,instantUpdate,newHeading);
+  }
+
   getLastCurrentLocationPredicted(): [number, number] {
     if (this.sensorData.snapLatitude != 0 && this.sensorData.snapLongitude != 0) return [this.sensorData.snapLongitude, this.sensorData.snapLatitude];
     if (this.sensorData.snapLatitude != 0 && this.sensorData.snapLongitude != 0) return [this.sensorData.longitude, this.sensorData.latitude];
