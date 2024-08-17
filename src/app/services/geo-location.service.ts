@@ -40,7 +40,7 @@ export class GeoLocationService {
 
   async getCurrentPos() {
     const options = {
-      maximumAge: 1500,
+      maximumAge: 1200,
       timeout: 3000,
       enableHighAccuracy: true,
     };
@@ -65,7 +65,7 @@ export class GeoLocationService {
 
   watchPosition(callback: (position: any) => void) {
     const options = {
-      maximumAge: 1500,
+      maximumAge: 1200,
       timeout: 3000,
       enableHighAccuracy: true,
     };
@@ -131,7 +131,7 @@ export class GeoLocationService {
         }
       }
       const options = {
-        maximumAge: 1500,
+        maximumAge: 1200,
         timeout: 3000,
         enableHighAccuracy: true,
       };

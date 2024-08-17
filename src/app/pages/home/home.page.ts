@@ -116,6 +116,7 @@ private mapboxService:MapboxService) {
 
 
   geolockMock() {
+
     const self = this;
     //this.geoLocationService.stopWatchingPosition();
     this.windowService.unAttachInterval("home", "gpsInterval");
@@ -126,7 +127,12 @@ private mapboxService:MapboxService) {
     this.windowService.unAttachInterval("home", "locationInterval");
 
     const locationInterval: any = setInterval(() => {
-
+      if(this.shouldEndSimulation){
+        this.cancelTripSimulation();
+        this.startWatchingPosition();
+        this.shouldEndSimulation=false;
+        return;
+      }
       /*if (this.mapService.isAnimating) {
         return;
       }*/
@@ -186,7 +192,7 @@ private mapboxService:MapboxService) {
 
 
       //});
-    }, 2000); // Check every 5 seconds (adjust interval as needed)
+    }, 1200); // Check every 5 seconds (adjust interval as needed)
     this.windowService.attachedInterval("home", "locationInterval", locationInterval);
   }
 
@@ -308,7 +314,7 @@ private mapboxService:MapboxService) {
 
         });
 
-    }, 2200); // Check every 2 seconds (adjust interval as needed)
+    }, 1200); // Check every 2 seconds (adjust interval as needed)
     this.windowService.attachedInterval("home", "gpsInterval", gpsInterval);
   }
 
@@ -484,6 +490,8 @@ private mapboxService:MapboxService) {
   }
 
   public cancelTripSimulation() {
+    if(!this.shouldEndSimulation
+      ||this.shouldEndSimulation&&this.simulation)
     this.windowService.unAttachInterval("home", "locationInterval");
     this.geoLocationService.mocking = false;
     environment.mocking = false;

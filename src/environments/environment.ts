@@ -421,7 +421,7 @@ export const environment = {
     minimunDistanceToBboxContainerDataBorder: 3,
     urlToCustomGeoJsonApi: 'https://overpass-api.de/api/interpreter',
     urlToAllNearDataApi: 'https://api.openstreetmap.org/api/0.6/map?bbox=',
-    maxspeedsQuerySelector: '[out:json][timeout:300];wr["maxspeed"]',
+    maxspeedsQuerySelector: '[out:json][timeout:300];wr["highway"]',
     placesSelector: '[out:json][timeout:6666];nwr',
     outputQueryGeom: 'out geom;',
     osmGeocoderEndpoint: 'https://nominatim.openstreetmap.org/search?q='

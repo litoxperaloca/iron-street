@@ -50,6 +50,7 @@ export class MapService {
   mapEventIsFromTracking: boolean = false;
   popUpMainRoute: mapboxgl.Popup | null = null;
   popUpMaxSpeedWay: mapboxgl.Popup | null = null;
+  calculatingPressEvent: boolean=false;
 
   popUpAltRoute: mapboxgl.Popup | null = null;
   popUpDestination: mapboxgl.Popup | null = null;
@@ -335,11 +336,22 @@ export class MapService {
     }
   }
   onTouchStart(e: TouchEvent) {
-    this.isLongPress = false;
-    this.longPressTimeout = setTimeout(() => {
-      this.isLongPress = true;
-      this.onLongPress(e);
-    }, 2500); // 500ms threshold for long press
+    if(this.calculatingPressEvent){
+      this.calculatingPressEvent=false;
+      this.isLongPress = false;
+    }else{
+      this.calculatingPressEvent=true;
+      this.isLongPress = false;
+      this.longPressTimeout = setTimeout(() => {
+        if(this.calculatingPressEvent){
+          this.isLongPress = true;
+          this.onLongPress(e);
+          this.calculatingPressEvent=false;
+        }
+  
+      }, 2500); // 500ms threshold for long press
+    }
+
   }
 
   onTouchEnd(e: TouchEvent) {
@@ -347,6 +359,7 @@ export class MapService {
   }
 
   onTouchMove(e: TouchEvent) {
+    this.isLongPress=false;
     clearTimeout(this.longPressTimeout); // Cancel long press if touch moves
   }
 
@@ -368,6 +381,7 @@ export class MapService {
     mapContainer.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
     mapContainer.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
     mapContainer.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: true });
+   
     /*this.mapbox.on('touchstart', (e) => {
       //console.log(e);
       this.trackingUser = false;
@@ -421,6 +435,11 @@ export class MapService {
       .setLngLat(coordinates)
       //.setPopup(popup) // sets a popup on this marker
       .addTo(this.mapbox);
+      const self = this;
+      marker.getElement().addEventListener('click', function() {
+        // Call your function here
+        self.createMapPressedPopup([coordinates.lng, coordinates.lat]);
+      });
     //popup.addTo(this.mapbox);
     this.mapPressedMarkerInstance = marker;
   }
