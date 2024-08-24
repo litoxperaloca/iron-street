@@ -27,6 +27,7 @@ import { VoiceService } from '../../services/voice.service';
 import { TrafficAlertServiceService } from 'src/app/services/traffic-alert-service.service';
 import { SnapService } from 'src/app/services/snap.service';
 import { MapboxService } from 'src/app/services/mapbox.service';
+import { Place } from '@aws-amplify/geo';
 
 @Component({
   selector: 'app-home',
@@ -110,7 +111,7 @@ private mapboxService:MapboxService) {
       //this.speedService.startWatchingSpeedLimit();
 
 
-    }, 500);
+    }, 1000);
     this.windowService.attachedTimeOut("home", "waitAndRender", timeOut);
   }
 
@@ -130,7 +131,6 @@ private mapboxService:MapboxService) {
       if(this.shouldEndSimulation){
         this.cancelTripSimulation();
         this.startWatchingPosition();
-        this.shouldEndSimulation=false;
         return;
       }
       /*if (this.mapService.isAnimating) {
@@ -144,31 +144,11 @@ private mapboxService:MapboxService) {
           if (position.coords.latitude == 0 && position.coords.longitude == 0) {
             this.finishSimulation();
           } else {
-            self.sensorService.updateGeolocation(position);
-            const smoothedLat = self.sensorService.getSensorLatitude();
-            const smoothedLng = self.sensorService.getSensorLongitude();
-            const smoothedPosition: Position = {
-              coords: {
-                latitude: smoothedLat,
-                longitude: smoothedLng,
-                accuracy: position.coords.accuracy,
-                altitude: position.coords.altitude,
-                altitudeAccuracy: position.coords.altitudeAccuracy,
-                heading: position.coords.heading,
-                speed: position.coords.speed
-              },
-              timestamp: position.timestamp
-            };
-
-            ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
-            if (((window as any).mapService as MapService).isRotating) {
-              ((window as any).mapService as MapService).updateMarkerState();
-            } else {
-              //await self.speedService.locationUpdate();
-               self.snapService.locationUpdate();
+                  //await self.speedService.locationUpdate();
+               self.snapService.locationUpdate(position);
                if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
 
-            }
+            
             //((window as any).mapService as MapService).updateUserPosition();
             //((window as any).mapService as MapService).userStreet(position);
             /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
@@ -221,31 +201,8 @@ private mapboxService:MapboxService) {
 
 
     if (!position) return;
-    self.sensorService.updateGeolocation(position);
-    const smoothedLat = self.sensorService.getSensorLatitude();
-    const smoothedLng = self.sensorService.getSensorLongitude();
-    const smoothedPosition: Position = {
-      coords: {
-        latitude: smoothedLat,
-        longitude: smoothedLng,
-        accuracy: position.coords.accuracy,
-        altitude: position.coords.altitude,
-        altitudeAccuracy: position.coords.altitudeAccuracy,
-        heading: position.coords.heading,
-        speed: position.coords.speed
-      },
-      timestamp: position.timestamp
-    };
-
-    ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
-    if (((window as any).mapService as MapService).isRotating) {
-      ((window as any).mapService as MapService).updateMarkerState();
-    } else {
-      //await self.speedService.locationUpdate();
-      self.snapService.locationUpdate();
+      self.snapService.locationUpdate(position);
       if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-
-    }
     const speed = position.coords.speed;
     if (speed) {
       self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
@@ -275,31 +232,8 @@ private mapboxService:MapboxService) {
       self.geoLocationService.getCurrentPosition().then(
         (position) => {
           if (!position) return;
-          self.sensorService.updateGeolocation(position);
-          const smoothedLat = self.sensorService.getSensorLatitude();
-          const smoothedLng = self.sensorService.getSensorLongitude();
-          const smoothedPosition: Position = {
-            coords: {
-              latitude: smoothedLat,
-              longitude: smoothedLng,
-              accuracy: position.coords.accuracy,
-              altitude: position.coords.altitude,
-              altitudeAccuracy: position.coords.altitudeAccuracy,
-              heading: position.coords.heading,
-              speed: position.coords.speed
-            },
-            timestamp: position.timestamp
-          };
-
-          ((window as any).geoLocationService as GeoLocationService).setLastCurrentPosition(smoothedPosition);
-          if (((window as any).mapService as MapService).isRotating) {
-            ((window as any).mapService as MapService).updateMarkerState();
-          } else {
-            //self.speedService.locationUpdate();
-            self.snapService.locationUpdate();
+            self.snapService.locationUpdate(position);
             if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-
-          }
           const speed = position.coords.speed;
           if (speed) {
             self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
@@ -328,7 +262,7 @@ private mapboxService:MapboxService) {
     (window as any).speedService = this.speedService;
     (window as any).osmService = this.osmService;
     (window as any).tripService = this.tripService;
-    //(window as any).intersectionService = this.intersectionService;
+    //(window as any).  = this.intersectionService;
     (window as any).cameraService = this.cameraService;
     (window as any).deviceOrientationService = this.deviceOrientationService;
     (window as any).sensorService = this.sensorService;
@@ -342,6 +276,8 @@ private mapboxService:MapboxService) {
     (window as any).trafficAlertService = this.trafficAlertService;
     (window as any).snapService = this.snapService;
     (window as any).mapboxService=this.mapboxService;
+    (window as any).bookmarkService=this.bookmarkService;
+
 
     (window as any).homePage = this;
     this.waitAndRenderPage();
@@ -614,6 +550,20 @@ private mapboxService:MapboxService) {
     }
   }
 
+  setDestinationBookmarkIfAbortCurrent(place: Place) {
+    if (this.mapService.isTripStarted) {
+      this.actionSheetService.askQuestionAorB("¿Desea terminar el viaje actual y cambiar el destino?", "Cambiando destino actual...", "Si, cambiar el destino de mi viaje", "No, continuar viaje actual sin alterar el destino").then((result) => {
+        if (result) {
+          this.cancelTrip();
+          this.mapService.setDestinationBookmark(place);
+        }
+      });
+    } else {
+      this.mapService.setDestinationBookmark(place);
+
+    }
+  }
+
   openInfoModalOSM(destinationId: number) {
     this.osmClickedId = destinationId;
     this.openModal("PlaceInfo");
@@ -630,6 +580,10 @@ private mapboxService:MapboxService) {
 
     this.openModal("Osm");
 
+  }
+
+  openBookmarkSavedModal(): void {
+    this.openModal("BookmarkSaved");
   }
 
   openLocationModal(coordinates: [number, number]): void {

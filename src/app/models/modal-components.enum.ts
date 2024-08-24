@@ -12,11 +12,13 @@ export enum ModalComponents {
   YourSpeed = 'YourSpeed',
   Debug = 'Debug',
   IronBot = 'IronBot',
-  UserMarkerSettings = 'UserMarkerSettingsModal'
+  UserMarkerSettings = 'UserMarkerSettingsModal',
+  BookmarkSaved = 'BookmarkSaved'
 }
 
 
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
+import { BookmarkSavedModalComponent } from '../modals/bookmark-saved-modal/bookmark-saved-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
 import { IronBotModalComponent } from '../modals/iron-bot-modal/iron-bot-modal.component';
@@ -47,7 +49,8 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.YourSpeed]: YourSpeedModalComponent,
   [ModalComponents.Debug]: DebugModalComponent,
   [ModalComponents.IronBot]: IronBotModalComponent,
-  [ModalComponents.UserMarkerSettings]: UserMarkerSettingsModalComponent
+  [ModalComponents.UserMarkerSettings]: UserMarkerSettingsModalComponent,
+  [ModalComponents.BookmarkSaved]: BookmarkSavedModalComponent
 
 
 

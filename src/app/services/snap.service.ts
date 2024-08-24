@@ -79,197 +79,10 @@ export class SnapService {
     ];
   }
 
-  async locationUpdate() {
-     const userPosition:Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation();
+  async locationUpdate(userPosition:Position){
     if(userPosition){
       this.snapToRoadUsingMiddleServer(userPosition);
     }
-  }
-
-  async getMapboxStreetFeature(lastTracepoint:any,osrmStreetName:string){
-    const map = ((window as any).mapService as MapService).getMap();
-    if (lastTracepoint && lastTracepoint.location) {
-      const snappedPosition:[number,number] = lastTracepoint.location; // This is the snapped coordinate [lon, lat]
-  
-      // Extract the street name from OSRM response
-      const roadName = osrmStreetName; // Adjust as needed to get the road name
-  
-      // Assuming you have a Mapbox layer with features
-      const features:MapboxGeoJSONFeature[] = map.querySourceFeatures('maxspeedDataSource', { sourceLayer: 'export_1-12rpm8' ,filter: ['==', 'name', osrmStreetName]}) as MapboxGeoJSONFeature[];
-  
-      // Filter features by road name
-      const matchingFeatures = features.filter(feature => {
-          return feature.properties && feature.geometry.type === 'LineString' && feature.properties["name"] === roadName;
-      });
-      let nearestFeature = null;
-      let minDistance = Infinity;
-      if (matchingFeatures.length === 0) {
-          console.log('No matching street name found.');
-         
-      } else {
-
-  
-          matchingFeatures.forEach(feature => {
-              if(feature.geometry.type==="LineString"){
-                const line = lineString(feature.geometry.coordinates);
-                const snappedPoint = point(snappedPosition);
-    
-                // Find the nearest point on the line
-                const nearestPoint = nearestPointOnLine(line, snappedPoint);
-                if(nearestPoint.geometry.type==="Point"){
-                  const distanceInMeters = distance(snappedPoint, nearestPoint, { units: 'meters' });
-                  // Track the closest feature
-                  if (distanceInMeters < minDistance) {
-                    minDistance = distanceInMeters;
-                    nearestFeature = feature;
-                  }
-                }
-              }
-          });
-  
-          if (!nearestFeature) {
-            const speedService = ((window as any).speedService as SpeedService);
-            nearestFeature = await speedService.getSpeedDataFromArroundIncludesName(osrmStreetName,snappedPosition);
-              if (nearestFeature) {
-                nearestFeature = speedService.wayToGeoJsonFeature(nearestFeature) as MapboxGeoJSONFeature;
-              }
-          }
-            let homePage = ((window as any).homePage as HomePage);
-            if(nearestFeature && !homePage.shouldEndSimulation){
-              //nearestFeature = this.chooseBestClosestFeatureForSnap(closestFeature,minDistance,alternativesWithSameName,osrmLastMatch);
-              return nearestFeature;
-  
-            }
-            return nearestFeature;          }
-      
-  } else {
-      console.log('No valid last tracepoint found.');
-  }
-
-  }
-
-  async snapNewPositionOSRMmatch(userPosition:Position):Promise<void>{
-    this.lastestUserLocations.push(userPosition);
-    if(this.lastestUserLocations.length<2){
-      return;
-    }
-    if(this.lastestUserLocations.length>5){
-      this.lastestUserLocations.shift();
-    }
-      let coordinates:string =  this.lastestUserLocations.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
-      let timestamps = this.lastestUserLocations.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
-      //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
-      //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
-     // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
-      let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?timestamps=${timestamps}&steps=true&geometries=geojson`;
-
-      //let url = `https://api.ironstreet.com.uy/nearest/v1/driving/${userPosition.coords.longitude},${userPosition.coords.latitude}.json`;
-      
-      const data = await this.osmService.doGet(url,{});
-        //console.log(data);
-        if(data.data){
-          const locationsCount:number=data.data.tracepoints.length;
-          const lastMatch:any=data.data.tracepoints[locationsCount-1];
-          this.lastOSRMmatchesLocations.push(lastMatch);
-          if(this.lastOSRMmatchesLocations.length>5){
-            this.lastOSRMmatchesLocations.slice();
-          }
-          /*this.lastestHints.push(data.data.waypoints[0].hint);
-          if(this.lastestHints.length>5){
-            this.lastestHints.shift();
-          }*/
-            const tracepoint= lastMatch;
-            // Set snapedPos
-        const snapedPos = {
-          lat: tracepoint.location[1],
-          lon: tracepoint.location[0],
-      };
-      
-      const roadName = tracepoint.name;
-      const currentFeature:MapboxGeoJSONFeature = await this.getMapboxStreetFeature(tracepoint,roadName)
-      let maxspeed = null;
-      let newHeading = null;
-      let useStreetHeading=true;
-      let instantUpdate=false;
-      let userMoved:boolean=false;
-      if(currentFeature && currentFeature.properties){
-        maxspeed = currentFeature.properties['maxspeed'];
-        const mapService = ((window as any).mapService as MapService);
-        mapService.setUserCurrentStreet(currentFeature);
-        const speedService = ((window as any).speedService as SpeedService);
-     
-   
-        if(this.lastPosition){
-          userMoved=this.hasMoved([this.lastPosition.lon,this.lastPosition.lat],[snapedPos.lon,snapedPos.lat],userPosition.coords.accuracy)
-          newHeading = this.calculateHeading(this.lastPosition, snapedPos);
-          if(newHeading){
-            const diffHeadingsInDeg:number=this.calculateHeadingDifference(this.lastHeading,newHeading);
-            let speed = userPosition.coords.speed;
-            if(!speed)speed = 0;
-            const shouldUseNewHeading = this.shouldUseCalculatedHeading(userMoved,diffHeadingsInDeg,speed)
-            if(shouldUseNewHeading){
-              useStreetHeading=false;
-            }else{
-              useStreetHeading=true;
-            }
-            this.lastHeading=newHeading;
-            
-          }
-        }
-        let setInitialStreetsConfData=false;
-        if(!speedService.lastCurrentStreet){
-          setInitialStreetsConfData=true;
-          if(!userMoved){
-            userMoved=true; //Es la primera vez que ubicare al usuario en una calle, entonces actualizo camara
-          }
-        }
-        speedService.lastCurrentStreet=currentFeature;
-        const smothedPosition:Position = {
-          coords: {
-              latitude: snapedPos.lat,
-              longitude: snapedPos.lon,
-              altitude: userPosition.coords.altitude, // Set to null unless you have this data
-              accuracy: userPosition.coords.accuracy, // Set to null or provide an accuracy value if known
-              altitudeAccuracy: userPosition.coords.altitudeAccuracy,
-              heading: newHeading, // Set to null or provide heading if known
-              speed: userPosition.coords.speed // Set to null or provide speed if known
-          },
-          timestamp: userPosition.timestamp // Use current timestamp or a specific one
-      };
-      const geoLocationService:GeoLocationService = ((window as any).geoLocationService as GeoLocationService);
-      geoLocationService.setLastCurrentPosition(smothedPosition);
-          const trafficAlertService = ((window as any).trafficAlertService as TrafficAlertServiceService);
-          if(setInitialStreetsConfData){
-            await trafficAlertService.setCamerasStreetName();
-          }
-          trafficAlertService.checkAlertableObjectsOnNewUserPosition(smothedPosition);
-        }
-        const homePage:HomePage = ((window as any).homePage as HomePage);
-        if(currentFeature && currentFeature.properties){
-          homePage.currentMaxSpeed = Number.parseInt(currentFeature.properties["maxspeed"]);
-
-        }
-
-        if(homePage && homePage.shouldEndSimulation){
-          instantUpdate=true;
-          useStreetHeading=true;
-          homePage.shouldEndSimulation=false;
-
-        }
-        
-        this.lastPosition=snapedPos;
-      // Return the result object
-  
-        const sensorService = ((window as any).sensorService as SensorService);
-        if(newHeading){
-          sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,useStreetHeading,userMoved,instantUpdate,newHeading);
-        }else{
-          sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,true,userMoved,instantUpdate,0);
-
-        
-      }
-      
-      }
   }
 
   shouldUseCalculatedHeading(userMoved:boolean, diffHeadingsInDeg:number, speed:number) {
@@ -322,10 +135,7 @@ export class SnapService {
 
   async snapToRoadUsingMiddleServer(userPosition:Position):Promise<void>{
     this.lastestUserLocations.push(userPosition);
-    if(this.lastestUserLocations.length<2){
-      return;
-    }
-    if(this.lastestUserLocations.length>5){
+    if(this.lastestUserLocations.length>10){
       this.lastestUserLocations.shift();
     }
       let coordinates:string =  this.lastestUserLocations.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
@@ -343,18 +153,12 @@ export class SnapService {
       const data = await this.osmService.doGet(url,parms);
         //console.log(data);
         if(data.data){
-          const locationsCount:number=data.data.tracepoints.length;
           const lastMatch:any=data.data.lastTracePoint;
           this.lastOSRMmatchesLocations.push(lastMatch);
-          if(this.lastOSRMmatchesLocations.length>5){
-            this.lastOSRMmatchesLocations.slice();
+          if(this.lastOSRMmatchesLocations.length>10){
+            this.lastOSRMmatchesLocations.shift();
           }
-          /*this.lastestHints.push(data.data.waypoints[0].hint);
-          if(this.lastestHints.length>5){
-            this.lastestHints.shift();
-          }*/
             const tracepoint= lastMatch;
-            // Set snapedPos
       const snapedPos = {
           lat: tracepoint.location[1],
           lon: tracepoint.location[0],
@@ -366,13 +170,18 @@ export class SnapService {
       const maxspeed = tracepoint.maxSpeed;
       const cameras = tracepoint.cameras;
       const heading = tracepoint.bearing;
-      const currentFeature:MapboxGeoJSONFeature = await this.getMapboxStreetFeature(tracepoint,roadName)
+      const currentFeature = tracepoint.feature;
       const newHeading = heading;
+      const streetId = tracepoint.firstId;
+      const sensorService = ((window as any).sensorService as SensorService);
       let useStreetHeading=true;
       let instantUpdate=false;
       let userMoved:boolean=false;
+      
+
       if(currentFeature){
         const mapService = ((window as any).mapService as MapService);
+        mapService.setStreetFeature(currentFeature);
         mapService.setUserCurrentStreet(currentFeature);
         const speedService = ((window as any).speedService as SpeedService);
      
@@ -394,14 +203,13 @@ export class SnapService {
             
           }
         }
-        const setInitialStreetsConfData=false;
         if(!speedService.lastCurrentStreet){
           if(!userMoved){
             userMoved=true; //Es la primera vez que ubicare al usuario en una calle, entonces actualizo camara
           }
         }
         speedService.lastCurrentStreet=currentFeature;
-        const smothedPosition:Position = {
+        const smoothedPosition:Position = {
           coords: {
               latitude: snapedPos.lat,
               longitude: snapedPos.lon,
@@ -414,9 +222,16 @@ export class SnapService {
           timestamp: userPosition.timestamp // Use current timestamp or a specific one
       };
       const geoLocationService:GeoLocationService = ((window as any).geoLocationService as GeoLocationService);
-      geoLocationService.setLastCurrentPosition(smothedPosition);
-          const trafficAlertService = ((window as any).trafficAlertService as TrafficAlertServiceService);
-          //trafficAlertService.checkAlertableObjectsOnNewUserPosition(smothedPosition);
+      geoLocationService.setLastCurrentPosition(smoothedPosition);
+      if (((window as any).mapService as MapService).isRotating) {
+        /*((window as any).mapService as MapService).setFirstGeo([lon,lat],heading);
+        userMoved=true;
+        isFirstGeo=true;*/
+        ((window as any).mapService as MapService).updateMarkerState([lon,lat],mapService.userCurrentStreetHeading);
+        return;
+      }
+      const trafficAlertService = ((window as any).trafficAlertService as TrafficAlertServiceService);
+      trafficAlertService.checkAlertableObjectsOnNewUserPositionFromArray(smoothedPosition,roadName,cameras);
         }
         const homePage:HomePage = ((window as any).homePage as HomePage);
           homePage.currentMaxSpeed = Number.parseInt(maxspeed);
@@ -430,15 +245,14 @@ export class SnapService {
           
           this.lastPosition=snapedPos;
         // Return the result object
-    
-          const sensorService = ((window as any).sensorService as SensorService);
-          if(newHeading){
-            sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,useStreetHeading,userMoved,instantUpdate,newHeading);
-          }else{
-            sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,true,userMoved,instantUpdate,0);
-  
-          
-        }
+         
+            if(newHeading){
+              sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,useStreetHeading,userMoved,instantUpdate,newHeading);
+            }else{
+              sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,true,userMoved,instantUpdate,0);
+              
+            }
+
     
       
       

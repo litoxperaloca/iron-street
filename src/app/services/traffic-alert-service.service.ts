@@ -21,6 +21,7 @@ export class TrafficAlertServiceService {
   streetsObjects: any[]=[];
   streetsCamerasConfigured:boolean=false;
   lastUserCurrentStreet:MapboxGeoJSONFeature|null=null;
+  lastUserCurrentStreetName:string|null=null;
   preannouncedObjects = new Set<number>(); // Set de objetos ya preanunciados
   announcedObjects = new Set<number>(); // Set de objetos ya anunciados
 
@@ -50,7 +51,7 @@ export class TrafficAlertServiceService {
         this.windowService.attachedTimeOut("home", "tripservice", time);
       }
     }
-    if(alertType === "camera"){
+    if(alertType === "speedCamera"){
       const tripStepDetails = document.getElementById("tripStepDetails");
       if (tripStepDetails) {
         tripStepDetails.style.display = "block";
@@ -73,31 +74,21 @@ export class TrafficAlertServiceService {
    
   }
 
-
-  checkAlertableObjectsOnNewUserPosition(userPosition: Position){
+  checkAlertableObjectsOnNewUserPositionFromArray(userPosition: Position, streetName:string,alertables:any[]){
     console.log("buscando camaras...");
-    const mapService = ((window as any).mapService as MapService);
-    const street = mapService.userCurrentStreet;
-    console.log("Street:",street);
-    let streetName;
-    if(street && street.properties){
-      streetName=street.properties['name']
-    }else{
+    if(!alertables || alertables.length<=0){
+
       console.log("Salgo!");
 
       return;
     };
-    console.log("StreetName:",streetName);
-    console.log("Objs:",this.streetsObjects[streetName]);
 
-    if(this.streetsObjects[streetName]){
-      const streetObjs:any[]=this.streetsObjects[streetName];
-      console.log("streetObjs:",streetObjs);
-      console.log("lastStreet:",this.lastUserCurrentStreet);
+    if(streetName){
 
-      if(this.lastUserCurrentStreet){
-        if(this.lastUserCurrentStreet.properties 
-          && this.lastUserCurrentStreet.properties['name']===streetName){
+
+      if(this.lastUserCurrentStreetName){
+        if(this.lastUserCurrentStreetName
+          && this.lastUserCurrentStreetName===streetName){
             //sigo en la misma calle
                   console.log("SIGO EN LA MISMA");
 
@@ -107,7 +98,7 @@ export class TrafficAlertServiceService {
 
             this.preannouncedObjects.clear();
             this.announcedObjects.clear();
-            this.lastUserCurrentStreet=street;
+            this.lastUserCurrentStreetName=streetName;
           }
       }else{
         //Primera calle
@@ -115,15 +106,12 @@ export class TrafficAlertServiceService {
 
         this.preannouncedObjects.clear();
         this.announcedObjects.clear();
-        this.lastUserCurrentStreet=street;
+        this.lastUserCurrentStreetName=streetName;
       }
-      streetObjs.forEach(objAlertable=>{
+      alertables.forEach(objAlertable=>{
         console.log("objAlertable",objAlertable);
 
-        const distanceToObj = this.mapboxService.calculateDistance(
-          [userPosition.coords.longitude,userPosition.coords.latitude],
-          objAlertable.feature.geometry.coordinates
-        );
+        const distanceToObj = objAlertable.distanceInMeters;
         console.log("distanceToObj",distanceToObj);
         console.log(distanceToObj,objAlertable,streetName);
 
@@ -144,19 +132,27 @@ export class TrafficAlertServiceService {
   preAnnounceAlertableObj(distance: number, objAlertable: any, streetName:string) {
     const alertableConfig = this.getAlertableConfig(objAlertable.type);
     console.log("alertableConfig",alertableConfig);
-    console.log(alertableConfig,alertableConfig!.preAnnounce, distance,alertableConfig!.preAnnouncementDistance,this.preannouncedObjects,objAlertable.feature.id);
-
+    let idlabel:string = objAlertable.tags["osmid"];
+    const objId:number = Number(idlabel.replace("node/",""));
+    console.log(alertableConfig,alertableConfig!.preAnnounce, distance,alertableConfig!.preAnnouncementDistance,this.preannouncedObjects,objId);
+    
     if (alertableConfig && 
       alertableConfig.preAnnounce && 
       distance < alertableConfig.preAnnouncementDistance &&       
-      !this.preannouncedObjects.has(objAlertable.feature.id)
+      !this.preannouncedObjects.has(objId)
     ) {
-      let preAnnouncement = alertableConfig.preAnnouncement
+      let preAnnouncement:string='';
+      if(objAlertable.tags["maxspeed"])
+      preAnnouncement = alertableConfig.preAnnouncement
         .replace('{distance}', Math.round(distance).toString())
-        .replace('{modifier}', objAlertable.feature.properties["maxspeed"])
+        .replace('{modifier}', objAlertable.tags["maxspeed"])
         .replace('{streetName}', streetName);
+      if(!objAlertable.tags["maxspeed"])
+        preAnnouncement = alertableConfig.preAnnouncement
+          .replace('{distance}', Math.round(distance).toString())
+          .replace('{streetName}', streetName);
       
-      this.preannouncedObjects.add(objAlertable.feature.id);
+      this.preannouncedObjects.add(objId);
       this.showAlert(preAnnouncement,objAlertable.type,alertableConfig.icon,true);
 
     }
@@ -165,19 +161,27 @@ export class TrafficAlertServiceService {
   announceAlertableObj(distance: number, objAlertable: any, streetName:string) {
     const alertableConfig = this.getAlertableConfig(objAlertable.type);
     console.log("alertableConfig",alertableConfig);
-    console.log(alertableConfig,alertableConfig!.announce, distance,alertableConfig!.announcementDistance,this.announcedObjects,objAlertable.feature.id);
+    let idlabel:string = objAlertable.tags["osmid"];
+    const objId:number = Number(idlabel.replace("node/",""));
+    console.log(alertableConfig,alertableConfig!.announce, distance,alertableConfig!.announcementDistance,this.announcedObjects,objId);
 
     if (alertableConfig && 
       alertableConfig.announce && 
       distance < alertableConfig.announcementDistance &&       
-      !this.announcedObjects.has(objAlertable.feature.id)
+      !this.announcedObjects.has(objId)
     ) {
-      let announcement = alertableConfig.announcement
+      let announcement='';
+      if(objAlertable.tags["maxspeed"])
+       announcement = alertableConfig.announcement
         .replace('{distance}', Math.round(distance).toString())
-        .replace('{modifier}', objAlertable.feature.properties["maxspeed"])
+        .replace('{modifier}', objAlertable.tags["maxspeed"])
         .replace('{streetName}', streetName);
+      if(!objAlertable.tags["maxspeed"])
+        announcement = alertableConfig.announcement
+          .replace('{distance}', Math.round(distance).toString())
+          .replace('{streetName}', streetName);
       
-      this.announcedObjects.add(objAlertable.feature.id);
+      this.announcedObjects.add(objId);
       this.showAlert(announcement,objAlertable.type,alertableConfig.icon,true);
 
     }

@@ -185,7 +185,7 @@ export class SensorService {
     this.sensorData.closestPoint = nearestPoint;
     this.sensorData.headingAbs=newHeading;
     this.sensorData.heading=newHeading;
-    ((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm(useStreetHeading,userMoved,instantUpdate,newHeading);
+    ((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm([coordinates[0],coordinates[1]],useStreetHeading,userMoved,instantUpdate,newHeading);
   }
 
   getLastCurrentLocationPredicted(): [number, number] {

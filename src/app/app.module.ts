@@ -55,6 +55,7 @@ import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-
 import { MapboxService } from './services/mapbox.service';
 import { TrafficAlertServiceService } from './services/traffic-alert-service.service';
 import { SnapService } from './services/snap.service';
+import { BookmarkSavedModalComponent } from './modals/bookmark-saved-modal/bookmark-saved-modal.component';
 
 
 Amplify.configure(awsconfig);
@@ -86,7 +87,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       YourSpeedModalComponent,
       DebugModalComponent,
       IronBotModalComponent,
-      UserMarkerSettingsModalComponent
+      UserMarkerSettingsModalComponent,
+      BookmarkSavedModalComponent
     ],
   imports: [
 

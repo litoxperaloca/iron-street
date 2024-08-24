@@ -1,4 +1,5 @@
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
+import { BookmarkSavedModalComponent } from '../modals/bookmark-saved-modal/bookmark-saved-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
 import { IronBotModalComponent } from '../modals/iron-bot-modal/iron-bot-modal.component';
@@ -69,6 +70,14 @@ export const ComponentRef = {
     breakpoints: [0, 0.24, 0.55, 0.75, 1],
     initialBreakpoint: 0.24,
     backdropBreakpoint: 1,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.BookmarkSaved]: {
+    component: BookmarkSavedModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.34, 0.55],
+    initialBreakpoint: 0.34,
+    backdropBreakpoint: 0.55,
     props: {} // Añade las propiedades que necesites
   },
   [ModalComponents.Location]: {

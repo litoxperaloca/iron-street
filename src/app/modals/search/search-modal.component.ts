@@ -10,6 +10,8 @@ import { GeoLocationService } from '../../services/geo-location.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
 import { ModalService } from '../../services/modal.service';
 import { OsmService } from '../../services/osm.service';
+import { point } from '@turf/helpers';
+import distance from '@turf/distance';
 @Component({
   selector: 'app-search-modal',
   templateUrl: './search-modal.component.html',
@@ -143,6 +145,8 @@ export class SearchModalComponent {
             }
           });
         });
+        const position = this.geoLocationService.getLastCurrentLocation();
+        this.groupedPlaces = this.sortLocationsByDistance({lon: position.coords.longitude,lat: position.coords.latitude},this.groupedPlaces)
         this.segmentIsLoading[this.currentSegment] = false;
         //console.log(this.groupedPlaces);
 
@@ -157,6 +161,57 @@ export class SearchModalComponent {
     }
 
   }
+
+  sortLocationsByDistance(userLocation: { lat: number, lon: number }, data: any) {
+    const userPoint = point([userLocation.lon, userLocation.lat]);
+
+    // Sort each municipality's locations
+    Object.keys(data).forEach(country => {
+      Object.keys(data[country]).forEach(municipality => {
+        data[country][municipality] = data[country][municipality].sort((a: any, b: any) => {
+          const distanceA = distance(userPoint, point(a.geometry.point));
+          const distanceB = distance(userPoint, point(b.geometry.point));
+          return distanceA - distanceB;
+        });
+      });
+    });
+
+    // Sort municipalities within each country by their closest location
+    Object.keys(data).forEach(country => {
+      const sortedMunicipalities = Object.keys(data[country]).sort((a, b) => {
+        const closestA = data[country][a][0];
+        const closestB = data[country][b][0];
+        const distanceA = distance(userPoint, point(closestA.geometry.point));
+        const distanceB = distance(userPoint, point(closestB.geometry.point));
+        return distanceA - distanceB;
+      });
+
+      // Reorder municipalities in the data object
+      const sortedMunicipalitiesData:any= {};
+      sortedMunicipalities.forEach(municipality => {
+        sortedMunicipalitiesData[municipality] = data[country][municipality];
+      });
+      data[country] = sortedMunicipalitiesData;
+    });
+
+    // Sort countries by their closest municipality's location
+    const sortedCountries = Object.keys(data).sort((a, b) => {
+      const closestMunicipalityA = (Object.values(data[a]) as any)[0][0];
+      const closestMunicipalityB = (Object.values(data[b]) as any)[0][0];
+      const distanceA = distance(userPoint, point(closestMunicipalityA.geometry.point));
+      const distanceB = distance(userPoint, point(closestMunicipalityB.geometry.point));
+      return distanceA - distanceB;
+    });
+
+    // Reorder countries in the data object
+    const sortedData :any= {};
+    sortedCountries.forEach(country => {
+      sortedData[country] = data[country];
+    });
+
+    return sortedData;
+  }
+  
 
   formatOSMResponse(osmResponse: Feature[]) {
     return osmResponse.map(item => {

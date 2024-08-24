@@ -28,23 +28,31 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.flyTo({
-
+      map.easeTo({              
+        duration:200,
         center: [position.coords.longitude,
-        position.coords.latitude],
-        zoom: 17,
-        speed: 1,
-        //curve: 1,
-        easing(t: number) {
-          return t;
-        },
-        essential: true,
-        pitch: 0,
-        bearing: 0
-      });
+          position.coords.latitude],
+          zoom: 17,
+          //curve: 1,
+          essential: true,
+          pitch: 0,
+          bearing: 0
+
+    });
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;
+        map.triggerRepaint();
+      })
+      map.once('zoomend', () => {
+        self.locked = false;
+        self.isFlying = false;
+        map.triggerRepaint();
+      })
+      map.once('pitchend', () => {
+        self.locked = false;
+        self.isFlying = false;
+        map.triggerRepaint();
       })
     }
   }
@@ -61,20 +69,16 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.flyTo({
-
+      map.easeTo({              
+        duration:200,
         center: [position.coords.longitude,
-        position.coords.latitude],
-        zoom: 17,
-        speed: 1,
-        //curve: 1,
-        easing(t: number) {
-          return t;
-        },
-        essential: true,
-        pitch: 55,
-        bearing: position.coords.heading as number
-      });
+          position.coords.latitude],
+          zoom: 17,
+          //curve: 1,
+          essential: true,
+          pitch: 55,
+          bearing: position.coords.heading as number
+    });
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;
@@ -107,18 +111,15 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.flyTo({
+      map.easeTo({              
+        duration:200,
         center: location,
         //zoom: 19,
         //minZoom: 19,
-        speed: 1,
         //pitch: 80,
         //bearing: newRotation,
         essential: true,
-        easing(t) {
-          return t;
-        }
-      });
+    });
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;
@@ -138,18 +139,14 @@ export class CameraService {
     if (map.isMoving()) {
       map.stop();
     }
-    map.flyTo({
+    map.easeTo({              
+      duration:200,
       center: location.geometry.coordinates,
       zoom: 17,
-      speed: 1,
       pitch: 55,
       bearing: bearing,
       essential: true,
-      easing(t) {
-        // console.log(t);
-        return t;
-      }
-    })
+  });
     map.once('moveend', () => {
       self.locked = false;
       self.isFlying = false;
@@ -166,20 +163,19 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.flyTo({
+      map.flyTo({              
+        duration:400,
+       // animate: true,
+        //minZoom: 19,
+        //speed: 1.5,
         center: location,
         zoom: 16,
         //minZoom: 19,
-        speed: 1.5,
-        pitch: 0,
         bearing: 0,
+        pitch: 55,
         essential: true,
-        easing(t) {
-          // console.log(t);
-
-          return t;
-        }
-      });
+        //minZoom: 19,
+    });
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;
@@ -197,22 +193,17 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.flyTo({
-        center: position,
-        zoom: 17,
+      map.flyTo({              
+        duration:400,
         animate: true,
-        duration: 400,
         //minZoom: 19,
         //speed: 1.5,
         pitch: 55,
-        bearing: mapBearing,
         essential: true,
-        easing(t) {
-          // console.log(t);
-
-          return t;
-        }
-      });
+        zoom: 17,
+        center: position,
+        bearing: mapBearing
+    });
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;
@@ -222,7 +213,6 @@ export class CameraService {
 
 
   async updateCameraForUserMarkerGeoEvent(position: [number, number], mapBearing: number) {
-    if (!this.locked && !this.isFlying) {
       const self = this;
       self.locked = true;
       self.isFlying = true;
@@ -230,7 +220,17 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.flyTo(
+      map.easeTo({              
+          duration:200,
+         // animate: true,
+          //minZoom: 19,
+          //speed: 1.5,
+          essential: true,
+          //minZoom: 19,
+          center: position,
+          bearing: mapBearing
+      });
+    /*  map.flyTo(
         {
           animate: true,
           duration: 400,
@@ -241,7 +241,7 @@ export class CameraService {
           center: position,
           bearing: mapBearing
         }
-      );
+      );*/
       /*self.locked = false;
       self.isFlying = false;*/
       map.once('moveend', () => {
@@ -249,6 +249,4 @@ export class CameraService {
         self.isFlying = false;
       })
     }
-
-  }
 }

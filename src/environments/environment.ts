@@ -12,11 +12,11 @@ export const environment = {
   },
   locatorDefault: {
     type: 'gltf',
-    obj: '/assets/models/bumble_bee.glb',
-    scale: 9,
+    obj: '/assets/models/car_arrow.glb',
+    scale: 6,
     units: 'meters',
     anchor: "top",
-    rotation: { x: 90, y: 0, z: 0 }
+    rotation: { x: 270, y: 0, z: 0 }
   },
   locators: [
     
@@ -29,7 +29,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/car_arrow.glb',
-        scale: 5,
+        scale: 6,
         units: 'meters',
         anchor: "top",
         rotation: { x: 270, y: 0, z: 0 }
@@ -131,12 +131,12 @@ export const environment = {
   trafficAlertServiceConf: {
     alertables:[
       {
-        type: 'camera',
+        type: 'speedCamera',
         preAnnounce: true,
-        preAnnouncement: 'Atención: En {distance}, cámara de velocidad. Máximo {modifier} kilómetros por hora.',
+        preAnnouncement: 'En {distance}, cámara de velocidad. Máximo {modifier} kilómetros por hora.',
         preAnnouncementDistance: 500,
         announce: true,
-        announcement: 'Cuidado, cámara de velocidad cerca',
+        announcement: 'Cámara de velocidad cerca',
         announcementDistance: 80,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',

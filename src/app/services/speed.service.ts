@@ -162,7 +162,7 @@ export class SpeedService {
       if(setInitialStreetsConfData){
         await this.trafficAlertService.setCamerasStreetName();
       }
-      this.trafficAlertService.checkAlertableObjectsOnNewUserPosition(userPosition);
+      //his.trafficAlertService.checkAlertableObjectsOnNewUserPosition(userPosition);
     }
     
   }

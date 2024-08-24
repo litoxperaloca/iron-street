@@ -40,7 +40,7 @@ export class GeoLocationService {
 
   async getCurrentPos() {
     const options = {
-      maximumAge: 1200,
+      maximumAge: 1500,
       timeout: 3000,
       enableHighAccuracy: true,
     };
@@ -65,7 +65,7 @@ export class GeoLocationService {
 
   watchPosition(callback: (position: any) => void) {
     const options = {
-      maximumAge: 1200,
+      maximumAge: 1500,
       timeout: 3000,
       enableHighAccuracy: true,
     };
@@ -131,17 +131,19 @@ export class GeoLocationService {
         }
       }
       const options = {
-        maximumAge: 1200,
+        maximumAge: 1500,
         timeout: 3000,
         enableHighAccuracy: true,
       };
       if (environment.mocking && this.mocking) {
         const coords: Position = await this.geoLocationMockService.getNextPosition();
-        if (coords.coords.latitude === 0 && coords.coords.longitude === 0) {
+        if (coords.coords.latitude === 0 && coords.coords.longitude === 0 
+          || ((window as any).homePage as HomePage).shouldEndSimulation) {
           //console.log('Termino la simulacion');
           ((window as any).homePage as HomePage).cancelTripSimulation();
-          const coordinates = await Geolocation.getCurrentPosition(options);
-          return coordinates;
+          //const coordinates = await Geolocation.getCurrentPosition(options);
+          //return coordinates;
+            return null;
         } else {
           return coords;
         }

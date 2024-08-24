@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar color="black">
+    <ion-img class="featureCategoryIcon" slot="start" [src]="featureIcon" (click)="locatePlace()"></ion-img>
+    <ion-title class="ion-padding">Guardado como '{{favType}}'</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content scrollY="true">
+
+
+  <div>
+
+    <div>
+      <ion-list>
+        <ion-item>
+                  <div id="modalBarButton">
+                    <ion-icon (click)="dismiss()" name="close-circle-sharp" size="big" color="danger">
+                    </ion-icon>
+                    <ion-icon (click)="removeBookmark()" name="trash-sharp" size="big"
+                      color="danger">
+                    </ion-icon>
+                    <ion-icon (click)="setDestinationBookmarkifAbortCurrent()" name="navigate-circle-sharp" size="big"
+                      color="success">
+                    </ion-icon>
+                  </div>
+        </ion-item>
+        <ion-item >
+          <ion-label *ngIf="place && place.label">
+            {{place.label}}
+          </ion-label>
+          
+        </ion-item>
+      </ion-list>
+      <hr/>
+    </div>
+
+
+  </div>
+
+</ion-content>

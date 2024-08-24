@@ -1,7 +1,9 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
-import mapboxgl, { AnyLayer, LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';
+import {Feature,LineString} from '@turf/helpers';
+
+import mapboxgl, { AnyLayer, GeoJSONFeature, LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';
 
 //import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from '@capacitor/geolocation';
@@ -12,12 +14,13 @@ import { WindowService } from "./window.service";
 
 //import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 //import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-import { Place } from '@aws-amplify/geo';
+import { Place, PlaceGeometry } from '@aws-amplify/geo';
 import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
-import { env } from 'node:process';
+import { BookmarksService } from './bookmarks.service';
+import { FeatureCollection, Geometry } from 'geojson';
 @Injectable({
   providedIn: 'root'
 })
@@ -38,13 +41,13 @@ export class MapService {
   actualRoute!: any;
   currentStep: number = 0;
   alreadySpoken: boolean = false;
-  sourcesAndLayers: any = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
+  sourcesAndLayers: any = { sources: { directions: null, userMarkerSource: null }, layers: [] };
   isStandardMap: boolean = true;
   isRotating = true; // Flag to control rotation
   light: string = "dusk";
   userMarkerInstance: mapboxgl.Marker | null = null;
   userVisionMarkerInstance: mapboxgl.Marker | null = null;
-  introTime: number = 2500;
+  introTime: number = 2000;
   introTimeWaited: boolean = false;
   trackingUser: boolean = true;
   mapEventIsFromTracking: boolean = false;
@@ -73,7 +76,13 @@ export class MapService {
   camera: any;
   userCurrentStreetHeading: number = 0;
   userCurrentStreetHeadingNotFound:boolean=false;
-
+  animationHeading:number|null=0;
+  startTime:number|null=null;
+  animationDuration:number|null = null;
+  startPosition:any|null=null;
+  userMoved:boolean=false;
+  selectedBookmarkType:string|null=null;
+  selectedFavIndex:number|null=null;
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
     private sensorService: SensorService) {
@@ -234,25 +243,25 @@ export class MapService {
       if (self.isStandardMap) {
         const defaultLightPreset = this.light;
         self.mapbox.setConfigProperty('basemap', 'lightPreset', defaultLightPreset);
-        self.mapbox.setConfigProperty('basemap', 'showPointOfInterestLabels', true);
+        self.mapbox.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
         self.mapbox.setConfigProperty('basemap', 'showTransitLabels', true);
         self.mapbox.setConfigProperty('basemap', 'showRoadLabels', true);
-        self.mapbox.setConfigProperty('basemap', 'showPlaceLabels', true);
+        self.mapbox.setConfigProperty('basemap', 'showPlaceLabels', false);
       }
+      self.set3D();
       self.mapbox.resize();
        // eslint-disable-next-line no-undef
 
-      self.set3D();
     }); 
   }
 
   set3D(){
     const self = this;
     this.mapbox.addLayer({
-      id: 'custom_layer',
+      id: '3dLocatorPukLayer',
       type: 'custom',
       renderingMode: '3d',
-      onAdd: function (map, mbxContext) {
+      onAdd: async function (map, mbxContext) {
         (window as any).setUtils(self.mapbox, self.mapbox.getCanvas().getContext('webgl'));
         self.tb = (window as any).tb;
 
@@ -266,13 +275,20 @@ export class MapService {
 
         }
 
-        self.tb.loadObj(options, function (model:any) {
-          let origin=[0,0];
-          if(self.geoLocationService.getLastCurrentLocation())origin = [self.geoLocationService.getLastCurrentLocation().coords.longitude,self.geoLocationService.getLastCurrentLocation().coords.latitude];
-          self.carModel = model.setCoords(origin);
-          //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
-          self.tb.add(self.carModel);
-        })
+         const added = await self.tb.loadObj(options, function (model:any) {
+          if(!self.carModel){
+            let origin=[0,0];
+            if(self.geoLocationService.getLastCurrentLocation())origin = [self.geoLocationService.getLastCurrentLocation().coords.longitude,self.geoLocationService.getLastCurrentLocation().coords.latitude];
+            self.carModel = model.setCoords(origin);
+            //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+            self.tb.add(self.carModel);
+          }else{
+            //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+            self.tb.add(self.carModel);
+          }
+         
+        });
+        self.mapbox.triggerRepaint();
 
       },
 
@@ -288,10 +304,17 @@ export class MapService {
     const origin=this.carModel.coordinates;
     const rotation = this.carModel.rotation;
     this.tb.remove(self.carModel);
+
     await this.tb.loadObj(options, function (model:any) {
       self.carModel = model.setCoords(origin);
       //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
       self.tb.add(self.carModel);
+      if(locator.id==='redarrow'){
+        document.body.classList.remove('noCircle');
+      }else{
+        document.body.classList.remove('noCircle');
+        document.body.classList.add('noCircle');
+      }
     });
     if(this.carModel){
       this.carModel.setRotation(rotation);
@@ -305,6 +328,7 @@ export class MapService {
     let rad = this.toRad(degInvertedOrientation);
     let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
     //this.carModel.setRotation({ x: 90, y: -90, z: rotationVision });
+    if(this.carModel)
     this.carModel.setRotationFromAxisAngle(zAxis,rad);
     //this.mapbox.triggerRepaint();
   }
@@ -349,7 +373,7 @@ export class MapService {
           this.calculatingPressEvent=false;
         }
   
-      }, 2500); // 500ms threshold for long press
+      }, 1000); // 500ms threshold for long press
     }
 
   }
@@ -381,44 +405,6 @@ export class MapService {
     mapContainer.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
     mapContainer.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
     mapContainer.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: true });
-   
-    /*this.mapbox.on('touchstart', (e) => {
-      //console.log(e);
-      this.trackingUser = false;
-      this.mapEventIsFromTracking = false;
-      if (this.mapbox.isEasing() || this.mapbox.isMoving()
-        || this.mapbox.isRotating() || this.mapbox.isZooming()) {
-        this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
-        return;
-      } else {
-        if (this.firstTouchDone) {
-          this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
-
-        } else {
-          this.firstTouchDone = true;
-          const longPressTimer = setTimeout(() => {
-            if (this.popUpMapPressed) {
-              this.popUpMapPressed.remove();
-            }
-            const coordinates = e.lngLat;
-            this.addMarkerWithPopup(coordinates);
-          }, 2000); // 1000ms for a long press
-          this.windowService.attachedTimeOut("home", "mapService_longPressTimer", longPressTimer);
-
-        }
-
-      }
-
-    });
-
-    this.mapbox.on('touchend', (e) => {
-      // console.log(e);
-      //e.preventDefault();
-      this.windowService.unAttachTimeOut("home", "mapService_longPressTimer");
-      this.firstTouchDone = false;
-
-    });
-    */
   }
 
   addMarkerWithPopup(coordinates: mapboxgl.LngLat) {
@@ -773,6 +759,16 @@ export class MapService {
 
   }
 
+  setStreetFeature(feature:Feature<LineString>){
+    if(this.mapbox.getSource('streetSource')){
+      (this.mapbox.getSource('streetSource') as mapboxgl.GeoJSONSource).setData({
+        "type": "FeatureCollection",
+        "features": [feature]
+      });
+    }
+    
+  }
+
   getMap(): mapboxgl.Map {
     return this.mapbox;
   }
@@ -789,19 +785,6 @@ export class MapService {
     }
   }
 
-  getQueryParams() {
-    var url = new URL(window.location.href);
-    return url.searchParams;
-  };
-
-  updateQueryParam(key: any, value: any): void {
-    var queryParams = this.getQueryParams();
-    queryParams.set(key, value);
-    var newUrl = new URL(window.location.href);
-    newUrl.search = queryParams.toString();
-    window.history.replaceState({}, '', newUrl.toString());
-  };
-
 
   updateMarkerRotation(alpha: number) {
     const heading: number = this.getUserMarker().getRotation();
@@ -816,13 +799,11 @@ export class MapService {
 
   }
 
-  updateMarkerState(): void {
+  updateMarkerState(newLocation: [number, number],heading:number): void {
     const firstGeolocalizationEvent: boolean = this.isRotating;
-    const newLocation: [number, number] = [this.sensorService.getSensorLongitude(), this.sensorService.getSensorLatitude()];
     const marker: mapboxgl.Marker = this.getUserMarker();
     const markerVision: mapboxgl.Marker = this.getUserVisionMarker();
 
-    const heading = this.sensorService.getSensorHeadingAbs();
     if (this.mapbox && marker) {
       marker.setLngLat([this.sensorService.getSensorLongitude(), this.sensorService.getSensorLatitude()]);
       markerVision.setLngLat([this.sensorService.getSensorLongitude(), this.sensorService.getSensorLatitude()]);
@@ -842,7 +823,7 @@ export class MapService {
       this.setupInteractionListeners();
       ((window as any).homePage as HomePage).alreadyGeoLocated();
       ((window as any).cameraService as CameraService).updateCameraForUserMarkerFirstGeoEvent(newLocation, bearing);
-      const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+      const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
       this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
     } else {
       if (heading) {
@@ -852,11 +833,35 @@ export class MapService {
       if (this.trackingUser) {
         this.mapEventIsFromTracking = true;
         ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent(newLocation, bearing);
-        const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500); // Reset after a delay to ensure event is finished
+        const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
         this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
 
       }
     }
+  }
+
+  setFirstGeo(newLocation: [number, number], heading:number): void {
+    const marker: mapboxgl.Marker = this.getUserMarker();
+    const markerVision: mapboxgl.Marker = this.getUserVisionMarker();
+
+    if (this.mapbox && marker) {
+      marker.setLngLat(newLocation);
+      markerVision.setLngLat(newLocation);
+    }
+      marker.addTo(this.mapbox)
+      markerVision.addTo(this.mapbox);
+      const headingInit: number = heading;
+      if (headingInit) {
+        marker.setRotation(headingInit);
+        markerVision.setRotation(headingInit);
+      }
+      this.isRotating = false;
+      this.userLocationMarkerPrerequisitesOk = true;
+
+      //((window as any).speedService as SpeedService).getSpeedDataFromArround(newLocation);
+      this.setupInteractionListeners();
+      ((window as any).homePage as HomePage).alreadyGeoLocated();
+    
   }
 
 
@@ -917,7 +922,11 @@ export class MapService {
     const sourcesToTrack = [
       'directions',
       'directions:markers',
-      'maxspeedDataSource',
+      //'maxspeedDataSource',
+      'homeDataSource',
+      'workDataSource',
+      'favouritesDataSource',
+      'streetSource',
       'speedCamerasDataSource'
       //'stopDataSource'
     ];
@@ -952,7 +961,14 @@ export class MapService {
     const sourcesToCheck = [
       'directions',
       'directions:markers',
-      'maxspeedDataSource',
+      //'maxspeedDataSource',
+      'streetSource',
+
+      'homeDataSource',
+      'workDataSource',
+      'favouritesDataSource',
+
+
       'speedCamerasDataSource'
       //'stopDataSource'
     ];
@@ -962,6 +978,9 @@ export class MapService {
         this.mapbox.addSource(sourceId, sourcesAndLayers.sources[sourceId]);
       }
     });
+    this.addImageIfNot('custom-home-marker', 'home.png');
+    this.addImageIfNot('custom-work-marker', 'work.png');
+    this.addImageIfNot('custom-favourite-marker', 'favourite.png');
 
     this.addImageIfNot('custom-speed-camera-marker', 'ironcamera.png');
    //this.addImageIfNot('custom-stop-marker', 'ironstop.png');
@@ -1053,7 +1072,7 @@ export class MapService {
       this.introTimeWaited = false;
       this.trackingUser = true;
       this.mapEventIsFromTracking = false;
-      this.sourcesAndLayers = { sources: { directions: null, maxspeedDataSource: null, userMarkerSource: null }, layers: [] };
+      this.sourcesAndLayers = { sources: { directions: null, userMarkerSource: null }, layers: [] };
     }
   }
 
@@ -1128,6 +1147,24 @@ export class MapService {
 
   };
 
+  setDestinationBookmark(place:Place) {
+    this.mapControls.directions.actions.setRouteIndex(0);
+    this.cleanRoutePopups();
+    const destination = place;
+    this.destinationPlace = destination;
+    if (destination.label) this.destination = destination.label;
+    if (destination.street) this.destinationAddress = destination.street;
+    if (!this.mapControls.directions.getOrigin().type) {
+      const position = this.geoLocationService.getLastCurrentLocation();
+      if (position) {
+        this.mapControls.directions.setOrigin([position.coords.longitude, position.coords.latitude]);
+      }
+      if (destination.geometry && destination.geometry.point) this.mapControls.directions.setDestination(destination.geometry.point);
+    } else {
+      if (destination.geometry && destination.geometry.point) this.mapControls.directions.setDestination(destination.geometry.point);
+    }
+  };
+
   setDestinationOSM(destinationId: number) {
     this.mapControls.directions.actions.setRouteIndex(0);
     this.closeOSMpopup(destinationId);
@@ -1180,11 +1217,274 @@ export class MapService {
 
   setDefaults() {
     const map = this.mapbox;
-    this.addLineTileVectorLayer(map, "maxspeedDataSource", "litoxperaloca.apypi869", "maxspeedDataLayer", "export_1-12rpm8", 12, 22, "hsl(0, 90%, 45%)", 0.2, 0.2);
+    
+    //this.addLineTileVectorLayer(map, "maxspeedDataSource", "litoxperaloca.apypi869", "maxspeedDataLayer", "export_1-12rpm8", 12, 22, "hsl(0, 90%, 45%)", 0.2, 0.2);
     //this.addSymbolTileVectorLayer(map, "ironsemaphore.png", "custom-semaphore-marker", "semaphoreDataSource", "litoxperaloca.3deav1ng", 0.40, "semaphoreDataLayer", "semaphores_uruguay-6l99vu", 14, 22);
     //this.addSymbolTileVectorLayer(map, "ironstop.png", "custom-stop-marker", "stopDataSource", "litoxperaloca.dlnykr8f", 0.50, "stopDataLayer", "stop_uruguay-6tysu4", 14, 22);
+    this.createStreetSourceAndLayer();
+    this.addBookmarksSourceAndLayer(map, "home.png", "custom-home-marker", "homeDataSource", 0.80, "homeDataLayer", 12, 22,"home","Casa");
+    this.addBookmarksSourceAndLayer(map, "work.png", "custom-work-marker", "workDataSource", 0.80, "workDataLayer", 12, 22,"work","Trabajo");
+    this.addBookmarksSourceAndLayer(map, "favourite.png", "custom-favourites-marker", "favouritesDataSource", 0.80, "favouritesDataLayer", 12, 22,"favourite","Favorito");
+    this.updateBookmarks();
     this.addSymbolTileVectorLayer(map, "ironcamera.png", "custom-speed-camera-marker", "speedCamerasDataSource", "litoxperaloca.clzls3eaq0vit1ml7v290ziao-124rh", 0.60, "speedCamerasDataLayer", "camerasaUY", 12, 22);
+    
   }
+
+  async updateBookmarks(){
+    const data:FeatureCollection = {
+      "type": "FeatureCollection",
+      "features": []
+    }
+    const bookmarkService =     (window as any).bookmarkService as BookmarksService;
+    const homeMarker = await bookmarkService.getHomeMarker();
+    if(homeMarker && homeMarker.geometry){
+      const homeMarkerAsGeoJson:any = {
+        "type": "FeatureCollection",
+        "features": [
+          {"type":"Feature",
+          "id":"999999999998",
+          "properties":
+            {"@id":"node/999999999998",
+              "name":"Casa",
+              "label":"Casa",
+              "street":homeMarker.street,
+              "addressNumber":homeMarker.addressNumber,
+              "country":homeMarker.country,
+              "municipality":homeMarker.municipality,
+              "neighborhood":homeMarker.neighborhood,
+              "postalCode":homeMarker.postalCode,
+              "region":homeMarker.region,
+              "subRegion":homeMarker.subRegion
+            },
+            "geometry": {"type":"Point",
+                          "coordinates":[homeMarker.geometry.point[0],homeMarker.geometry.point[1]]
+                        }
+          }
+        ]
+      };
+      (this.mapbox.getSource("homeDataSource") as mapboxgl.GeoJSONSource).setData(homeMarkerAsGeoJson);
+      
+    }else{
+      (this.mapbox.getSource("homeDataSource") as mapboxgl.GeoJSONSource).setData(data);
+
+    }
+    
+    const workMarker = await bookmarkService.getWorkMarker();
+    if(workMarker && workMarker.geometry){
+      const workMarkerAsGeoJson:FeatureCollection = {
+        "type": "FeatureCollection",
+        "features": [
+          {"type":"Feature",
+          "id":"999999999999",
+          "properties":
+            {"@id":"node/999999999999",
+              "name":"Trabajo",
+              "label":"Trabajo",
+              "street":workMarker.street,
+              "addressNumber":workMarker.addressNumber,
+              "country":workMarker.country,
+              "municipality":workMarker.municipality,
+              "neighborhood":workMarker.neighborhood,
+              "postalCode":workMarker.postalCode,
+              "region":workMarker.region,
+              "subRegion":workMarker.subRegion
+            },
+            "geometry": {"type":"Point",
+                          "coordinates":
+                            [workMarker.geometry.point[0],
+                            workMarker.geometry.point[1]]
+                        }
+          }
+        ]
+      };
+      (this.mapbox.getSource("workDataSource") as mapboxgl.GeoJSONSource).setData(workMarkerAsGeoJson);
+    }else{
+
+      (this.mapbox.getSource("workDataSource") as mapboxgl.GeoJSONSource).setData(data);
+
+    }
+    const favouritesMarker = await bookmarkService.getFavoriteMarkers();
+    let index = 0;
+    if(favouritesMarker && favouritesMarker.length>0){
+      const features:any[]=[];
+      favouritesMarker.forEach(fav => {
+       if(fav.geometry){
+        const feature =  {
+          "type":"Feature",
+          "id":"9999999998"+index,
+          "properties":
+            {"@id":"node/999999999999",
+              "name":"Favorito",
+              "label":"Favorito",
+              "street":fav.street,
+              "addressNumber":fav.addressNumber,
+              "country":fav.country,
+              "municipality":fav.municipality,
+              "neighborhood":fav.neighborhood,
+              "postalCode":fav.postalCode,
+              "region":fav.region,
+              "subRegion":fav.subRegion,
+              "favIndex":index
+            },
+            "geometry": {"type":"Point",
+                          "coordinates":
+                            [fav.geometry.point[0],
+                            fav.geometry.point[1]]
+                        }
+          };
+          index++;
+          features.push(feature);
+        }
+  
+          const favouritesMarkerAsGeoJson:FeatureCollection = {
+            "type": "FeatureCollection",
+            "features": features
+          };
+        (this.mapbox.getSource("favouritesDataSource") as mapboxgl.GeoJSONSource).setData(favouritesMarkerAsGeoJson);
+  
+      });
+    }else{
+      (this.mapbox.getSource("favouritesDataSource") as mapboxgl.GeoJSONSource).setData(data);
+
+    }
+  }
+
+  createStreetSourceAndLayer(){
+    // Add the source to the Mapbox map
+  this.mapbox.addSource("streetSource", {
+    type: 'geojson',
+    data: {
+      "type": "FeatureCollection",
+      "features": []
+    }
+    });
+
+  // Add the layer to the Mapbox map
+  this.mapbox.addLayer({
+    id: "streetLayer",
+    type: 'line',
+    source: "streetSource",
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round',
+      'visibility': 'none'
+    },
+    paint: {
+      'line-color': '#007cbf',
+      'line-width': 4
+    },
+  });
+
+  }
+
+  addBookmarksSourceAndLayer( 
+     map: mapboxgl.Map,
+    imageFileName: string,
+    imageName: string,
+    sourceId: string,
+    imageSize: number,
+    layerId: string,
+    minZoom: number,
+    maxZoom: number,
+    bookmarkType:string,
+    label:string):void{
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: {
+          "type": "FeatureCollection",
+          "features": []
+        }
+        });
+    
+      map.loadImage(
+        '/assets/img/map-icons/' + imageFileName,
+        (error, image) => {
+          if (error) throw error;
+          if (image) {
+            if (!map.hasImage(imageName)) map.addImage(imageName, image);
+            map.addLayer(
+              {
+                "id": layerId,
+                "minzoom": minZoom,
+                "maxzoom": maxZoom,
+                "type": "symbol",
+                'paint': {
+                  'text-color': '#ffffff',
+                  'text-halo-color': '#000000',
+                  'text-halo-width': 0.5,
+                  'text-halo-blur': 0.7,
+                  'text-opacity': 1
+                },
+                'layout': {
+                  'icon-image': imageName,
+                  'icon-size': imageSize,
+                  //'icon-allow-overlap': true,
+                  "icon-anchor": 'bottom',
+                  'visibility': 'visible',
+                  'text-field': ['get', "label"],
+                  'text-justify': 'center',
+                  'text-offset': [0, 0.3],
+                  'text-anchor': 'top'
+  
+                  //'icon-rotate': ['get', 'bearing']
+                },
+                //"filter": ["<=", ["distance-from-center"], 0.5],
+  
+                "source": sourceId,
+              });
+            map.on('click', layerId, function (e) {
+              if (e.features && e.features[0] && e.features[0].properties && e.features[0].geometry.type == "Point") {
+                const coordinates = e.features[0].geometry.coordinates.slice();
+                const properties = e.features[0].properties;
+  
+                // Ensure that if the map is zoomed out such that multiple copies of the feature are visible,
+                // the popup appears over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+                const feature = e.features[0];
+                if (!feature.properties || feature.geometry.type != "Point") return;
+                const place: Place = {
+                  label: feature.properties["name"] as string,
+                  addressNumber: "",
+                  country: "",
+                  municipality: "",
+                  neighborhood: "",
+                  postalCode: "",
+                  region: "",
+                  street: "",
+  
+                  geometry: {
+                    point: [
+                      feature.geometry.coordinates[0], // Longitude
+                      feature.geometry.coordinates[1]  // Latitude
+                    ]
+                  }
+                };
+  
+                const self = ((window as any).mapService as MapService);
+              
+                self.selectedBookmarkType = bookmarkType;
+                if(bookmarkType==="favourite"){
+                  self.selectedFavIndex=feature.properties["favIndex"];
+                }
+                
+                //featurePopup.addTo(map);
+                
+                const iconElement = document.querySelector(`[data-id="${feature.id}"]`);
+                if (iconElement) {
+                  iconElement.classList.toggle('highlight-icon');
+                }
+                ((window as any).homePage as HomePage).openBookmarkSavedModal();
+                self.mapbox.flyTo({
+                  center: [coordinates[0], coordinates[1]]
+                });
+              }
+            });
+          }
+        })
+    };
+
 
   getOSMStreetHeading(street: mapboxgl.MapboxGeoJSONFeature): number {
     // Reiniciar el estado antes de cada cálculo
@@ -1245,7 +1545,6 @@ export class MapService {
     if (this.showingMaxSpeedWay) {
       if (this.userCurrentStreet && this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
         if (this.showingMaxSpeedWay && this.showingMaxSpeedWayId != this.userCurrentStreet.properties['@id']) {
-          this.mapbox.setFilter('maxspeedRenderLayer', ['==', ['get', '@id'], this.userCurrentStreet.properties['@id']]);
           this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
           if (this.userCurrentStreet.geometry!.type === "LineString") {
             if (this.popUpMaxSpeedWay) {
@@ -1264,7 +1563,7 @@ export class MapService {
 
   async hideUserCurrentStreetMaxSpeedWay() {
     if (this.mapbox.getLayer("maxspeedRenderLayer")) {
-      this.mapbox.removeLayer("maxspeedRenderLayer");
+      this.mapbox.setLayoutProperty('maxspeedRenderLayer', "visibility", 'none');
       this.showingMaxSpeedWayId = null;
       this.showingMaxSpeedWay = false;
     }
@@ -1292,6 +1591,7 @@ export class MapService {
     })
       .setLngLat(midPoint.geometry.coordinates as [number, number])
       .setHTML('<div><p> ' + 'MAX: ' + maxSpeed + ' Km/h.</p</div>');
+      this.mapbox.setLayoutProperty('maxspeedRenderLayer', 'visibility', 'visible');
 
     let className: string = "red";
     this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#E91E63');
@@ -1328,15 +1628,13 @@ export class MapService {
           "layout": {
             "visibility": "visible",
           },
-          "source": "maxspeedDataSource",
-          "source-layer": "export_1-12rpm8"
+          "source": "streetSource",
         });
     }
     if (this.userCurrentStreet) {
       this.mapbox.setLayoutProperty("maxspeedRenderLayer", "visibility", "visible");
 
       if (this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
-        this.mapbox.setFilter('maxspeedRenderLayer', ['==', ['get', '@id'], this.userCurrentStreet.properties['@id']]);
         this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
         this.showingMaxSpeedWay = true;
         if (this.userCurrentStreet.geometry!.type === "LineString") {
@@ -1597,18 +1895,48 @@ export class MapService {
     const map = this.mapbox;
     const sourceId = category.marker + "Source";
     if (data && data.length > 0) {
+      const geoJsonFeatureCollection = this.convertOsmToJson(data);
       if (map.getSource(sourceId)) {
-        (map.getSource(sourceId) as mapboxgl.GeoJSONSource).setData(this.convertOsmToJson(data));
+        (map.getSource(sourceId) as mapboxgl.GeoJSONSource).setData(geoJsonFeatureCollection);
       } else {
         map.addSource(sourceId, {
           type: 'geojson',
           data: this.convertOsmToJson(data)
         });
-
+        const userLocation = {lat:this.geoLocationService.getLastCurrentLocation().coords.latitude, lon: this.geoLocationService.getLastCurrentLocation().coords.longitude}
         this.addSymbolOSMLayer(map, category.marker + ".png", category.marker, category.marker + "Source", 0.75, category.marker + "Layer", 7, 20, category.labelPropertyIndex, category.name, category);
-        ((window as any).homePage as HomePage).setCameraMode('SKY');
+        const closestFeature = this.findClosestFeature(userLocation, geoJsonFeatureCollection);
+        const bounds = this.calculateBoundsToCollectionCloser(userLocation, closestFeature);
+    
+        this.fitMapToBounds(map, bounds);
+        //((window as any).homePage as HomePage).setCameraMode('SKY');
       }
     } // Handle errors as needed
+  }
+
+  findClosestFeature(userLocation: { lat: number, lon: number }, geoJsonFeatureCollection: any) {
+    const userPoint = turf.point([userLocation.lon, userLocation.lat]);
+    const closestFeature = turf.nearestPoint(userPoint, geoJsonFeatureCollection);
+    return closestFeature;
+  }
+
+  calculateBoundsToCollectionCloser(userLocation: { lat: number, lon: number }, closestFeature: any): mapboxgl.LngLatBoundsLike {
+    const userCoords = [userLocation.lon, userLocation.lat];
+    const featureCoords = closestFeature.geometry.coordinates;
+
+    const bounds = new mapboxgl.LngLatBounds();
+    
+    bounds.extend(new mapboxgl.LngLat(userCoords[0],userCoords[1]));
+    bounds.extend(featureCoords);
+
+    return bounds;
+  }
+
+  fitMapToBounds(map: mapboxgl.Map, bounds: mapboxgl.LngLatBoundsLike) {
+    map.fitBounds(bounds, {
+      padding: { top: 20, bottom: 20, left: 20, right: 20 },
+      maxZoom: 15
+    });
   }
 
   private calculateInitialHeading(newPosition: mapboxgl.LngLat): number {
@@ -1644,7 +1972,7 @@ export class MapService {
       this.updateUserMarkerNoAnimation(newPosition,newHeading,userMoved);
       return;
     }
-    const animationDuration = 800;
+    const animationDuration = 600;
 
     // If the user marker doesn't exist, create it
     if (!userMarker) {
@@ -1666,10 +1994,10 @@ export class MapService {
     this.animationTarget = newPosition;
 
     const animateMarker = (currentTime: number) => {
-      if (!this.isAnimating) return;
+      if (!this.isAnimating || !this.animationTarget) return;
 
       const progress = Math.min((currentTime - startTime) / animationDuration, 1);
-      const interpolatedPosition = this.interpolatePosition(startPosition, newPosition, progress);
+      const interpolatedPosition = this.interpolatePosition(startPosition, this.animationTarget, progress);
       const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), newHeading, progress);
 
       userMarker.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
@@ -1682,7 +2010,7 @@ export class MapService {
         //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
 
       } else {
-        this.completeAnimation(newPosition, newHeading, userMoved);
+        this.completeAnimation(this.animationTarget, newHeading, userMoved);
       }
     };
 
@@ -1739,6 +2067,7 @@ export class MapService {
   }
 
   private updateUserMarkerNoAnimation(newPosition: mapboxgl.LngLat, newHeading: number,userMoved:boolean) {
+    this.trackingUser = true;
     const userMarker = this.getUserMarker();
     const userMarkerVision = this.getUserVisionMarker();
     userMarker.setLngLat(newPosition).setRotation(newHeading);
@@ -1746,6 +2075,7 @@ export class MapService {
     userMarkerVision.setLngLat(newPosition).setRotation(newHeading);
     this.updateModelRotation(newHeading);
     this.isAnimating = false;
+    this.animationTarget=null;
     this.lastPosition = newPosition;
     this.mapEventIsFromTracking = true;
     ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([newPosition.lng, newPosition.lat], newHeading);
@@ -1777,70 +2107,62 @@ export class MapService {
   }
 
 
-  public updateUserMarkerSnapedPositionOsrm(useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean, newHeading:number) {
-    const newCoordinates: [number, number] = [
-      this.sensorService.getSensorSnapLongitude(),
-      this.sensorService.getSensorSnapLatitude()
-    ];
+  public updateUserMarkerSnapedPositionOsrm(newCoordinates: [number, number] ,useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean, newHeading:number) {
     const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
     const userMarker = this.getUserMarker();
-    const userMarkerVision = this.getUserVisionMarker();
-    let rotationVision = this.sensorService.getSensorHeadingAbs();
-    if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
-      rotationVision=this.userCurrentStreetHeading;
-    }
-    const startPosition = userMarker.getLngLat();
     if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
       newHeading=this.userCurrentStreetHeading;
     }
+    
     if(instantUpdate){
       this.updateUserMarkerNoAnimation(newPosition,newHeading,userMoved);
       return;
     }
-    const animationDuration = 600;
 
-    // If the user marker doesn't exist, create it
-    if (!userMarker) {
-      this.createAndPositionUserMarker(newPosition, rotationVision);
-      return;
-    }
+
 
     // If already animating, update the animation target and exit
     
-    if (this.isAnimating) {
       this.animationTarget = newPosition;
+      this.animationHeading = newHeading;
+      this.startTime=performance.now();
+      this.animationDuration = 1000;
+      this.startPosition = userMarker.getLngLat();
+      this.userMoved = userMoved;
+    if (this.isAnimating) {
       return;
     }
+    this.isAnimating=true;
 
-
-    const startTime = performance.now();
-
-    this.isAnimating = true;
-    this.animationTarget = newPosition;
-
-    const animateMarker = (currentTime: number) => {
-      if (!this.isAnimating) return;
-
-      const progress = Math.min((currentTime - startTime) / animationDuration, 1);
-      const interpolatedPosition = this.interpolatePosition(startPosition, newPosition, progress);
-      const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), newHeading, progress);
-
-      userMarker.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
-      this.updateModelPosition(interpolatedPosition as [number,number]);
-      userMarkerVision.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
-      this.updateModelRotation(interpolatedRotation);
-
-      if (progress < 1) {
-        requestAnimationFrame(animateMarker);
-        //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
-
-      } else {
-        this.completeAnimation(newPosition, newHeading, userMoved);
-      }
-    };
-
-    requestAnimationFrame(animateMarker);
+   
+    requestAnimationFrame(this.animateMarker);
     //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
   }
+
+  animateMarker = (currentTime: number) => {
+    if (!this.isAnimating || !this.animationTarget 
+      ||!this.animationHeading
+      ||!this.startTime
+      ||!this.animationDuration
+      ||!this.startPosition 
+    ) return;
+    let userMarker=this.getUserMarker();
+
+    const progress = Math.min((currentTime -  this.startTime) / this.animationDuration, 1);
+    const interpolatedPosition = this.interpolatePosition( this.startPosition, this.animationTarget, progress);
+    const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), this.animationHeading, progress);
+    userMarker.setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+    this.updateModelPosition(interpolatedPosition as [number,number]);
+    this.getUserVisionMarker().setLngLat(interpolatedPosition).setRotation(interpolatedRotation);
+    this.updateModelRotation(interpolatedRotation);
+
+    if (progress < 1) {
+      requestAnimationFrame(this.animateMarker);
+      //this.windowService.attachedAnimationFrameRequest("home", "mapService_updateUserSnapedPosition", frame);
+
+    } else {
+      this.completeAnimation(this.animationTarget, this.animationHeading,  this.userMoved);
+    }
+  };
 
 }

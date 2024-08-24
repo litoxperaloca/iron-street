@@ -18,7 +18,10 @@
           "/assets/utils/mapbox/mapbox-gl-directions.css",
           "/assets/utils/threebox/threebox.js",
           "/assets/utils/threebox/threebox.css",
-          "/assets/i18n/*.json"       
+          "/assets/i18n/*.json",
+          "/assets/models/**",
+          "/assets/models/*.glb",
+          "/assets/models/*.gltf"
          ]
       }
     },
@@ -29,9 +32,7 @@
       "resources": {
         "files": [
           "/assets/**",
-          "/assets/models/**",
-          "/assets/models/*.glb",
-          "/assets/models/*.gltf",
+
           "/assets/img/**",
           "/assets/img/cars/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
           "/assets/img/motorbikes/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
