@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TrafficAlertServiceService } from './traffic-alert-service.service';
+import { TrafficAlertServiceService } from './traffic-alert-service';
 
 describe('TrafficAlertServiceService', () => {
   let service: TrafficAlertServiceService;

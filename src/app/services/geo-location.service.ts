@@ -40,8 +40,8 @@ export class GeoLocationService {
 
   async getCurrentPos() {
     const options = {
-      maximumAge: 1500,
-      timeout: 3000,
+      maximumAge: environment.gpsSettings.positionMaxAge,
+      timeout: environment.gpsSettings.timeOut,
       enableHighAccuracy: true,
     };
     if (Capacitor.isNativePlatform()) {
@@ -65,8 +65,8 @@ export class GeoLocationService {
 
   watchPosition(callback: (position: any) => void) {
     const options = {
-      maximumAge: 1500,
-      timeout: 3000,
+      maximumAge: environment.gpsSettings.positionMaxAge,
+      timeout: environment.gpsSettings.timeOut,
       enableHighAccuracy: true,
     };
     if (Capacitor.isNativePlatform()) {
@@ -124,33 +124,48 @@ export class GeoLocationService {
         let perm = await Geolocation.requestPermissions();
         if (perm.location !== 'granted') {
           await this.alertService.presentAlert("Error: falta habilitar permiso para acceder a tu ubicación.", "Ubicación desactivada o permiso deshabilitado.", "Para poder utilizar esta app, permite que Iron Street acceda a tu ubicación. Dependiendo de tu dispositivo, es posible que debas abrir nuevamente la app después de habiliar el permiso.", ["OK (habilitarlo a continuación)"]);
-          perm = await Geolocation.requestPermissions();
-          if (perm.location !== 'granted') {
+          let permAgain = await Geolocation.requestPermissions();
+          if (permAgain.location !== 'granted') {
             return null;
           }
         }
       }
       const options = {
-        maximumAge: 1500,
-        timeout: 3000,
+        maximumAge: environment.gpsSettings.positionMaxAge,
+        timeout: environment.gpsSettings.timeOut,
         enableHighAccuracy: true,
       };
       if (environment.mocking && this.mocking) {
         const coords: Position = await this.geoLocationMockService.getNextPosition();
         if (coords.coords.latitude === 0 && coords.coords.longitude === 0 
-          || ((window as any).homePage as HomePage).shouldEndSimulation) {
-          //console.log('Termino la simulacion');
-          ((window as any).homePage as HomePage).cancelTripSimulation();
+          || ((window as any).homePage as HomePage).simulation==false) {
+          console.log('Termino la simulacion');
           //const coordinates = await Geolocation.getCurrentPosition(options);
           //return coordinates;
             return null;
         } else {
           return coords;
         }
-      } else {
-        const coordinates = await Geolocation.getCurrentPosition(options);
+      } else {  
+        if (Capacitor.isNativePlatform()) {
+          return  Geolocation.getCurrentPosition(options);
+          //return coordinates;
+        } else {
+          if (navigator.geolocation) {
+           //const coords = navigator.geolocation.getCurrentPosition(this.webCoords,null,options);
+           //return coords;
+           return new Promise<Position>((resolve, reject) => {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(resolve, reject, options);
+              } else {
+                reject(new Error('Geolocation not supported'));
+              }
+            });
+          }else {
+            return null;
+          }
+        } 
 
-        return coordinates;
       }
 
     } catch (e) {
@@ -158,6 +173,10 @@ export class GeoLocationService {
       return null;
     }
   }
+
+async webCoords(position:any){
+  ((window as any).homePage as HomePage).geoLockForWeb(position as Position);
+}
 
   calculateDistanceToNearestBboxEdge(userLocation: Point, bbox: [[number, number], [number, number]]) {
     const [[minLongitude, minLatitude], [maxLongitude, maxLatitude]] = bbox;

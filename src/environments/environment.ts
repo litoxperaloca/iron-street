@@ -407,7 +407,8 @@ export const environment = {
         maneuverPriority: 3
       }
     ],
-    deviationThreshold:50
+    deviationThreshold:50,
+    stepIntroMinDistance:15,
   },
   blogConfig: {
     "wpApiKey": "wy1G 60Xi OQ1z 4VA7 o8JN GVLJ",
@@ -439,6 +440,15 @@ export const environment = {
     showAccuracyCircle: false,
     showUserLocation: true,
     showUserHeading: true
+  },
+  gpsSettings:{
+    locationIntervalTimeInMs:2000,
+    simulationIntervalTimeInMs:2000,
+    userMarkerAnimationDurationInMs:800,
+    positionMaxAge:1500,
+    timeOut:3000,
+    timeBeforeStartInMs:500,
+    timeRotating:500
   },
   mapboxMapConfig: {
     accessToken: 'pk.eyJ1IjoibGl0b3hwZXJhbG9jYSIsImEiOiJjbGc3ZW95OGQwNXRtM2V0bHM3ZTcwajVmIn0.rZXdOoZoUFuJ2K4eFyxamg',

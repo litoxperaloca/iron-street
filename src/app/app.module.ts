@@ -53,7 +53,9 @@ import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
 import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
 import { MapboxService } from './services/mapbox.service';
-import { TrafficAlertServiceService } from './services/traffic-alert-service.service';
+import { TrafficAlertService } from './services/traffic-alert-service';
+import { OsrmService } from './services/osrm.service';
+
 import { SnapService } from './services/snap.service';
 import { BookmarkSavedModalComponent } from './modals/bookmark-saved-modal/bookmark-saved-modal.component';
 
@@ -140,8 +142,9 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       FirebaseService,
       AuthService,
       MapboxService,
-      TrafficAlertServiceService,
-      SnapService
+      TrafficAlertService,
+      SnapService,
+      OsrmService
     ],
   bootstrap: [AppComponent],
 })

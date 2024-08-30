@@ -127,7 +127,12 @@ export class LocationModalComponent {
   }
 
   dismiss() {
+    this.deteleMarker();
     this.modalController.dismiss();
+  }
+
+  deteleMarker(){
+    ((window as any).mapService as MapService).removeClassicMarker();
   }
 
   setDestinationOSMifAbortCurrent(destinationId: number) {
@@ -157,7 +162,7 @@ export class LocationModalComponent {
   async addWorkPlace(): Promise<void> {
     if (this.place) {
       await this.bookmarksService.setWorkMarker(this.place);
-      this.toggleBookmarks();
+      this.dismiss();
     }
 
 
@@ -166,14 +171,14 @@ export class LocationModalComponent {
   async addHomePlace(): Promise<void> {
     if (this.place) {
       await this.bookmarksService.setHomeMarker(this.place);
-      this.toggleBookmarks();
+      this.dismiss();
     }
   }
 
   async addFavoritePlace(): Promise<void> {
     if (this.place) {
       await this.bookmarksService.addFavoriteMarker(this.place);
-      this.toggleBookmarks();
+      this.dismiss();
     }
   }
 

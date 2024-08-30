@@ -33,29 +33,32 @@ export class FirebaseService {
 
 
   startApp(): void {
-    // Initialize Firebase
-    this.app = initializeApp(environment.firebaseConfig);
-    //this.analytics = getAnalytics(this.app);
-    this.auth = getAuth(this.app);
-    this.auth.useDeviceLanguage();
-    // Initialize the Vertex AI service
+    if(!this.app){
+      // Initialize Firebase
+      this.app = initializeApp(environment.firebaseConfig);
+      //this.analytics = getAnalytics(this.app);
+      this.auth = getAuth(this.app);
+      this.auth.useDeviceLanguage();
+      // Initialize the Vertex AI service
 
-    // Initialize the generative model with a model that supports your use case
-    // Gemini 1.5 models are versatile and can be used with all API capabilities
+      // Initialize the generative model with a model that supports your use case
+      // Gemini 1.5 models are versatile and can be used with all API capabilities
 
-    // Pass your reCAPTCHA v3 site key (public key) to activate(). Make sure this
-    // key is the counterpart to the secret key you set in the Firebase console.
-    /*this.appCheck = initializeAppCheck(this.app, {
-      provider: new ReCaptchaEnterpriseProvider('6LeIPgAqAAAAAEA12DY7Df3IraZbrqXPGDRI7Kv2'),
+      // Pass your reCAPTCHA v3 site key (public key) to activate(). Make sure this
+      // key is the counterpart to the secret key you set in the Firebase console.
+      /*this.appCheck = initializeAppCheck(this.app, {
+        provider: new ReCaptchaEnterpriseProvider('6LeIPgAqAAAAAEA12DY7Df3IraZbrqXPGDRI7Kv2'),
 
-      // Optional argument. If true, the SDK automatically refreshes App Check
-      // tokens as needed.
-      isTokenAutoRefreshEnabled: true
-    });*/
+        // Optional argument. If true, the SDK automatically refreshes App Check
+        // tokens as needed.
+        isTokenAutoRefreshEnabled: true
+      });*/
 
-    //this.performance = getPerformance(this.app);
+      //this.performance = getPerformance(this.app);
 
-    this.db = getFirestore(this.app);
+      this.db = getFirestore(this.app);
+    }
+    
 
   }
 

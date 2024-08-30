@@ -7,9 +7,9 @@ RewriteRule ^ - [L]
 RewriteRule ^ /index.html
 
 # Encabezados de seguridad
-Header always append X-Frame-Options SAMEORIGIN
-Header always set X-Content-Type-Options nosniff
-Header always set X-XSS-Protection "1; mode=block"
+#Header always append X-Frame-Options SAMEORIGIN
+#Header always set X-Content-Type-Options nosniff
+#Header always set X-XSS-Protection "1; mode=block"
 
 # Configuración de caché
 <FilesMatch "\.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|ttf|otf|glb)$">

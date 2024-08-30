@@ -62,8 +62,9 @@ export class AppComponent {
 
     // Establece el idioma predeterminado
     this.platform.ready().then(async () => {
-      this.firebaseService.startApp();
+      //this.firebaseService.startApp();
       //this.translate.addLangs(this.languages);
+      await this.preferencesService.restoreSavedPreferences();
       await this.preferencesService.loadStoredTheme();
       await this.preferencesService.loadStoredLanguage();
       this.preferencesService.languageChanged.subscribe(lang => {

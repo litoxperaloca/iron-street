@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
+import { FirebaseService } from 'src/app/services/firebase.service';
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.page.html',
@@ -15,7 +16,9 @@ export class AuthPage implements OnInit {
   authSegment = 'login';
   agreedToTerms = false;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private firebaseService:FirebaseService, private authService: AuthService, private router: Router) {
+    this.firebaseService.startApp();
+
   }
 
 

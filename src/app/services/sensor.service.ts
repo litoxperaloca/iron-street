@@ -178,14 +178,23 @@ export class SensorService {
     ((window as any).mapService as MapService).updateUserMarkerSnapedPosition(useStreetHeading,userMoved,instantUpdate);
   }
 
-  updateSnapToRoadPositionOSRM(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any, useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean,newHeading:number) {
+  setMatchedPosition(position:Position,feature:any,nearestPoint:any){
+    this.sensorData.snapLatitude = position.coords.latitude;
+    this.sensorData.snapLongitude = position.coords.longitude;
+    this.sensorData.closestStreetFeatureLine = feature;
+    this.sensorData.closestPoint = nearestPoint;
+    this.sensorData.headingAbs=position.coords.heading!;
+    this.sensorData.heading=position.coords.heading!;
+  }
+
+  updateSnapToRoadPositionOSRM(coordinates: number[], feature: MapboxGeoJSONFeature, nearestPoint: any, useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean,newHeading:number, geoIndex:number) {
     this.sensorData.snapLatitude = coordinates[1];
     this.sensorData.snapLongitude = coordinates[0];
     this.sensorData.closestStreetFeatureLine = feature;
     this.sensorData.closestPoint = nearestPoint;
     this.sensorData.headingAbs=newHeading;
     this.sensorData.heading=newHeading;
-    ((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm([coordinates[0],coordinates[1]],useStreetHeading,userMoved,instantUpdate,newHeading);
+    ((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm([coordinates[0],coordinates[1]],useStreetHeading,userMoved,instantUpdate,newHeading,geoIndex);
   }
 
   getLastCurrentLocationPredicted(): [number, number] {

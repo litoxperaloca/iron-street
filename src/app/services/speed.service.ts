@@ -12,7 +12,7 @@ import { SnapService } from './snap.service';
 
 import { retry } from 'rxjs';
 import { MapboxService } from './mapbox.service';
-import { TrafficAlertServiceService } from './traffic-alert-service.service';
+import { TrafficAlertServiceService } from './traffic-alert-service';
 import { HomePage } from '../pages/home/home.page';
 //import distance from '@turf/distance';
 interface Way {

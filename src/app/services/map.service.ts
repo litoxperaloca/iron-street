@@ -47,7 +47,6 @@ export class MapService {
   light: string = "dusk";
   userMarkerInstance: mapboxgl.Marker | null = null;
   userVisionMarkerInstance: mapboxgl.Marker | null = null;
-  introTime: number = 2000;
   introTimeWaited: boolean = false;
   trackingUser: boolean = true;
   mapEventIsFromTracking: boolean = false;
@@ -83,6 +82,8 @@ export class MapService {
   userMoved:boolean=false;
   selectedBookmarkType:string|null=null;
   selectedFavIndex:number|null=null;
+  positionIndex:number=0;
+  lastLocationAnimationCompleted:number=0;
   constructor(private windowService: WindowService,
     private geoLocationService: GeoLocationService,
     private sensorService: SensorService) {
@@ -128,11 +129,12 @@ export class MapService {
 
 
     map.on('load', () => {
+      //map.setTerrain(undefined);
       map.resize();
 
       const timeOutIntroTime = setTimeout(() => {
         this.introTimeWaited = true;
-      }, this.introTime);
+      }, environment.gpsSettings.timeRotating);
       this.windowService.attachedTimeOut("home", "mapService_introTime", timeOutIntroTime);
       this.windowService.setValueIntoProperty('map', map);
       this.setDefaults();
@@ -153,13 +155,16 @@ export class MapService {
           mapService.mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
           mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
           mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-color', '#2fdf75');
-          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.7);
-          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.7);
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.2);
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.2);
+
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-opacity', 0.4);
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-opacity', 0.4);
         };
 
         const setAltRouteStyle = () => {
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 0.8);
-          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 8);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 7);
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
         };
         let directionsBounds: LngLatBounds;
@@ -213,7 +218,7 @@ export class MapService {
 
         const center = directionsBounds.getCenter();
         const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
-        this.mapbox.fitBounds(directionsBounds, { padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: false });
+        this.mapbox.fitBounds(directionsBounds, { padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: true });
 
         homePage.showTrip();
 
@@ -238,7 +243,8 @@ export class MapService {
 
     const self = this;
     map.on('style.load', (event) => {
-      
+      map.setTerrain(undefined);
+
       self.addAdditionalSourceAndLayer(self.sourcesAndLayers);
       if (self.isStandardMap) {
         const defaultLightPreset = this.light;
@@ -261,6 +267,7 @@ export class MapService {
       id: '3dLocatorPukLayer',
       type: 'custom',
       renderingMode: '3d',
+      slot:'top',
       onAdd: async function (map, mbxContext) {
         (window as any).setUtils(self.mapbox, self.mapbox.getCanvas().getContext('webgl'));
         self.tb = (window as any).tb;
@@ -286,14 +293,16 @@ export class MapService {
             //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
             self.tb.add(self.carModel);
           }
-         
+          self.tb.update();
+
         });
-        self.mapbox.triggerRepaint();
 
       },
 
       render: function (gl:any, matrix:any) {
         self.tb.update();
+        //self.mapbox.triggerRepaint();
+
       }
   });
   }
@@ -526,6 +535,14 @@ export class MapService {
     this.popUpDestination = popup;
     // Crea un popup y lo añade al mapa en el punto medio
     return popup;
+  }
+
+  removeClassicMarker(){
+     // Add your long press logic here, e.g., add a marker at the press location
+     if (this.popUpMapPressed) {
+      this.popUpMapPressed.remove();
+      this.popUpMapPressed=null;
+    }
   }
 
   createDestinationPopup(coordinates: [number, number]): mapboxgl.Popup {
@@ -980,7 +997,7 @@ export class MapService {
     });
     this.addImageIfNot('custom-home-marker', 'home.png');
     this.addImageIfNot('custom-work-marker', 'work.png');
-    this.addImageIfNot('custom-favourite-marker', 'favourite.png');
+    this.addImageIfNot('custom-favourites-marker', 'favourite.png');
 
     this.addImageIfNot('custom-speed-camera-marker', 'ironcamera.png');
    //this.addImageIfNot('custom-stop-marker', 'ironstop.png');
@@ -1026,10 +1043,10 @@ export class MapService {
     this.destination = "";
 
     this.isTripStarted = false;
-    if (environment.mocking) {
+    /*if (environment.mocking) {
       environment.mocking = false;
       this.geoLocationService.mocking = false;
-    }
+    }*/
     this.mapControls.directions.removeRoutes();
     this.mapControls.directions.actions.clearDestination();
     this.mapControls.directions.actions.clearOrigin();
@@ -1041,22 +1058,6 @@ export class MapService {
     ((window as any).mapService as MapService).alreadySpoken = false;
     ((window as any).tripService as TripService).cancelTrip();
 
-  }
-
-  cancelTripSimulation(): void {
-    //this.destination = "";
-
-    this.isTripStarted = false;
-    //this.mapControls.directions.removeRoutes();
-    //this.mapControls.directions.actions.clearDestination();
-    //this.mapControls.directions.actions.clearOrigin();
-    //this.cleanRoutePopups();
-    //this.popUpDestination?.remove();
-
-    //((window as any).mapService as MapService).actualRoute = null;
-    ((window as any).mapService as MapService).currentStep = 0;
-    ((window as any).mapService as MapService).alreadySpoken = false;
-    ((window as any).tripService as TripService).cancelTrip();
   }
 
   leaveMapPage() {
@@ -1364,6 +1365,7 @@ export class MapService {
     id: "streetLayer",
     type: 'line',
     source: "streetSource",
+    slot:'middle',
     layout: {
       'line-join': 'round',
       'line-cap': 'round',
@@ -1972,7 +1974,7 @@ export class MapService {
       this.updateUserMarkerNoAnimation(newPosition,newHeading,userMoved);
       return;
     }
-    const animationDuration = 600;
+    const animationDuration = environment.gpsSettings.userMarkerAnimationDurationInMs;;
 
     // If the user marker doesn't exist, create it
     if (!userMarker) {
@@ -2082,10 +2084,12 @@ export class MapService {
     this.resetMapEventTrackingFlag();
   }
 
-  private completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number,userMoved:boolean) {
+  private async completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number,userMoved:boolean) {
+    console.log("ENTER to COMPLETE, last completed: ",this.lastLocationAnimationCompleted);
+
+    if(this.lastLocationAnimationCompleted>this.positionIndex)return;
     const userMarker = this.getUserMarker();
     const userMarkerVision = this.getUserVisionMarker();
-
     userMarker.setLngLat(newPosition).setRotation(newHeading);
     this.updateModelPosition(newPosition.toArray());
     userMarkerVision.setLngLat(newPosition).setRotation(newHeading);
@@ -2099,6 +2103,10 @@ export class MapService {
       ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEvent([newPosition.lng, newPosition.lat], newHeading);
       this.resetMapEventTrackingFlag();
     }
+    this.lastLocationAnimationCompleted=this.positionIndex;
+    console.log("ANIMATION COMPLETED: ",this.lastLocationAnimationCompleted,newPosition);
+
+
   }
 
   private resetMapEventTrackingFlag() {
@@ -2107,7 +2115,13 @@ export class MapService {
   }
 
 
-  public updateUserMarkerSnapedPositionOsrm(newCoordinates: [number, number] ,useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean, newHeading:number) {
+  public async updateUserMarkerSnapedPositionOsrm(newCoordinates: [number, number] ,useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean, newHeading:number, geoIndex:number) {
+    console.log("Entering ANIMATION, last checked",this.positionIndex);
+
+    if(geoIndex<=this.positionIndex)return;
+    this.positionIndex=geoIndex;
+    console.log("ANIMATING",this.positionIndex,newCoordinates);
+
     const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
     const userMarker = this.getUserMarker();
     if(useStreetHeading&&!this.userCurrentStreetHeadingNotFound){
@@ -2125,14 +2139,15 @@ export class MapService {
     
       this.animationTarget = newPosition;
       this.animationHeading = newHeading;
-      this.startTime=performance.now();
-      this.animationDuration = 1000;
-      this.startPosition = userMarker.getLngLat();
-      this.userMoved = userMoved;
+     
     if (this.isAnimating) {
       return;
     }
     this.isAnimating=true;
+    this.startTime=performance.now();
+    this.animationDuration = environment.gpsSettings.userMarkerAnimationDurationInMs;
+    this.startPosition = userMarker.getLngLat();
+    this.userMoved = userMoved;
 
    
     requestAnimationFrame(this.animateMarker);
@@ -2147,7 +2162,6 @@ export class MapService {
       ||!this.startPosition 
     ) return;
     let userMarker=this.getUserMarker();
-
     const progress = Math.min((currentTime -  this.startTime) / this.animationDuration, 1);
     const interpolatedPosition = this.interpolatePosition( this.startPosition, this.animationTarget, progress);
     const interpolatedRotation = this.interpolateRotation(userMarker.getRotation(), this.animationHeading, progress);
@@ -2164,5 +2178,103 @@ export class MapService {
       this.completeAnimation(this.animationTarget, this.animationHeading,  this.userMoved);
     }
   };
+
+
+  //private isAnimating = false; // Flag para controlar si hay una animación en curso
+  private animationQueue: (() => Promise<void>)[] = []; // Cola de animaciones
+  currentMarkerPosition!:{lat:number,lon:number};
+  currentHeading!:number;
+  // Método para actualizar el marcador del usuario con animación
+  async updateUserMarker(snappedPosition:  {
+    coords:
+    {
+      longitude:number,
+      latitude:number,
+      heading:number
+    }
+  } ): Promise<void> {
+    // Añadir la animación a la cola
+    this.enqueueAnimation(() => this.animateMarkerToPosition(snappedPosition));
+  }
+
+  // Añade una animación a la cola y la procesa si no hay animaciones en curso
+  private enqueueAnimation(animation: () => Promise<void>) {
+    this.animationQueue.push(animation);
+    if (!this.isAnimating) {
+      this.processNextAnimation();
+    }
+  }
+
+  // Procesa la siguiente animación en la cola
+   // Método para animar el marcador a la nueva posición y dirección
+  private async animateMarkerToPosition(snappedPosition:  {
+    coords:
+    {
+      longitude:number,
+      latitude:number,
+      heading:number
+    }
+  }  ): Promise<void> {
+    return new Promise<void>((resolve) => {
+      // Configuración de la animación usando requestAnimationFrame
+      const duration = 1000; // Duración de la animación en milisegundos
+      const start = performance.now();
+      const initialPosition = { ...this.currentMarkerPosition };
+      const initialHeading = this.currentHeading;
+
+      const step = (timestamp: number) => {
+        const progress = (timestamp - start) / duration;
+
+        if (progress < 1) {
+          // Interpolación de la posición y dirección
+          const interpolatedPosition = {
+            lat: initialPosition.lat + (snappedPosition.coords.latitude - initialPosition.lat) * progress,
+            lon: initialPosition.lon + (snappedPosition.coords.longitude - initialPosition.lon) * progress,
+          };
+          const interpolatedHeading = initialHeading! + (snappedPosition.coords.heading! - initialHeading!) * progress;
+
+          // Actualiza el marcador con la posición y dirección interpoladas
+          this.updateMarkerOnMap(interpolatedPosition, interpolatedHeading);
+          requestAnimationFrame(step);
+        } else {
+          // Finaliza la animación y resuelve la promesa
+          this.updateMarkerOnMap({lat:snappedPosition.coords.latitude,lon:snappedPosition.coords.longitude}, snappedPosition.coords.heading!);
+          resolve();
+        }
+      };
+
+      requestAnimationFrame(step);
+    });
+  }
+
+  // Actualiza la posición y el heading del marcador en el mapa
+  private updateMarkerOnMap(position: {lat:number,lon:number}, heading: number) {
+    // Aquí va la lógica para actualizar el marcador en el mapa
+    this.currentMarkerPosition = position;
+    this.currentHeading = heading;
+    // Ejemplo de actualización en Mapbox:
+    // this.map.getSource('user-marker').setData(newPosition);
+    // this.map.setLayoutProperty('user-marker', 'icon-rotate', heading);
+  }
+
+  // Ajuste mínimo en el manejo secuencial
+private async processNextAnimation() {
+  if (this.animationQueue.length === 0) return; 
+
+  this.isAnimating = true;
+  const nextAnimation = this.animationQueue.shift();
+
+  if (nextAnimation) {
+    try {
+      await nextAnimation(); // Correcto: se espera la finalización de la animación
+    } catch (error) {
+      console.error('Error en la animación:', error);
+    } finally {
+      this.isAnimating = false;
+      this.processNextAnimation(); // Continua con la siguiente animación en la cola
+    }
+  }
+}
+
 
 }

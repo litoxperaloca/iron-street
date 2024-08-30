@@ -16,10 +16,10 @@ import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class TrafficAlertServiceService {
+export class TrafficAlertService {
   alerts: any[] = [];
   streetsObjects: any[]=[];
-  streetsCamerasConfigured:boolean=false;
+  streetsCamerasConfigured:boolean=true;
   lastUserCurrentStreet:MapboxGeoJSONFeature|null=null;
   lastUserCurrentStreetName:string|null=null;
   preannouncedObjects = new Set<number>(); // Set de objetos ya preanunciados
@@ -74,11 +74,9 @@ export class TrafficAlertServiceService {
    
   }
 
-  checkAlertableObjectsOnNewUserPositionFromArray(userPosition: Position, streetName:string,alertables:any[]){
-    console.log("buscando camaras...");
+  async checkAlertableObjectsOnNewUserPositionFromArray(userPosition: Position, streetName:string,alertables:any[]){
     if(!alertables || alertables.length<=0){
 
-      console.log("Salgo!");
 
       return;
     };
@@ -90,11 +88,9 @@ export class TrafficAlertServiceService {
         if(this.lastUserCurrentStreetName
           && this.lastUserCurrentStreetName===streetName){
             //sigo en la misma calle
-                  console.log("SIGO EN LA MISMA");
 
           }else{
             //cambie de calle
-            console.log("cambio de calle");
 
             this.preannouncedObjects.clear();
             this.announcedObjects.clear();
@@ -102,18 +98,14 @@ export class TrafficAlertServiceService {
           }
       }else{
         //Primera calle
-        console.log("primera calle");
 
         this.preannouncedObjects.clear();
         this.announcedObjects.clear();
         this.lastUserCurrentStreetName=streetName;
       }
       alertables.forEach(objAlertable=>{
-        console.log("objAlertable",objAlertable);
 
         const distanceToObj = objAlertable.distanceInMeters;
-        console.log("distanceToObj",distanceToObj);
-        console.log(distanceToObj,objAlertable,streetName);
 
     
         this.preAnnounceAlertableObj(distanceToObj, objAlertable,streetName);
@@ -124,17 +116,14 @@ export class TrafficAlertServiceService {
   }
 
   private getAlertableConfig(type: string) {
-    console.log("type",type);
 
     return environment.trafficAlertServiceConf.alertables.find(a => a.type === type);
   }
 
   preAnnounceAlertableObj(distance: number, objAlertable: any, streetName:string) {
     const alertableConfig = this.getAlertableConfig(objAlertable.type);
-    console.log("alertableConfig",alertableConfig);
     let idlabel:string = objAlertable.tags["osmid"];
     const objId:number = Number(idlabel.replace("node/",""));
-    console.log(alertableConfig,alertableConfig!.preAnnounce, distance,alertableConfig!.preAnnouncementDistance,this.preannouncedObjects,objId);
     
     if (alertableConfig && 
       alertableConfig.preAnnounce && 
@@ -160,10 +149,8 @@ export class TrafficAlertServiceService {
 
   announceAlertableObj(distance: number, objAlertable: any, streetName:string) {
     const alertableConfig = this.getAlertableConfig(objAlertable.type);
-    console.log("alertableConfig",alertableConfig);
     let idlabel:string = objAlertable.tags["osmid"];
     const objId:number = Number(idlabel.replace("node/",""));
-    console.log(alertableConfig,alertableConfig!.announce, distance,alertableConfig!.announcementDistance,this.announcedObjects,objId);
 
     if (alertableConfig && 
       alertableConfig.announce && 

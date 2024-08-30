@@ -1,4 +1,4 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter, Injectable, OnInit } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { TranslateService } from '@ngx-translate/core';
 import { ThemeService } from './theme-service.service';
@@ -6,10 +6,11 @@ import { ThemeService } from './theme-service.service';
 @Injectable({
   providedIn: 'root'
 })
-export class PreferencesService {
+export class PreferencesService implements OnInit{
   languageChanged = new EventEmitter<string>();
 
   private readonly preferencesKey = 'user_preferences';
+
   defaultPreferences: {
     darkTheme: boolean,
     voiceInstructions: boolean,
@@ -29,12 +30,38 @@ export class PreferencesService {
       voiceSpeed: 1,
       voiceVolume: 1,
       voiceTone: 1,
-      language: 'es-ES',
+      language: 'es',
       mapStyle: '3D atardecer',
       distanceUnit: 'km'
     };
 
   constructor(private translate: TranslateService, private themeService: ThemeService) {
+  }
+
+  async ngOnInit(): Promise<void> {
+    //this.defaultPreferences = await this.getPreferences();
+  }
+
+  async restoreSavedPreferences():Promise<void>{
+    const preferences:{
+      darkTheme: boolean,
+      voiceInstructions: boolean,
+      voice: string,
+      voiceId: number,
+      voiceSpeed: number,
+      voiceVolume: number,
+      voiceTone: number,
+      language: string,
+      mapStyle: string,
+      distanceUnit: string
+    } = await this.getPreferences();
+    if(preferences.language!=this.defaultPreferences.language){
+      await this.changeLanguage(preferences.language);
+    }
+    if(preferences.darkTheme!=this.defaultPreferences.darkTheme){
+      await this.changeTheme(preferences.darkTheme);
+    }
+    this.defaultPreferences=preferences;
   }
 
 
