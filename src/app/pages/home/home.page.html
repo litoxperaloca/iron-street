@@ -32,10 +32,6 @@
       <h3 id="currentManeuver">{{currentManeuver}}</h3>
       <div id="stepIcon" class="directions-icon-{{currentManeuvreIcon}}"></div>
     </div>
-    <div id="tripNextStepDetails">
-      <h3 id="nextManeuver">{{nextManeuver}}</h3>
-      <div id="stepIconNext" class="directions-icon-{{nextManeuvreIcon}}"></div>
-    </div>
 
     <div id="tripProgress" [ngClass]="{'simulating':simulation===true}">
       <div *ngIf="simulation" class="flexMiddleRow motionFont">
@@ -71,13 +67,14 @@
     </div>
 
     <div id="mapFabIcons">
+      
       <ion-menu-toggle id="menuButtonToggle" auto-hide="false">
         <ion-fab-button color="light">
           <ion-icon color="dark" name="menu-outline"></ion-icon>
         </ion-fab-button>
       </ion-menu-toggle>
+
       <ion-fab id="fab-map-controls" slot="fixed" vertical="bottom" size="small" horizontal="start">
-        <!-- Speech Recognition FAB -->
 
         <ion-fab-button *ngIf="isNative" color="light" (click)="toggleSpeechRecognition()">
           <ion-icon color="danger" name="mic-outline"></ion-icon>
@@ -101,19 +98,20 @@
         <ion-fab-button color="light" (click)="openModal('UserMarkerSettings')">
           <ion-icon color="danger" name="car-outline"></ion-icon>
         </ion-fab-button>
-
-        <ion-fab-button *ngIf="audioOn" color="light" (click)="openModal('Conf')">
+        <ion-fab-button *ngIf="audioOn" color="light" (click)="toggleAudio()">
           <ion-icon color="warning" name="volume-high-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button *ngIf="!audioOn" color="light" (click)="openModal('Conf')">
+        <ion-fab-button *ngIf="!audioOn" color="light" (click)="toggleAudio()">
           <ion-icon color="warning" name="volume-mute-outline"></ion-icon>
         </ion-fab-button>
-        <!--<ion-fab-button color="light" (click)="openModal('Debug')">
-          <ion-icon color="danger" name="bug-outline"></ion-icon>
+
+        <ion-fab-button color="light" (click)="openModal('CalibrateApp')">
+          <ion-icon color="success" name="car-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button color="light" (click)="openModal('IronBot')">
-          <ion-icon color="danger" name="sparkles-outline"></ion-icon>
-        </ion-fab-button>-->
+        <ion-fab-button color="light" (click)="openModal('Debug')">
+          <ion-icon color="success" name="bug-outline"></ion-icon>
+        </ion-fab-button>
+
       </ion-fab>
     </div>
 </div>

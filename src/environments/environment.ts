@@ -16,7 +16,25 @@ export const environment = {
     scale: 6,
     units: 'meters',
     anchor: "top",
-    rotation: { x: 270, y: 0, z: 0 }
+    rotation: { x: 270, y: 0, z: 0 },
+    rotationDeg: {x:0, y:0, z:0}
+  },
+  locatorDefaultObj:     {
+    img: '/assets/img/cars/car_arrow.png',
+    name: 'Fecla roja',
+    id: 'redarrow',
+    type: '3D',
+    vehicleType: 'arrow',
+    options: {
+      type: 'gltf',
+      obj: '/assets/models/car_arrow.glb',
+      scale: 6,
+      units: 'meters',
+      anchor: "top",
+      rotation: { x: 270, y: 0, z: 0 },
+      rotationDeg: {x:0, y:0, z:0}
+
+    }
   },
   locators: [
     
@@ -32,7 +50,9 @@ export const environment = {
         scale: 6,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 270, y: 0, z: 0 }
+        rotation: { x: 270, y: 0, z: 0 },
+        rotationDeg: {x:0, y:0, z:0}
+
       }
     },
     {
@@ -47,7 +67,9 @@ export const environment = {
         scale: 2,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 0, z: 0 }
+        rotation: { x: 90, y: 0, z: 0 },
+        rotationDeg: {x:270, y:0, z:0}
+
       }
     },
     {
@@ -62,7 +84,9 @@ export const environment = {
         scale: 9,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 0, z: 0 }
+        rotation: { x: 90, y: 0, z: 0 },
+        rotationDeg: {x:270, y:0, z:0}
+
       }
     },
     {
@@ -77,7 +101,9 @@ export const environment = {
         scale: 9,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 0, z: 0 }
+        rotation: { x: 90, y: 0, z: 0 },
+        rotationDeg: {x:270, y:0, z:0}
+
       }
     },
     {
@@ -92,7 +118,9 @@ export const environment = {
         scale: 9,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 0, z: 0 }
+        rotation: { x: 90, y: 0, z: 0 },
+        rotationDeg: {x:270, y:0, z:0}
+
       }
     },
     {
@@ -107,7 +135,9 @@ export const environment = {
         scale: 14,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 180, z: 0 }
+        rotation: { x: 90, y: 180, z: 0 },
+        rotationDeg: {x:270, y:180, z:0}
+
       }
     },
     {
@@ -122,13 +152,25 @@ export const environment = {
         scale: 14,
         units: 'meters',
         anchor: "top",
-        rotation: { x: 90, y: 0, z: 0 }
+        rotation: { x: 90, y: 0, z: 0 },
+        rotationDeg: {x:270, y:0, z:0}
+
       }
     }
   ],
   production: true,
   mocking: false,
   trafficAlertServiceConf: {
+    alertsSettings: {
+      speedCamera: {
+          recommendedDuration: 3000,
+          durationForSimulation: 1500
+      },
+      maneuver: {
+          recommendedDuration: 4000,
+          durationForSimulation: 1000
+      }
+    },
     alertables:[
       {
         type: 'speedCamera',
@@ -442,13 +484,14 @@ export const environment = {
     showUserHeading: true
   },
   gpsSettings:{
-    locationIntervalTimeInMs:2000,
-    simulationIntervalTimeInMs:2000,
-    userMarkerAnimationDurationInMs:800,
-    positionMaxAge:1500,
-    timeOut:3000,
-    timeBeforeStartInMs:500,
-    timeRotating:500
+    locationIntervalTimeInMs:1500,
+    simulationIntervalTimeInMs:1500,
+    userMarkerAnimationDurationInMs:1000,
+    positionMaxAge:500,
+    timeOut:6000,
+    timeBetweenRealAndSimulation: 1200,
+    timeBeforeStartInMs:400,
+    timeRotating:800
   },
   mapboxMapConfig: {
     accessToken: 'pk.eyJ1IjoibGl0b3hwZXJhbG9jYSIsImEiOiJjbGc3ZW95OGQwNXRtM2V0bHM3ZTcwajVmIn0.rZXdOoZoUFuJ2K4eFyxamg',

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { PreferencesService } from './preferences.service';
 
@@ -16,14 +16,15 @@ export class VoiceService {
   voices: SpeechSynthesisVoice[] = [];
   isSpeaking: boolean = false;
   speechQueue: string[] = [];
+  audioStatusChanged = new EventEmitter<boolean>();
 
 
   constructor(private preferencesService: PreferencesService) {
+    this.speakerStatus = this.preferencesService.defaultPreferences.voiceInstructions;
     if (this.voices.length === 0) {
       this.getSupportedVoices().then((voices) => {
         this.voices = voices.voices;
       });
-
     }
   }
 
@@ -174,7 +175,7 @@ export class VoiceService {
 
   }
 
-  stopSpeaking(): void {
+  async stopSpeaking(): Promise<void> {
     TextToSpeech.stop(); // Stop any ongoing speech
     this.speechQueue = []; // Clear the queue
     this.isSpeaking = false; // Reset speaking flag
@@ -182,6 +183,18 @@ export class VoiceService {
 
   isCurrentlySpeaking(): boolean {
     return this.isSpeaking;
+  }
+
+  async toggleAudio():Promise<boolean>{
+    this.speakerStatus=this.speakerStatus?false:true;
+    await this.preferencesService.setAudioStatus(this.speakerStatus);
+    if(this.speakerStatus==false){
+      if(this.isSpeaking){
+        await this.stopSpeaking()
+      }
+    }
+    this.audioStatusChanged.emit(this.speakerStatus);
+    return this.speakerStatus;
   }
 
   // Implementa las demás funciones aquí como necesites

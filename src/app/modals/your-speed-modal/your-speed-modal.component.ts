@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ModalController, NavParams } from '@ionic/angular';
 import { HomePage } from 'src/app/pages/home/home.page';
 import { ModalService } from '../../services/modal.service';
+import { SpeedService } from 'src/app/services/speed.service';
 
 @Component({
   selector: 'app-your-speed-modal',
@@ -16,6 +17,7 @@ export class YourSpeedModalComponent implements OnInit {
     private modalController: ModalController,
     private navParams: NavParams,
     private modalService: ModalService,
+    private speedService: SpeedService
   ) {
 
   }
@@ -30,7 +32,7 @@ export class YourSpeedModalComponent implements OnInit {
   }
 
   ngOnInit() {
-    ((window as any).homePage as HomePage).speedChanged.subscribe(speed => {
+   this.speedService.speedChanged.subscribe(speed => {
       this.currentSpeed = speed;
     })
   }

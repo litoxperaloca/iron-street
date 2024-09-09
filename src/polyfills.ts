@@ -21,18 +21,17 @@
 (window as any).process = {
   env: { DEBUG: undefined, NODE_ENV: "production" }
 };
-window.global = window;
+// Required polyfills for Angular and modern browser support
+import 'core-js/stable';                 // ES6+ features
+import 'regenerator-runtime/runtime';   // Generator functions and async/await
+import 'whatwg-fetch';                  // Fetch API support
+import 'intersection-observer';         // Intersection Observer for lazy loading
+import 'web-animations-js';             // Web Animations API support (needed for certain animations in Safari and IE)
+import 'classlist.js';                  // Element.classList support in IE
+import 'proxy-polyfill/proxy.min.js';   // Proxy support for older browsers
 
-import 'core-js/stable';
-import 'regenerator-runtime/runtime';
-import 'whatwg-fetch';
-import 'proxy-polyfill/proxy.min.js';
-import 'intersection-observer';
+// Cross-fetch for a consistent fetch API in all environments
 import 'cross-fetch/polyfill';
-import 'event-source-polyfill';
-import 'first-input-delay';
-import 'web-animations-js';
-import 'classlist.js';
 /**
  * By default, zone.js will patch all possible macroTask and DomEvents
  * user can disable parts of macroTask/DomEvents patch by setting following flags

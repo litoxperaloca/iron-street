@@ -3,6 +3,7 @@ import { ModalController, NavParams } from '@ionic/angular';
 import { BookmarksService } from 'src/app/services/bookmarks.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
 import { ModalService } from '../../services/modal.service';
+import { SpeedService } from 'src/app/services/speed.service';
 
 @Component({
   selector: 'app-max-speed-details-modal',
@@ -19,6 +20,7 @@ export class MaxSpeedDetailsModalComponent implements OnInit {
     private navParams: NavParams,
     private modalService: ModalService,
     private mapService: MapService,
+    private speedService: SpeedService,
     private bookmarksService: BookmarksService// Servicio dedicado para operaciones del mapa
   ) {
 
@@ -44,7 +46,6 @@ export class MaxSpeedDetailsModalComponent implements OnInit {
         this.isShowingSpeedWayOnMap = true;
       } else {
         this.isShowingSpeedWayOnMap = false;
-
       }
     }
 

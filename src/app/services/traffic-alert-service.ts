@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { HomePage } from '../pages/home/home.page';
 import { MapService } from './map.service'; // Your MapService with updateUserMarker method
 import { VoiceService } from './voice.service'; // Assuming you have a VoiceService for speaking instructions
@@ -24,6 +24,18 @@ export class TrafficAlertService {
   lastUserCurrentStreetName:string|null=null;
   preannouncedObjects = new Set<number>(); // Set de objetos ya preanunciados
   announcedObjects = new Set<number>(); // Set de objetos ya anunciados
+  newManeuverAlert = new EventEmitter<{
+                          alertText:string, 
+                          alertType:string, 
+                          alertIconUrl:string, 
+                          recommendedDuration:number
+                     }>();
+  newSpeedCamaraAlert = new EventEmitter<{
+                      alertText:string, 
+                      alertType:string, 
+                      alertIconUrl:string,
+                      recommendedDuration:number 
+                 }>();
 
   constructor(
     private voiceService: VoiceService,
@@ -36,36 +48,13 @@ export class TrafficAlertService {
 
   async showAlert(alertText:string, alertType:string, alertIconUrl:string, speakAlert:boolean){
     if(alertType === "maneuver"){
-      const tripStepDetails = document.getElementById("tripStepDetails");
-      if (tripStepDetails) {
-        tripStepDetails.style.display = "block";
-        /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
-        if (instructions) instructions.style.display = "block";*/
-        const progress = document.getElementById("tripProgress");
-        if (progress) { progress.style.display = "block"; }
-        ((window as any).homePage as HomePage).currentManeuver = alertText;
-        ((window as any).homePage as HomePage).currentManeuvreIcon = alertIconUrl;
-        const time: any = setTimeout(() => {
-          if (tripStepDetails) tripStepDetails.style.display = "none";
-        }, 2500); // Adjust delay as needed
-        this.windowService.attachedTimeOut("home", "tripservice", time);
-      }
+      const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.speedCamera.recommendedDuration;
+      this.newSpeedCamaraAlert.emit({alertText,alertType,alertIconUrl,recommendedDuration});
+     
     }
     if(alertType === "speedCamera"){
-      const tripStepDetails = document.getElementById("tripStepDetails");
-      if (tripStepDetails) {
-        tripStepDetails.style.display = "block";
-        /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
-        if (instructions) instructions.style.display = "block";*/
-        const progress = document.getElementById("tripProgress");
-        if (progress) { progress.style.display = "block"; }
-        ((window as any).homePage as HomePage).currentManeuver = alertText;
-        ((window as any).homePage as HomePage).currentManeuvreIcon = alertIconUrl;
-        const time: any = setTimeout(() => {
-          if (tripStepDetails) tripStepDetails.style.display = "none";
-        }, 3500); // Adjust delay as needed
-        this.windowService.attachedTimeOut("home", "tripservice", time);
-      }
+      const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.speedCamera.recommendedDuration;
+      this.newSpeedCamaraAlert.emit({alertText,alertType,alertIconUrl,recommendedDuration});
     }
     if(speakAlert){
       const voiceInstructions = alertText;
@@ -172,83 +161,5 @@ export class TrafficAlertService {
       this.showAlert(announcement,objAlertable.type,alertableConfig.icon,true);
 
     }
-  }
-
-  async setCamerasStreetName(){
-    if(this.streetsCamerasConfigured)return;
-    const mapService = ((window as any).mapService as MapService);
-    const map = mapService.getMap();
-    const speedCamerasArround:MapboxGeoJSONFeature[] = map.querySourceFeatures('speedCamerasDataSource', { sourceLayer: 'camerasaUY' }) as MapboxGeoJSONFeature[];
-
-    if (speedCamerasArround.length > 0) {
-      const speedService = ((window as any).speedService) as SpeedService;
-      const speedCamerasArroundObjOne=speedCamerasArround[0];
-      if(speedCamerasArroundObjOne.geometry.type==="Point"){
-        speedService.getSpeedDataFromArroundOnce([speedCamerasArroundObjOne.geometry.coordinates[0],speedCamerasArroundObjOne.geometry.coordinates[1]]).then(data=>{
-          speedCamerasArround.forEach(camera => {
-            if(camera.geometry.type=="Point"){
-              this.snapCameraToRoad([camera.geometry.coordinates[0],camera.geometry.coordinates[1]],data).then((street)=>{
-                if(street && street.properties){
-                  const streetName = street.properties["name"];
-                  if(!this.streetsObjects[streetName]){
-                    this.streetsObjects[streetName]=[];
-                  }
-                  this.streetsObjects[streetName].push({type:"camera",feature:camera});
-                }
-              });
-            }
-          });
-          this.streetsCamerasConfigured=true;
-          console.log(this.streetsObjects);
-        });
-
-      }
-
-
-    }
-  }
-
-  async snapCameraToRoad(position:[number,number],data:any): Promise<MapboxGeoJSONFeature | undefined> {
-    const mapService = ((window as any).mapService as MapService);
-    const map = mapService.getMap();
-
-    if (!map.getLayer("maxspeedDataLayer")) {
-      return;
-    }
-
-    const cameraPoint = point([position[0], position[1]]);
-    
-    const features:MapboxGeoJSONFeature[] = map.querySourceFeatures('maxspeedDataSource', { sourceLayer: 'export_1-12rpm8' }) as MapboxGeoJSONFeature[];
-
-    if (features.length > 0) {
-      const closestFeature = await this.findClosestRoad(features, cameraPoint,data);
-      if (closestFeature) return closestFeature;
-    }
-    return;
-  }
-
-  private async findClosestRoad(features: MapboxGeoJSONFeature[], cameraPoint: any, data:any): Promise<MapboxGeoJSONFeature | null> {
-    let closestFeature: MapboxGeoJSONFeature | null = null;
-    let minDistance = Number.MAX_VALUE;
-    features.forEach(feature => {
-      if (feature.geometry!.type === 'LineString') {
-        const line = lineString(feature.geometry!.coordinates);
-        const pointInLine = nearestPointOnLine(line, cameraPoint);
-        const distancePoints = distance(pointInLine, cameraPoint, { units: 'kilometers' });
-        if (distancePoints < minDistance && distancePoints < 0.05) {
-            minDistance = distancePoints;
-            closestFeature = feature;
-          }
-                 
-      }
-    });
-    if (closestFeature == null) {
-      const speedService = ((window as any).speedService) as SpeedService;
-      closestFeature = await speedService.getSpeedDataFromArroundAvailable(cameraPoint.geometry.coordinates,data);
-      if (closestFeature) {
-        closestFeature = speedService.wayToGeoJsonFeature(closestFeature) as MapboxGeoJSONFeature;
-      }
-    }
-    return closestFeature;
   }
 }

@@ -6,7 +6,6 @@ import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-l
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import {bearing} from "@turf/turf";
 import { environment } from 'src/environments/environment';
-import axios from 'axios'; // Importa axios o cualquier otra librería HTTP que estés utilizando.
 import { timeStamp } from 'console';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 
@@ -25,6 +24,16 @@ export class OsrmService {
 
   constructor(
   ) { }
+
+  public clear(){
+    this.lastPosition = null;
+    this.lastCurrentStreet= null;
+    this.lastUserStreets=[];
+    this.lastestUserLocations=[];
+    this.lastestHints=[];
+    this.lastHeading=0;
+    this.positionIndex=0;
+  }
 
   public async getOsrmGeoLocation(userPosition: Position): Promise<any> {
     try {
@@ -59,7 +68,7 @@ export class OsrmService {
         // Verifica si la respuesta contiene coincidencias y ajusta la posición.
           const response:any = {
             lat: lat,
-            lng: lon,
+            lon: lon,
             roadName: roadName,
             maxspeed:maxspeed,
             cameras:cameras,
@@ -69,7 +78,8 @@ export class OsrmService {
             speed: userPosition.coords.speed,
             accuracy: userPosition.coords.accuracy,
             altitude: userPosition.coords.altitude,
-            timeStamp: userPosition.timestamp 
+            timeStamp: userPosition.timestamp,
+            altitudeAccuracy: userPosition.coords.altitudeAccuracy 
           }
           return response;
         }
@@ -79,7 +89,7 @@ export class OsrmService {
       // En caso de error, devuelve la posición original.
       const response:any =     {
         lat: userPosition.coords.latitude,
-        lng: userPosition.coords.longitude,
+        lon: userPosition.coords.longitude,
         roadName: null,
         maxspeed:null,
         cameras:[],
@@ -115,6 +125,7 @@ export class OsrmService {
           timestamps: timestamps
         }
         const data = await this.doGet(url,parms);
+        console.log(data);
           //console.log(data);
         if(data.data){
           const tracepoint= data.data.lastTracePoint;
@@ -129,7 +140,7 @@ export class OsrmService {
         // Verifica si la respuesta contiene coincidencias y ajusta la posición.
           const response:any = {
             lat: lat,
-            lng: lon,
+            lon: lon,
             roadName: roadName,
             maxspeed:maxspeed,
             cameras:cameras,
@@ -139,7 +150,7 @@ export class OsrmService {
             speed: userPosition.coords.speed,
             accuracy: userPosition.coords.accuracy,
             altitude: userPosition.coords.altitude,
-            timeStamp: userPosition.timestamp 
+            timestamp: userPosition.timestamp 
           }
           return response;
         }
@@ -149,7 +160,7 @@ export class OsrmService {
       // En caso de error, devuelve la posición original.
       const response:any =     {
         lat: userPosition.coords.latitude,
-        lng: userPosition.coords.longitude,
+        lon: userPosition.coords.longitude,
         roadName: null,
         maxspeed:null,
         cameras:[],

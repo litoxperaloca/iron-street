@@ -1,0 +1,130 @@
+@import 'src/theme/variables.scss';
+
+.calibrate-modal {
+  ion-header {
+    --background: var(--background-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  ion-toolbar {
+    --background: var(--background-color);
+    --color: var(--text-color);
+  }
+
+  ion-title {
+    font-weight: bold;
+  }
+
+  ion-content {
+    --background: var(--background-color);
+    --color: var(--text-color);
+    padding: 15px;
+  }
+
+  // Segment buttons styling
+  ion-segment {
+    --background: var(--accent-color-light);
+    margin-bottom: 15px;
+  }
+
+  ion-segment-button {
+    --color-checked: var(--accent-color);
+    --indicator-color: var(--accent-color-dark);
+    padding: 10px 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+
+  // Card styling for each section
+  ion-card {
+    background-color: var(--ion-card-background-color, var(--background-color));
+    color: var(--text-color);
+    border-radius: var(--modal-border-radius);
+    margin-bottom: 15px;
+
+    ion-card-header {
+      background-color: var(--accent-color-light);
+      --color: var(--text-color);
+      font-weight: bold;
+    }
+
+    ion-card-title {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+
+      ion-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  ion-item {
+    --background: var(--background-color);
+    color: var(--text-color);
+    margin-bottom: 10px;
+
+    ion-label {
+      font-size: 1rem;
+    }
+
+    ion-input {
+      --color: var(--text-color);
+    }
+  }
+
+  // Buttons styling
+  ion-button {
+    --background: var(--accent-color);
+    --color: var(--background-color);
+    margin-top: 15px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+
+    ion-icon {
+      margin-right: 10px;
+    }
+  }
+
+  // Styling for each specific section
+  .gps-settings,
+  .snap-service,
+  .traffic-alerts {
+    padding: 10px;
+  }
+}
+
+// Responsive adjustments for Calibrate Navigation Modal
+@media (min-width: 768px) {
+  .calibrate-modal {
+    ion-content {
+      padding: 20px;
+    }
+
+    ion-segment-button {
+      padding: 12px 20px;
+      font-size: 16px;
+    }
+
+    ion-card {
+      padding: 20px;
+    }
+  }
+}
+
+ion-header ion-toolbar {
+  padding: 20px !important;
+}
+
+ion-fab.md.fab-horizontal-end.fab-vertical-bottom.hydrated {
+  bottom: 0px;
+  left: 0px;
+  height: 90px;
+}
+
+.twenty{
+  width:20%;
+}

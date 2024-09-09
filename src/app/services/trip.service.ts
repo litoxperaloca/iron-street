@@ -1,27 +1,37 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
-import { HomePage } from '../pages/home/home.page';
 import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service'; // Your MapService with updateUserMarker method
-import { WindowService } from './window.service';
 import { MapboxService } from './mapbox.service';
 import { Subject } from 'rxjs';
 import { TrafficAlertService } from './traffic-alert-service';
 import { environment } from 'src/environments/environment';
-
+import { Route,Trip } from 'src/app/models/route.interface';
 @Injectable({
   providedIn: 'root',
 })
 export class TripService {
-   route: any = null; // La ruta seleccionada para el viaje
+   userStartedTripFrom: Position|null=null;
+   userIsOnGuidedTrip:boolean=false;
+   route: Route|null = null; // La ruta seleccionada para el viaje
    currentStepIndex: number = 0; // Índice del paso actual
    tripProgress: number = 0; // Progreso del viaje en porcentaje
+   tripDuration: number = 0; // Distancia total de la ruta
    tripDistance: number = 0; // Distancia total de la ruta
-   alerts$: Subject<string> = new Subject<string>(); // Canal para enviar alertas de navegación
+   tripDestination:string='';
+   tripDestinationAddress:string|null = null;
+   tripIsSimulation:boolean = false;
    preannouncedManeuvers = new Set<number>(); // Set de maniobras ya anunciadas
    announcedManeuvers = new Set<number>(); // Set de maniobras ya anunciadas
    lastUserPositionMonitored:Position|null = null;
-  
+   lastPositionWasSimulated:boolean=false; 
+   tripProgressChanged = new EventEmitter<number>();
+   tripStarted = new EventEmitter<Trip>();
+   tripEnded = new EventEmitter<Trip>();
+   tripCanceled = new EventEmitter<Trip>();
+   tripError = new EventEmitter<Trip>();
+   trip:Trip|null=null;
+
   constructor(
     private mapboxService: MapboxService, 
     private mapService:MapService,
@@ -31,36 +41,52 @@ export class TripService {
   ) {}
 
   // Iniciar un nuevo viaje con una ruta específica
-  startTrip(route: any) {
-    this.route = route;
-    this.currentStepIndex = 0;
-    this.tripProgress=0;
-    this.tripDistance = this.calculateTotalDistance();
+  startTrip(route: Route,initialLocation:Position, simulation:boolean) {
+    this.userStartedTripFrom=initialLocation;
     this.preannouncedManeuvers.clear();
     this.announcedManeuvers.clear();
-    const userPosition: Position = ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(); // Get user's current location
-    this.currentStepIndex=0;  
+    this.userIsOnGuidedTrip=true;
+    this.route = route;
+    this.currentStepIndex = 0;
+    this.tripProgress=0.00;
+    this.tripDuration= this.calculateDuration();
+    this.tripDistance = this.calculateTotalDistance();
+    this.tripDestination = this.route.legs[0].steps[this.route.legs[0].steps.length-1].name;
+    this.tripDestinationAddress = this.mapService.destinationAddress;
+    this.tripIsSimulation = simulation;
+    const trip:Trip = {
+      tripProgress: this.tripProgress,
+      tripDistance: this.tripDistance,
+      tripDuration:  this.tripDuration,
+      tripDestination: this.tripDestination,
+      tripDestinationAddress: this.tripDestinationAddress,
+      tripIsSimulation:  this.tripIsSimulation,
+      userStartedTripFrom: this.userStartedTripFrom
+    }
+    //this.announceManeuver(this.route.legs[0].steps[0]);
+    //this.currentStepIndex=1;  
 
-    this.announceManeuver(this.route.legs[0].steps[0]);
-    this.currentStepIndex=1;  
-
-    this.lastUserPositionMonitored=userPosition;
-    this.mapService.setCameraPOVPosition(userPosition);
-
+    this.lastUserPositionMonitored=initialLocation;
+    this.tripStarted.emit(trip);
   }
 
   async locationUpdate(tripIsSimulation: boolean,userPosition:Position): Promise<void> {
-    if (userPosition == this.lastUserPositionMonitored) {
+    if (userPosition && this.lastUserPositionMonitored
+      && userPosition.coords.latitude == this.lastUserPositionMonitored.coords.altitude 
+        && userPosition.coords.longitude == this.lastUserPositionMonitored.coords.longitude) {
       //console.log("No hay cambio de posición");
       return;
     }
+    if(this.lastPositionWasSimulated&&!tripIsSimulation){
+      this.lastPositionWasSimulated=false;
+    }
     this.lastUserPositionMonitored=userPosition;
-    const stepCount=this.route.legs[0].steps.length;
+    const stepCount=this.route!.legs[0].steps.length;
     if(this.currentStepIndex>0 && this.currentStepIndex<stepCount-1){
       this.updateUserPosition([userPosition.coords.longitude,userPosition.coords.latitude]);
       return;
     }
-    if(this.currentStepIndex>0 && this.currentStepIndex==stepCount-1){
+    if(this.currentStepIndex>0 && this.currentStepIndex>=stepCount-1){
       if(this.announcedManeuvers.has(this.currentStepIndex)){
         this.endTrip();
         return;  
@@ -76,7 +102,7 @@ export class TripService {
     const closestStepIndex = this.findClosestStepIndex(coords);
     const distanceToClosestStep = this.mapboxService.calculateDistance(
       coords,
-      this.route.legs[0].steps[closestStepIndex].maneuver.location
+      this.route!.legs[0].steps[closestStepIndex].maneuver.location as [number,number]
     );
     let distanceToCurrentStep:number|null=null;
     if (closestStepIndex > this.currentStepIndex && distanceToClosestStep <= environment.tripserviceConf.stepIntroMinDistance) {
@@ -84,7 +110,7 @@ export class TripService {
     } else {
       distanceToCurrentStep = this.mapboxService.calculateDistance(
         coords,
-        this.route.legs[0].steps[this.currentStepIndex].maneuver.location
+        this.route!.legs[0].steps[this.currentStepIndex].maneuver.location as [number,number]
       );
 
       if (distanceToCurrentStep > environment.tripserviceConf.deviationThreshold) {
@@ -93,11 +119,11 @@ export class TripService {
       }
     }
 
-    const currentStep = this.route.legs[0].steps[this.currentStepIndex];
+    const currentStep = this.route!.legs[0].steps[this.currentStepIndex];
     if(!distanceToCurrentStep){
       distanceToCurrentStep = this.mapboxService.calculateDistance(
                                 coords,
-                                currentStep.maneuver.location
+                                currentStep.maneuver.location as [number,number]
                               );
     }
     this.updateTripProgress(coords,distanceToCurrentStep,this.currentStepIndex);
@@ -110,7 +136,13 @@ export class TripService {
 
   // Calcular la distancia total de la ruta
   private calculateTotalDistance(): number {
-    return this.route.distance;
+    return this.route!.distance;
+  }
+
+  
+  // Calcular la distancia total de la ruta
+  private calculateDuration(): number {
+    return this.route!.duration;
   }
 
   async preAnnounceManeuver(distance: number, step: any) {
@@ -125,7 +157,6 @@ export class TripService {
         .replace('{modifier}', step.maneuver.modifier)
         .replace('{instruction}', step.maneuver.instruction);
       
-      this.alerts$.next(preAnnouncement);
       this.preannouncedManeuvers.add(this.currentStepIndex);
       this.trafficAlertService.showAlert(preAnnouncement,"maneuver",this.maneurveIcon(step),true);
 
@@ -140,16 +171,6 @@ export class TripService {
         let announcement = maneuverConfig.announcement
           .replace('{modifier}', step.maneuver.modifier)
           .replace('{instruction}', step.maneuver.instruction);
-        /*if (step.maneuver.type === 'continue') {
-          const nextStep = this.route.legs[0].steps[this.currentStepIndex + 1];
-          const distanceToNextStep = this.mapboxService.calculateDistance(
-            step.maneuver.location,
-            nextStep.maneuver.location
-          );
-          announcement = announcement.replace('{distanceToNextStep}', Math.round(distanceToNextStep).toString());
-        }*/
-
-        this.alerts$.next(announcement);
         this.announcedManeuvers.add(this.currentStepIndex);
         this.trafficAlertService.showAlert(announcement,"maneuver",this.maneurveIcon(step),true);
         /*if(step.maneuver.type==="arrive"){
@@ -171,47 +192,37 @@ export class TripService {
   // Calcular la distancia restante sumando las distancias de los steps restantes
   private calculateRemainingDistance(coords: [number,number],offset:number,stepIndex:number): number {
     let remainingDistance = offset;
-    if(stepIndex<this.route.legs[0].steps.length-2){
+    if(stepIndex<this.route!.legs[0].steps.length-2){
 
     }
-    for (let i = stepIndex+1; i < this.route.legs[0].steps.length; i++) {
+    for (let i = stepIndex+1; i < this.route!.legs[0].steps.length; i++) {
       /*remainingDistance += this.mapboxService.calculateDistance(
         coords,
         this.route.legs[0].steps[i].maneuver.location
       );*/
-      remainingDistance+=this.route.legs[0].steps[i].distance;
+      remainingDistance+=this.route!.legs[0].steps[i].distance;
     }
     return remainingDistance;
   }
 
   // Actualizar el progreso del viaje
   private updateTripProgress(coords: any, distanceToCurrentStep:number, stepIndex:number) {
+    const lastTripProgress:number = this.tripProgress;
     const totalDistance = this.calculateTotalDistance();
-    /*const distanceCovered = this.mapboxService.calculateDistance(
-      this.route.legs[0].steps[0].maneuver.location,
-      coords
-    );*/
     const remainingDistance  = this.calculateRemainingDistance(coords,distanceToCurrentStep,stepIndex)
-    //this.tripProgress = (distanceCovered / totalDistance) * 100;
     const distanceCovered = totalDistance-remainingDistance;
-    this.tripProgress = (distanceCovered / totalDistance) * 100;
-    //console.log(this.tripProgress);
-    //console.log(distanceCovered);
-    //console.log(totalDistance);
-    ((window as any).homePage as HomePage).tripProgressIndex = 1 * this.tripProgress/100;
+   //this.tripProgress = (distanceCovered / totalDistance)*100;
 
-  }
-
-  // Anunciar llegada al destino
-  private announceArrival() {
-    this.alerts$.next('Ha llegado a su destino.');
-    this.trafficAlertService.showAlert('Ha llegado a su destino.',"maneuver",'',true);
-
+    this.tripProgress = (distanceCovered / totalDistance);
+    if(lastTripProgress!=this.tripProgress){
+      this.tripProgressChanged.emit(this.tripProgress);
+    }
   }
 
   // Finalizar el viaje y limpiar recursos
   endTrip() {
-    ((window as any).homePage as HomePage).cancelTrip(); // Your MapService with cancelTrip method
+    this.tripEnded.emit(this.trip!);
+    //((window as any).homePage as HomePage).cancelTrip(); // Your MapService with cancelTrip method
   }
 
   maneurveIcon(step: any): string {
@@ -237,6 +248,9 @@ export class TripService {
     this.tripDistance = 0;
     this.preannouncedManeuvers.clear();
     this.announcedManeuvers.clear();
+    this.tripCanceled.emit(
+      this.trip!
+    );
     /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
     if (instructions) instructions.style.display = "none";*/
   }
@@ -246,7 +260,7 @@ export class TripService {
     let closestIndex = this.currentStepIndex;
     let minDistance = Infinity;
 
-    this.route.legs[0].steps.forEach((step: any, index: number) => {
+    this.route!.legs[0].steps.forEach((step: any, index: number) => {
       const distance = this.mapboxService.calculateDistance(
         coords,
         step.maneuver.location
@@ -262,26 +276,12 @@ export class TripService {
 
   // Recalcular la ruta desde la ubicación actual
   async recalculateRoute(coords: any) {
-   await this.mapboxService.getNewRoute(coords, this.route.waypoints).then((newRoute) => {
-      this.route = newRoute;
-      this.currentStepIndex = this.findClosestStepIndex(coords);
-      this.alerts$.next('Recalculando ruta.');
-      const alert = this.trafficAlertService.showAlert('Recalculando ruta.',"voiceAlertOnly",'',true);
-      this.mapService.changeRoute(newRoute);
-    });
+   //await this.mapboxService.getNewRoute(coords, this.route!.waypoints).then((newRoute) => {
+     // this.route = newRoute;
+    //  this.currentStepIndex = this.findClosestStepIndex(coords);
+    //  const alert = this.trafficAlertService.showAlert('Recalculando ruta.',"voiceAlertOnly",'',true);
+   //   this.mapService.changeRoute(newRoute);
+   // });
   }
 
-  // Verificar si es el último paso
-  private isLastStep(): boolean {
-    return this.currentStepIndex == this.route.legs[0].steps.length - 1;
-  }
-
-  private lastStepFinished(): boolean {
-    return this.currentStepIndex >= this.route.legs[0].steps.length;
-  }
-
-  // Obtener el observable de alertas
-  getAlerts() {
-    return this.alerts$.asObservable();
-  }
 }

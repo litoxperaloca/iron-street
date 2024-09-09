@@ -9,6 +9,16 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { Amplify } from 'aws-amplify';
+import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
+import { MapboxService } from './services/mapbox.service';
+import { TrafficAlertService } from './services/traffic-alert-service';
+import { OsrmService } from './services/osrm.service';
+import { MarkerAnimationService } from './services/marker-animation.service';
+import { SnapService } from './services/snap.service';
+import { BookmarkSavedModalComponent } from './modals/bookmark-saved-modal/bookmark-saved-modal.component';
+import { GeoLocationAnimatedService } from './services/geo-location-animated.service';
+import { CookiesService } from './services/cookies.service';
+import { DeviceDataService } from './services/device-data.service';
 import { ManeurveModalComponent } from 'src/app/modals/maneurve/maneurve-modal.component';
 import { PermissionModalComponent } from 'src/app/modals/permission/permission-modal.component';
 import { RouteModalComponent } from 'src/app/modals/route/route-modal.component';
@@ -51,14 +61,8 @@ import { ThemeService } from './services/theme-service.service';
 import { TripSimulatorService } from './services/trip-simulator.service';
 import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
-import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
-import { MapboxService } from './services/mapbox.service';
-import { TrafficAlertService } from './services/traffic-alert-service';
-import { OsrmService } from './services/osrm.service';
-
-import { SnapService } from './services/snap.service';
-import { BookmarkSavedModalComponent } from './modals/bookmark-saved-modal/bookmark-saved-modal.component';
-
+import { SourceAndLayerManagerService } from './services/mapHelpers/source-and-layer-manager.service';
+import { CalibrateAppModalComponent } from './modals/calibrate-app-modal/calibrate-app-modal.component';
 
 Amplify.configure(awsconfig);
 
@@ -90,7 +94,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       DebugModalComponent,
       IronBotModalComponent,
       UserMarkerSettingsModalComponent,
-      BookmarkSavedModalComponent
+      BookmarkSavedModalComponent,
+      CalibrateAppModalComponent
     ],
   imports: [
 
@@ -121,6 +126,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
       VoiceService,
       MapService,
+      SourceAndLayerManagerService,
       ModalService,
       GeoLocationService,
       OsmService,
@@ -144,7 +150,11 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       MapboxService,
       TrafficAlertService,
       SnapService,
-      OsrmService
+      OsrmService,
+      GeoLocationAnimatedService,
+      MarkerAnimationService,
+      CookiesService, 
+      DeviceDataService
     ],
   bootstrap: [AppComponent],
 })

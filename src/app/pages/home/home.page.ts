@@ -12,7 +12,6 @@ import { WindowService } from 'src/app/services/window.service';
 import { environment } from 'src/environments/environment';
 import { ActionSheetService } from '../../services/action-sheet.service';
 import { CameraService } from '../../services/camera.service';
-import { DeviceOrientationService } from '../../services/device-orientation.service';
 import { GeoLocationService } from '../../services/geo-location.service';
 //import { IntersectionService } from '../../services/intersection.service';
 import { MapService } from '../../services/map.service';
@@ -30,6 +29,10 @@ import { MapboxService } from 'src/app/services/mapbox.service';
 import { Place } from '@aws-amplify/geo';
 import { GeoLocationAnimatedService } from 'src/app/services/geo-location-animated.service';
 import { OsrmService } from 'src/app/services/osrm.service';
+import { MarkerAnimationService } from 'src/app/services/marker-animation.service';
+import { Trip } from 'src/app/models/route.interface';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -40,7 +43,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   speechRecogEnabled: boolean = false;
   userLoggedIn: boolean = false;
   audioOn: boolean = true;
-
+  currentTrip:Trip|null=null;
   currentMaxSpeed: number = 0;
   currentSpeed: number = 0;
   currentSpeedometerNeedleRotation: number = 60;
@@ -61,11 +64,11 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   shouldEndSimulation: boolean = false;
   getMock: boolean = true;
   isNative: boolean = false;
-  speedChanged = new EventEmitter<number>();
   isShowingSpeedWayOnMap:boolean=false;
   lastTimeStampFromUserPosition = 0;
   positionIndex:number = 0;
-  geoLocationAnimatedService:GeoLocationAnimatedService|null=null;
+  private destroy$ = new Subject<void>();
+
   constructor(
     private translateService: TranslateService,
     public mapService: MapService,
@@ -74,36 +77,30 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     private speedService: SpeedService,
     private modalService: ModalService,
     private osmService: OsmService,
-    private deviceOrientationService: DeviceOrientationService,
     private voiceService: VoiceService,
     private cameraService: CameraService,
     private menuController: MenuController,
     private tripService: TripService,
-    //private intersectionService: IntersectionService,
     private actionSheetService: ActionSheetService,
     private themeService: ThemeService,
     private sensorService: SensorService,
     private tripSimulatorService: TripSimulatorService,
-    private toastController: ToastController, // Fix the typo here
     private ToastService: ToastService,
     private speechRecognitionService: SpeechRecognitionService,
     private bookmarkService: BookmarksService,
     private windowService: WindowService,
     private alertService: AlertService,
-  private trafficAlertService:TrafficAlertService,
-private snapService:SnapService,
-private mapboxService:MapboxService,
-private osrmService:OsrmService
-) {
+    private trafficAlertService:TrafficAlertService,
+    private snapService:SnapService,
+    private mapboxService:MapboxService,
+    private osrmService:OsrmService, 
+    private markerAnimationService:MarkerAnimationService,
+    private geoLocationAnimatedService: GeoLocationAnimatedService
+  ) {
     // Existing constructor code...
-    this.isNative = Capacitor.isNativePlatform()
+    this.isNative = Capacitor.isNativePlatform();
     this.audioOn = this.voiceService.isSpeakerOn();
-    this.geoLocationAnimatedService = new GeoLocationAnimatedService(this.osrmService, this.mapService, this.tripService, this.trafficAlertService);
   }
-
-
-
-  // Existing code...
 
   toggleSpeechRecognition() {
     this.speechRecognitionService.toggleSpeechRecognition();
@@ -113,242 +110,106 @@ private osrmService:OsrmService
     const timeOut = setTimeout(() => {
       this.mapService.initMap();
       this.startWatchingPosition();
-      //this.deviceOrientationService.startListeningHeading();
-      //this.deviceOrientationService.listenAcceleration();
-      //this.speedService.startWatchingSpeedLimit();
-
-
     }, environment.gpsSettings.timeBeforeStartInMs);
     this.windowService.attachedTimeOut("home", "waitAndRender", timeOut);
   }
 
 
-  async geolockMock() {
-
+  async startSimulatingPosition(){
     const self = this;
-    //this.geoLocationService.stopWatchingPosition();
-    this.windowService.unAttachInterval("home", "gpsInterval");
-    this.windowService.unAttachWatch("home", "gps");
-    self.geoLocationService.mocking = true;
-    environment.mocking = true;
-    self.simulation = true;
-    this.windowService.unAttachInterval("home", "locationInterval");
-
-    const locationInterval: any = setInterval(() => {
-      /*if (this.mapService.isAnimating) {
-        return;
-      }*/
-
-      //this.geoLocationService.watchPosition((position, error) => {
-      self.geoLocationMockService.getNextPosition().then
-        (position => {
-          if (!position || !self.simulation) return;
-          if (position.coords.latitude == 0 && position.coords.longitude == 0) {
-            self.finishSimulation();
-          } else {
-              self.positionIndex=self.positionIndex+1;
-                  //await self.speedService.locationUpdate();
-               self.snapService.locationUpdate(position,self.positionIndex);
-               //if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-
-            
-            //((window as any).mapService as MapService).updateUserPosition();
-            //((window as any).mapService as MapService).userStreet(position);
-            /*if ((window as any).mapService.userCurrentStreet && (window as any).mapService.userCurrentStreet.properties) {
-              self.currentMaxSpeed = Number.parseInt((window as any).mapService.userCurrentStreet.properties["maxspeed"]);
-            } */
-            const speed = position.coords.speed;
-            if (speed) {
-              self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-              //self.currentSpeedometerNeedleRotation = self.needleRotation();
-              if(self.currentSpeed<5){
-                self.currentSpeed=0;
-              }
-            } else {
-              self.currentSpeed = 0;
-            }
-            self.speedChanged.emit(self.currentSpeed);
-
-          }
-
-        });
-
-
-      //});
-    }, environment.gpsSettings.simulationIntervalTimeInMs); // Check every 5 seconds (adjust interval as needed)
-    self.windowService.attachedInterval("home", "locationInterval", locationInterval);
   }
 
-  startWatchingPositionV2() {
-    if(this.geoLocationAnimatedService){
-      this.geoLocationAnimatedService.startWatchingPosition();
-    }
-  }
-
-   startWatchingPosition() {
-    try {
-      this.windowService.unAttachInterval("home", "locationInterval");
-      this.simulation = false;
-      this.geoLocationService.mocking = false;
-      environment.mocking = false;
-      this.windowService.unAttachInterval("home", "gpsInterval");
-      this.windowService.unAttachWatch("home", "gps");
-      const watchId: any = this.geoLocationService.watchPosition(async (position) => {
-        //console.log('New position:', position);
-         await this.geolock(position)
-      });
-      this.windowService.attachedWatch("home", "gps", watchId);
-    } catch (e) {
-      console.error('Error starting position watch:', e);
-      alert('Unable to watch position. Please ensure location services are enabled and permissions are granted.');
-    }
-  }
-
-  startWatchingPositioGPS() {
-    try {
-      this.windowService.unAttachInterval("home", "locationInterval");
-      this.simulation = false;
-      this.geoLocationService.mocking = false;
-      environment.mocking = false;
-      this.windowService.unAttachInterval("home", "gpsInterval");
-      this.windowService.unAttachWatch("home", "gps");
-      const self = this;
-
-      const gpsInterval: any = setInterval(() => {
-
-        self.geoLocationService.getCurrentPosition().then(
-          async (position) => {
-            self.positionIndex = self.positionIndex+1;
-            console.log("NEW GPS READ: ",self.positionIndex,position);
-            if (self.simulation || !position || position.timestamp<=self.lastTimeStampFromUserPosition) return;
-              self.lastTimeStampFromUserPosition=position.timestamp;
-              self.snapService.locationUpdate(position,self.positionIndex);
-              //if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-            const speed = position.coords.speed;
-            if (speed) {
-              self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-              //self.currentSpeedometerNeedleRotation = self.needleRotation();
-              if(self.currentSpeed<5){
-                self.currentSpeed=0;
-              }
-            } else {
-              self.currentSpeed = 0;
-            }
-            self.speedChanged.emit(self.currentSpeed);
-  
-          });
-  
-      }, environment.gpsSettings.locationIntervalTimeInMs); // Check every 2 seconds (adjust interval as needed)
-      this.windowService.attachedInterval("home", "gpsInterval", gpsInterval);
-    } catch (e) {
-      console.error('Error starting position watch:', e);
-      alert('Unable to watch position. Please ensure location services are enabled and permissions are granted.');
-      return;
-    }
-  }
-
-  async geoLockForWeb(position:Position){
-      const self = ((window as any).homePage as HomePage);
-      self.positionIndex = self.positionIndex+1;
-      console.log("NEW GPS READ: ",self.positionIndex,position);
-      if (self.simulation || !position || position.timestamp<=self.lastTimeStampFromUserPosition) return;
-        self.lastTimeStampFromUserPosition=position.timestamp;
-        self.snapService.locationUpdate(position,self.positionIndex);
-        //if (self.mapService.isTripStarted) { self.tripService.locationUpdate(false); }
-      const speed = position.coords.speed;
-      if (speed) {
-        self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-        //self.currentSpeedometerNeedleRotation = self.needleRotation();
-        if(self.currentSpeed<5){
-          self.currentSpeed=0;
-        }
-      } else {
-        self.currentSpeed = 0;
-      }
-      self.speedChanged.emit(self.currentSpeed);
-  }
-
- async geolock(position: Position | null) {
+  async startWatchingPosition() {
     const self = this;
-    if (!position || this.simulation) return;
-    self.positionIndex=self.positionIndex+1;
-    console.log("NEW GPS READ: ",self.positionIndex,position);
-    const speed = position.coords.speed;
-    let speedChanged = false;
-    if (speed) {
-      if(self.currentSpeed!=speed){
-        speedChanged=true;
+    if(self.geoLocationAnimatedService){
+      if(self.simulation){
+        const stop=await self.tripSimulatorService.cancelSimulation();        
+        self.simulation=false;
       }
-      self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-      //self.currentSpeedometerNeedleRotation = self.needleRotation();
-      if(self.currentSpeed<5){
-        self.currentSpeed=0;
-      }
-    } else {
-      self.currentSpeed = 0;
+
+      let waitTime=setTimeout(async()=>{
+        await self.geoLocationAnimatedService!.startWatchingPosition();
+        clearTimeout(waitTime);
+      },environment.gpsSettings.timeBetweenRealAndSimulation);
+        
     }
-    if(speedChanged){
-      self.speedChanged.emit(self.currentSpeed);
-
-    }
-    await self.snapService.locationUpdate(position,self.positionIndex);
-  }
-
- async geolockUsingIntervals() {
-    const self = this;
-    this.windowService.unAttachInterval("home", "locationInterval");
-    this.simulation = false;
-    this.geoLocationService.mocking = false;
-    environment.mocking = false;
-    this.windowService.unAttachWatch("home", "gps");
-    this.windowService.unAttachInterval("home", "gpsInterval");
-
-    const gpsInterval: any = setInterval(() => {
-
-      self.geoLocationService.getCurrentPosition().then(
-        async (position) => {
-          if (!position) return;
-          self.positionIndex=self.positionIndex+1;
-
-          await self.snapService.locationUpdate(position,self.positionIndex);
-          const speed = position.coords.speed;
-          let speedChanged = false;
-          if (speed) {
-            if(self.currentSpeed!=speed){
-              speedChanged=true;
-            }
-            self.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-            //self.currentSpeedometerNeedleRotation = self.needleRotation();
-            if(self.currentSpeed<5){
-              self.currentSpeed=0;
-            }
-          } else {
-            self.currentSpeed = 0;
-          }
-          if(speedChanged){
-            self.speedChanged.emit(self.currentSpeed);
-
-          }
-        });
-
-    }, environment.gpsSettings.locationIntervalTimeInMs); // Check every 2 seconds (adjust interval as needed)
-    this.windowService.attachedInterval("home", "gpsInterval", gpsInterval);
   }
 
   ngOnInit() {
   }
+
+  private initSubscriptions() {
+      this.speedService.speedChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(speed => {
+          this.currentSpeed = speed;
+        });
+  
+      this.speedService.maxSpeedChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(maxSpeed => {
+          this.currentMaxSpeed = maxSpeed;
+        });
+  
+      this.tripService.tripProgressChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(tripProgress => {
+          this.tripProgressIndex = tripProgress;
+        });
+  
+      this.tripService.tripEnded
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(trip => {
+          this.tripFinished(trip);
+        });
+  
+      this.tripService.tripStarted
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(trip => {
+          this.currentTrip = trip;
+          this.showTripProgress(trip);
+        });
+  
+      this.tripService.tripCanceled
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(trip => {
+          this.tripCanceled(trip);
+        });
+  
+      this.tripService.tripError
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(error => {
+          //this.showTripError(error);
+        });
+  
+      this.trafficAlertService.newSpeedCamaraAlert
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(alert => {
+          this.showSpeedCamera(alert);
+        });
+  
+      this.trafficAlertService.newManeuverAlert
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(alert => {
+          this.showNewManeuver(alert);
+        });
+
+      this.voiceService.audioStatusChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(audio => {
+          this.audioOn=audio;
+        });
+    }
+
+
   
   ngAfterViewInit() {
-    const self = this;
-
     (window as any).mapService = this.mapService;
     (window as any).geoLocationService = this.geoLocationService;
     (window as any).speedService = this.speedService;
-    (window as any).osmService = this.osmService;
+     (window as any).osmService = this.osmService;
     (window as any).tripService = this.tripService;
-    //(window as any).  = this.intersectionService;
     (window as any).cameraService = this.cameraService;
-    (window as any).deviceOrientationService = this.deviceOrientationService;
     (window as any).sensorService = this.sensorService;
     (window as any).tripSimulatorService = this.tripSimulatorService;
     (window as any).geoLocationMockService = this.geoLocationMockService;
@@ -361,14 +222,20 @@ private osrmService:OsrmService
     (window as any).snapService = this.snapService;
     (window as any).mapboxService=this.mapboxService;
     (window as any).bookmarkService=this.bookmarkService;
-
-
     (window as any).homePage = this;
+    (window as any).GeoLocationAnimatedService = this.geoLocationAnimatedService;
+    (window as any).markerAnimationService = this.markerAnimationService;
+    (window as any).osrmService = this.osrmService;
+    this.initSubscriptions();
     this.waitAndRenderPage();
   }
 
   toggleDarkLightMode() {
     this.themeService.toggleTheme();
+  }
+
+  toggleAudio(){
+    this.voiceService.toggleAudio();
   }
 
   alreadyGeoLocated() {
@@ -384,23 +251,20 @@ private osrmService:OsrmService
     if (card_left) {
       card_left.style.display = "block";
     }
-    /*const card_right = document.getElementById("card_right");
-    if (card_right) {
-      card_right.style.display = "block";
-    }*/
-
   }
 
   ngOnDestroy() {
-    // Perform clean-up tasks here
-    // this.geoLocationService.stopLocationObserver();
-    //this.deviceOrientationService.stopListeningHeading();
-    //this.speedService.stopWatchingSpeedLimit();
+    if(this.geoLocationAnimatedService)this.geoLocationAnimatedService.stopWatchingPosition();
+    
+       // Emitir un valor para cerrar todas las suscripciones
+    this.destroy$.next();
+    this.destroy$.complete();
     this.windowService.unattachComponent("home");
     this.mapService.leaveMapPage();
     this.modalService.avoidMultipleInstancesOfModal()
-    this.cancelTrip();
-    this.windowService.unattachComponent("home");
+    if(this.currentTrip){
+      this.cancelTrip();
+    }
     this.positionIndex=0;
     this.snapService.positionIndex=0;
     this.mapService.positionIndex=0;
@@ -415,24 +279,18 @@ private osrmService:OsrmService
 
   public setCameraMode(cameraMode: 'POV' | 'SKY') {
     //this.cameraService.setCameraMode(cameraMode);
-    let snapedPosition: Position = {
-      coords: {
-        latitude: this.sensorService.getLastCurrentLocationPredicted()[1],
-        longitude: this.sensorService.getLastCurrentLocationPredicted()[0],
-        accuracy: 1,
-        altitude: null,
-        altitudeAccuracy: null,
-        heading: this.mapService.getUserMarker().getRotation(),
-        speed: null
-      },
-      timestamp: Date.now()
-    };
-    const speedSNAP = this.sensorService.getSensorSpeed();
-    if (speedSNAP) {
-      snapedPosition.coords.speed = speedSNAP;
-    }
-    if (cameraMode === 'POV') this.mapService.setCameraPOVPosition(snapedPosition);
-    if (cameraMode === 'SKY') this.mapService.setCameraSKYPosition(snapedPosition);
+    if(this.geoLocationAnimatedService){
+      let snapedPosition: Position = this.geoLocationAnimatedService.getLastPosition();
+      if(snapedPosition){
+        if (cameraMode === 'POV'){
+          this.mapService.setCameraPOVPosition(snapedPosition);
+        }else if (cameraMode === 'SKY'){
+          this.mapService.setCameraSKYPosition(snapedPosition)
+        }
+        
+      }
+   }
+   
   }
 
   public toggleSpeedControl() {
@@ -453,36 +311,46 @@ private osrmService:OsrmService
   }
 
   public simulateTrip() {
-    this.geolockMock();
-    this.tripSimulatorService.simulateGuidedTrip();
+
+    //this.startSimulatingPosition();
+    this.mapService.startNewSimulationTrip();
   }
 
-  public startTrip() {
-    /*if (this.simulation) {
-      this.cancelTripSimulation();
-      this.geolock();
-    }*/
+  showTripProgress(trip:Trip){
+    const tripProgressContainer = document.getElementById("tripProgress");
+    if (tripProgressContainer) {
+      tripProgressContainer.style.display = "block";
+    }
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
     if (tripDetailsContainer) {
       tripDetailsContainer.style.display = "none";
     }
-    /*const tripControls = document.getElementById("tripControls");
-    if (tripControls) {
-      tripControls.style.display = "none";
-    }*/
-    this.mapService.startTrip();
+    this.tripProgressIndex=trip.tripProgress;
   }
 
-  public cancelTrip() {
-   if (this.simulation) {
-      this.resetTripAndPositionsProperties;
-      this.cancelTripDOMelements();
+  public startTrip() {
+    this.mapService.startTrip(false);
+  }
+
+  public tripCanceled(trip:Trip) {
+    let stopSimulatingPosition = false;
+    if (trip.tripIsSimulation) {
+       this.resetTripAndPositionsProperties();
+       stopSimulatingPosition=true;
+     }
+     this.cancelTripDOMelements();
+     this.mapService.cancelTrip();
+     if(stopSimulatingPosition){
       this.startWatchingPosition();
-    }else{
-      this.cancelTripDOMelements();
-      this.mapService.cancelTrip();
-    }
-    //this.setCameraMode('SKY');
+     }
+     
+   }
+
+  public cancelTrip() {
+   /*if (this.simulation||this.tripService.trip?.tripIsSimulation) {
+   }*/
+   this.tripService.cancelTrip();
+
   }
 
   public resetTripAndPositionsProperties(){
@@ -545,71 +413,67 @@ private osrmService:OsrmService
       this.currentManeuver = "";
       this.currentManeuvreIcon = "";
     }
-
-    const tripNexStepDetails = document.getElementById("tripNexStepDetails");
-    if (tripNexStepDetails) {
-      tripNexStepDetails.style.display = "none";
-      this.nextManeuver = "";
-      this.nextManeuvreIcon = "";
-    }
-
     const tripProgress = document.getElementById("tripProgress");
 
     if (tripProgress) tripProgress.style.display = "none";
   }
   
-
-  needleRotation(): number {
-    // Assuming max rotation angle is 180 degrees
-    return 60 + ((this.currentSpeed / 240) * 300);
-  }
-
-  showTrip(): void {
+  showTrip(trip:Trip): void {
+    this.mapService.setCameraPOVPosition(trip.userStartedTripFrom!);
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
     if (tripDetailsContainer) {
       tripDetailsContainer.style.display = "block";
-      this.tripDistance = parseFloat(Math.round(this.mapService.actualRoute.distance / 1000).toFixed(2));
-      this.tripDuration = parseFloat(Math.round(this.mapService.actualRoute.duration / 60).toFixed(2));
-      this.tripDestination = this.mapService.destination;
-      this.tripDestinationAddress = this.mapService.destinationAddress;
-      this.eta = this.tripDuration;
-      this.dta = this.tripDistance;
-
-
+      this.tripDistance = parseFloat(Math.round(trip.tripDistance / 1000).toFixed(2));
+      this.tripDuration = parseFloat(Math.round(trip.tripDuration / 60).toFixed(2));
+      this.tripDestination = trip.tripDestination;
+      this.tripDestinationAddress = trip.tripDestinationAddress!;
+      this.eta = trip.tripDuration;
+      this.dta = trip.tripDistance;
       /*const tripControls = document.getElementById("tripControls");
       if (tripControls) {
         tripControls.style.display = "block";
       }*/
     }
   }
-  updateMarkerOrientation(event: DeviceOrientationEvent) {
-    ((window as any).deviceOrientationService as DeviceOrientationService).setLastResult(event);
-
-    if (event.alpha !== null) {
-      ((window as any).mapService as MapService).updateMarkerRotation(event.alpha * -1);
-    }
-  };
-
-  updateMarkerAccel(event: DeviceMotionEventAcceleration) {
-
-  };
 
   addAnotherStopToTrip() {
     this.openModal("Search", true);
   }
 
-  async finishSimulation() {
-    this.cancelTrip();
-    //this.geolock();
-    //this.startWatchingPosition();
-
-    //this.voiceService.speak("Simulación de viaje completada. Accediendo a ubicación real nuevamente.")
-    await this.alertService.presentAlert("Simulación completada", "", "A partir de ahora se accederá nuevamente a su ubicación real", ["OK"]);
+  tripFinished(trip:Trip) {
+    //if (this.geoLocationService.mocking) {
+    if(this.currentTrip?.tripIsSimulation){  
+      this.actionSheetService.askQuestionAorB("¿Desea finalizar la simulación?", "Cerrando el viaje simulado...", "Si, cancelar viaje simulado", "No, continuar viaje simulado y guías").then((result) => {
+        if (result) {
+          this.cancelTrip();
+          //this.geolock();
+          //this.startWatchingPosition();
+        }
+      });
+    } else {
+      this.actionSheetService.askQuestionAorB("Terminar el viaje ahora?", "Cerrar el viaje guiado...", "Si, cancelar viaje", "No, continuar viaje y guías").then((result) => {
+        if (result) {
+          this.cancelTrip();
+        }
+      });
+    }
 
   }
 
+  simulationFinished() {
+    //this.geolock();
+    //this.startWatchingPosition();
+    this.simulation=false;
+    environment.mocking=false;
+
+    //this.startWatchingPosition();
+    //this.voiceService.speak("Simulación de viaje completada. Accediendo a ubicación real nuevamente.")
+    this.alertService.presentAlert("Simulación completada", "", "A partir de ahora se accederá nuevamente a su ubicación real", ["OK"]);
+  }
+
   stopTrip() {
-    if (this.geoLocationService.mocking) {
+    //if (this.geoLocationService.mocking) {
+    if(this.currentTrip?.tripIsSimulation){  
       this.actionSheetService.askQuestionAorB("¿Desea finalizar la simulación?", "Cerrando el viaje simulado...", "Si, cancelar viaje simulado", "No, continuar viaje simulado y guías").then((result) => {
         if (result) {
           this.cancelTrip();
@@ -716,19 +580,51 @@ private osrmService:OsrmService
     this.openModal("BookmarkAdd");
   }
 
-  setCurrentSpeed(speed:number|null){
-    let lastSpeed = this.currentSpeed;
-    if (speed) {
-      this.currentSpeed = Math.round(speed * 60 * 60 / 1000);
-      //self.currentSpeedometerNeedleRotation = self.needleRotation();
-      if(this.currentSpeed<5){
-        this.currentSpeed=0;
-      }
-    } else {
-      this.currentSpeed = 0;
+  showNewManeuver(alert:{
+    alertText:string, 
+    alertType:string, 
+    alertIconUrl:string,
+    recommendedDuration:number 
+}){
+    const tripStepDetails = document.getElementById("tripStepDetails");
+    if (tripStepDetails) {
+      tripStepDetails.style.display = "block";
+      /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
+      if (instructions) instructions.style.display = "block";*/
+      const progress = document.getElementById("tripProgress");
+      if (progress) { progress.style.display = "block"; }
+      ((window as any).homePage as HomePage).currentManeuver = alert.alertText;
+      ((window as any).homePage as HomePage).currentManeuvreIcon = alert.alertIconUrl;
+      const time: any = setTimeout(() => {
+        if (tripStepDetails) tripStepDetails.style.display = "none";
+      }, alert.recommendedDuration); // Adjust delay as needed
+      this.windowService.attachedTimeOut("home", "tripservice", time);
     }
-    if(lastSpeed!=this.currentSpeed){
-      this.speedChanged.emit(this.currentSpeed);
+  }
+
+  showSpeedCamera(alert:{
+    alertText:string, 
+    alertType:string, 
+    alertIconUrl:string,
+    recommendedDuration:number 
+}){
+    const tripStepDetails = document.getElementById("tripStepDetails");
+    if (tripStepDetails) {
+      tripStepDetails.style.display = "block";
+      /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
+      if (instructions) instructions.style.display = "block";*/
+      const progress = document.getElementById("tripProgress");
+      if (progress) { progress.style.display = "block"; }
+      ((window as any).homePage as HomePage).currentManeuver = alert.alertText;
+      ((window as any).homePage as HomePage).currentManeuvreIcon = alert.alertIconUrl;
+      const time: any = setTimeout(() => {
+        if (tripStepDetails) tripStepDetails.style.display = "none";
+      }, alert.recommendedDuration); // Adjust delay as needed
+      this.windowService.attachedTimeOut("home", "tripservice", time);
     }
+  }
+
+  openCalibrationModal(){
+    this.openModal("CalibrateApp");
   }
 }

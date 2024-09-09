@@ -211,6 +211,24 @@ export class CameraService {
     }
   }
 
+  async teletransportCamera(position: [number, number], mapBearing: number) {
+    const self = this;
+
+    const map = ((window as any).mapService as MapService).getMap();
+    if (!map) {
+      return;
+    }
+    map.jumpTo({              
+       // animate: true,
+        //minZoom: 19,
+        //speed: 1.5,
+        //minZoom: 19,
+        center: position,
+        bearing: mapBearing,
+        zoom: 16
+    });
+    map.triggerRepaint();
+  }
 
   async updateCameraForUserMarkerGeoEvent(position: [number, number], mapBearing: number) {
       const self = this;

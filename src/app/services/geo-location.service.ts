@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { Geolocation, Position } from '@capacitor/geolocation';
+import { Geolocation, Position, PermissionStatus as Perm } from '@capacitor/geolocation';
 //import * as turf from '@turf/turf';
 import distance from '@turf/distance';
 import { point } from '@turf/helpers';
@@ -19,22 +19,33 @@ export class GeoLocationService {
   private lastBboxCalculatedForDataIncome: any = null;
   public mocking: boolean = false;
 
-  async requestPermissions() {
+  async requestPermissions(tryCount:number):Promise<boolean> {
+    if(tryCount>=5){
+      return false;
+    }
+    let permission:Perm|PermissionStatus;
     if (Capacitor.isNativePlatform()) {
-      try {
-        const permissions = await Geolocation.requestPermissions();
-        if (permissions.location === 'granted') {
-          return true;
-        } else {
-          throw new Error('Location permission not granted');
-        }
-      } catch (error) {
-        console.error('Error requesting location permissions', error);
-        throw error;
-      }
+      permission = await Geolocation.requestPermissions();
     } else {
-      // Web does not need explicit permissions
+      permission = await navigator.permissions.query({ name: "geolocation" });
+    }
+    if (
+        (
+          (permission as Perm) 
+          && (permission as Perm).location 
+          && (permission as Perm).location === 'granted'
+        )
+        ||
+        (
+          (permission as PermissionStatus) 
+          && (permission as PermissionStatus).state 
+          && (permission as PermissionStatus).state === 'granted'
+        )
+      ) {
       return true;
+    } else {
+      const result = await this.requestPermissions(tryCount+1);
+      return result;
     }
   }
 
@@ -174,9 +185,6 @@ export class GeoLocationService {
     }
   }
 
-async webCoords(position:any){
-  ((window as any).homePage as HomePage).geoLockForWeb(position as Position);
-}
 
   calculateDistanceToNearestBboxEdge(userLocation: Point, bbox: [[number, number], [number, number]]) {
     const [[minLongitude, minLatitude], [maxLongitude, maxLatitude]] = bbox;

@@ -1,5 +1,6 @@
 import { BookmarkModalComponent } from '../modals/bookmark-modal/bookmark-modal.component';
 import { BookmarkSavedModalComponent } from '../modals/bookmark-saved-modal/bookmark-saved-modal.component';
+import { CalibrateAppModalComponent } from '../modals/calibrate-app-modal/calibrate-app-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
 import { IronBotModalComponent } from '../modals/iron-bot-modal/iron-bot-modal.component';
@@ -132,6 +133,14 @@ export const ComponentRef = {
     component: UserMarkerSettingsModalComponent,
     cssClass: 'bottom-sheet-modal',
     breakpoints: [0, 1],
+    initialBreakpoint: 1,
+    backdropBreakpoint: 1,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.CalibrateApp]: {
+    component: CalibrateAppModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 0.5, 0.75, 1],
     initialBreakpoint: 1,
     backdropBreakpoint: 1,
     props: {} // Añade las propiedades que necesites

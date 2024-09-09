@@ -51,6 +51,7 @@ export class SnapService {
   lastOSRMmatchesLocations:any[]=[];
   lastHeading:number=0;
   positionIndex=0;
+  lastPositionWasSimulated:boolean=false;
 
   constructor(
     private mapService: MapService,
@@ -58,7 +59,8 @@ export class SnapService {
     private sensorService: SensorService,
     private osmService: OsmService,
     private mapboxService: MapboxService,
-    private trafficAlertService: TrafficAlertService
+    private trafficAlertService: TrafficAlertService,
+    private tripService: TripService
   ) { }
 
   
@@ -76,14 +78,24 @@ export class SnapService {
     ];
   }
 
-  async locationUpdate(userPosition:Position, geoIndex:number){
+  async locationUpdate(userPosition:Position, geoIndex:number, isSimulation:boolean){
+    let teletransportMarker:boolean=false;
+    if(this.lastPositionWasSimulated && !isSimulation){
+      this.lastPositionWasSimulated=false;
+      this.lastCurrentStreet=null;
+      this.lastHeading=0;
+      this.lastestUserLocations=[];
+      this.lastPosition=null;
+      this.lastUserStreets=[];
+      this.positionIndex=0;
+      teletransportMarker=true;
+    }
     console.log("ENTERING SNAP, positionBefore: ",this.positionIndex);
-
     if(userPosition&&geoIndex>this.positionIndex){
       this.positionIndex=geoIndex;  
       console.log("SNAPPING",this.positionIndex,userPosition)
 
-      await this.snapToRoadUsingMiddleServer(userPosition, geoIndex);
+      const snappedPosition = await this.snapToRoadUsingMiddleServer(userPosition, geoIndex, teletransportMarker);
     }
   }
 
@@ -135,7 +147,7 @@ export class SnapService {
       return difference;
   }
 
-  async snapToRoadUsingMiddleServer(userPosition:Position,geoIndex:number):Promise<void>{
+  async snapToRoadUsingMiddleServer(userPosition:Position,geoIndex:number,teletransportMarker:boolean):Promise<void>{
 
     this.lastestUserLocations.push(userPosition);
     if(this.lastestUserLocations.length>10){
@@ -179,10 +191,10 @@ export class SnapService {
         let useStreetHeading=true;
         let userMoved:boolean=false;
         const homePage:HomePage = ((window as any).homePage as HomePage);
-        if(maxspeed){
+        /*if(maxspeed){
           homePage.currentMaxSpeed = Number.parseInt(maxspeed);
         }
-        homePage.setCurrentSpeed(userPosition.coords.speed);  
+        homePage.setCurrentSpeed(userPosition.coords.speed);  */
 
         if(currentFeature){
           const mapService = ((window as any).mapService as MapService);
@@ -208,12 +220,12 @@ export class SnapService {
               
             }
           }
-          if(!speedService.lastCurrentStreet){
+          if(!this.lastCurrentStreet){
             if(!userMoved){
               userMoved=true; //Es la primera vez que ubicare al usuario en una calle, entonces actualizo camara
             }
           }
-          speedService.lastCurrentStreet=currentFeature;
+          this.lastCurrentStreet=currentFeature;
           const smoothedPosition:Position = {
             coords: {
                 latitude: snapedPos.lat,
@@ -233,33 +245,32 @@ export class SnapService {
           this.lastPosition=snapedPos;
           
           if (((window as any).mapService as MapService).isRotating) {
-            ((window as any).mapService as MapService).updateMarkerState([lon,lat],mapService.userCurrentStreetHeading);
+            ((window as any).mapService as MapService).updateMarkerState(smoothedPosition,mapService.userCurrentStreetHeading);
             return;
           }
                    
               
-          const promises = [];
+          let promises = [];
 
           // Return the result object
           const trafficAlertService = ((window as any).trafficAlertService as TrafficAlertService);
-          promises.push(trafficAlertService.checkAlertableObjectsOnNewUserPositionFromArray(smoothedPosition,roadName,cameras));
+          if(cameras && cameras.length){
+            promises.push(trafficAlertService.checkAlertableObjectsOnNewUserPositionFromArray(smoothedPosition,roadName,cameras));
+          }
  
-       
-          if (((window as any).mapService as MapService).isTripStarted) { 
-            const tripService = ((window as any).tripService as TripService);
+          const tripService = this.tripService;
+          if (mapService.isTripStarted) { 
             promises.push(tripService.locationUpdate(homePage.simulation,smoothedPosition));
           }
-
           if(newHeading){
             //sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,useStreetHeading,userMoved,false,newHeading,this.positionIndex);
-            promises.push(((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm([snapedPos.lon,snapedPos.lat],true,userMoved,false,0,geoIndex));
+            promises.push(mapService.updateUserMarkerSnapedPositionOsrm([snapedPos.lon,snapedPos.lat],useStreetHeading,userMoved,teletransportMarker,newHeading,geoIndex));
           }else{
-            promises.push(((window as any).mapService as MapService).updateUserMarkerSnapedPositionOsrm([snapedPos.lon,snapedPos.lat],true,userMoved,false,0,geoIndex));
+            promises.push(mapService.updateUserMarkerSnapedPositionOsrm([snapedPos.lon,snapedPos.lat],true,userMoved,teletransportMarker,0,geoIndex));
             //sensorService.updateSnapToRoadPositionOSRM([snapedPos.lon,snapedPos.lat], currentFeature, snapedPos,true,userMoved,instantUpdate,0,this.positionIndex);
           }
-
           await Promise.all(promises);
-          return;
+          return ;
         }
      }
    }

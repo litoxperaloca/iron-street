@@ -20,18 +20,22 @@ import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
 import { BookmarksService } from './bookmarks.service';
-import { FeatureCollection, Geometry } from 'geojson';
+import { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+import { Trip,Route } from '../models/route.interface';
+import { SourceAndLayerManagerService } from './mapHelpers/source-and-layer-manager.service';
+import { TripSimulatorService } from './trip-simulator.service';
 @Injectable({
   providedIn: 'root'
 })
 export class MapService {
-  private tb!: any;
-  private carModel: any;
-  private modelTransform: any;
+  tb!: any;
+  carModel: any;
+  carModelSimulator: any|null=null;
+  modelTransform: any;
   private mapbox!: mapboxgl.Map;
   userLocationMarkerPrerequisitesOk: boolean = false;
   isAnimating: boolean = false; // Indicador de si una animación está en curso
-  private animationTarget: mapboxgl.LngLat | null = null; // Stores the target for ongoing animation
+  animationTarget: mapboxgl.LngLat | null = null; // Stores the target for ongoing animation
   mapControls: any = { directions: null };
   destination!: string;
   destinationAddress!: string;
@@ -61,7 +65,7 @@ export class MapService {
   coordinatesAltRoute: number[][] = [];
   osmFeatures: mapboxgl.MapboxGeoJSONFeature[] = [];
   osmPlaces: Place[] = [];
-  private lastPosition: mapboxgl.LngLat | null = null;
+  lastPosition: mapboxgl.LngLat | null = null;
   mapPressedMarkerInstance: mapboxgl.Marker | null = null;
   popUpMapPressed: mapboxgl.Popup | null = null;
   private isLongPress: boolean = false;
@@ -84,9 +88,14 @@ export class MapService {
   selectedFavIndex:number|null=null;
   positionIndex:number=0;
   lastLocationAnimationCompleted:number=0;
-  constructor(private windowService: WindowService,
+  current3dUserModel:any =environment.locatorDefaultObj;
+
+
+  constructor(private tripSimulatorService:TripSimulatorService,
+    private windowService: WindowService,
     private geoLocationService: GeoLocationService,
-    private sensorService: SensorService) {
+    private sensorService: SensorService,
+    private sourceAndLayerManager: SourceAndLayerManagerService) {
   }
 
   initMap() {
@@ -107,7 +116,7 @@ export class MapService {
       attributionControl: environment.mapboxMapConfig.attributionControl,
       maxPitch: environment.mapboxMapConfig.maxPitch,
       maxZoom: environment.mapboxMapConfig.maxZoom,
-      projection: 'globe' as any,
+      //projection: 'globe' as any,
       antialias:environment.mapboxMapConfig.antialias
     });
 
@@ -126,21 +135,19 @@ export class MapService {
 
     this.mapbox = map;
 
-
-
     map.on('load', () => {
       //map.setTerrain(undefined);
       map.resize();
 
       const timeOutIntroTime = setTimeout(() => {
-        this.introTimeWaited = true;
+        self.introTimeWaited = true;
       }, environment.gpsSettings.timeRotating);
-      this.windowService.attachedTimeOut("home", "mapService_introTime", timeOutIntroTime);
-      this.windowService.setValueIntoProperty('map', map);
-      this.setDefaults();
+      self.windowService.attachedTimeOut("home", "mapService_introTime", timeOutIntroTime);
+      self.windowService.setValueIntoProperty('map', map);
+      self.setDefaults();
 
-      this.mapControls.directions.on('route', (event: any) => {
-        const selectedIndex: number = this.mapControls.directions._stateSnapshot.routeIndex;
+      self.mapControls.directions.on('route', (event: any) => {
+        const selectedIndex: number = self.mapControls.directions._stateSnapshot.routeIndex;
         const mapService = ((window as any).mapService as MapService);
         const homePage = ((window as any).homePage as HomePage);
 
@@ -150,7 +157,8 @@ export class MapService {
         mapService.cleanRoutePopups();
 
         const setMainRouteStyle = () => {
-          mapService.mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 1);
+          mapService.mapbox.setPaintProperty('directions-route-line','line-occlusion-opacity',0.5);
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 2);
           mapService.mapbox.setPaintProperty('directions-route-line', 'line-width', 12);
           mapService.mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
           mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
@@ -158,12 +166,15 @@ export class MapService {
           mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.2);
           mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.2);
 
-          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-opacity', 0.4);
-          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-opacity', 0.4);
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-opacity', 0.2);
+          mapService.mapbox.setLayoutProperty('directions-origin-point', 'visibility', 'none');
+
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-opacity', 0.2);
         };
 
         const setAltRouteStyle = () => {
-          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 0.8);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt','line-occlusion-opacity',0.5);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 1);
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 7);
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
         };
@@ -210,8 +221,8 @@ export class MapService {
 
         const distanceMain = mapService.actualRoute.distance / 1000;
         const durationMain = mapService.actualRoute.duration / 60;
-        homePage.tripDistance = parseFloat(distanceMain.toFixed(2));
-        homePage.tripDuration = parseFloat(durationMain.toFixed(2));
+        const tripDistance = parseFloat(distanceMain.toFixed(2));
+        const tripDuration = parseFloat(durationMain.toFixed(2));
 
         this.trackingUser = false;
         this.mapEventIsFromTracking = false;
@@ -219,8 +230,16 @@ export class MapService {
         const center = directionsBounds.getCenter();
         const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
         this.mapbox.fitBounds(directionsBounds, { padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: true });
-
-        homePage.showTrip();
+        const trip:Trip = {
+          tripDuration:tripDuration,
+          tripDistance:tripDistance,
+          tripIsSimulation:null,
+          tripDestinationAddress:'',
+          userStartedTripFrom:null,
+          tripProgress:0,
+          tripDestination:(mapService.actualRoute as Route).legs[0].steps[(mapService.actualRoute as Route).legs[0].steps.length-1].name
+        }
+        homePage.showTrip(trip);
 
       });
 
@@ -243,7 +262,7 @@ export class MapService {
 
     const self = this;
     map.on('style.load', (event) => {
-      map.setTerrain(undefined);
+      //map.setTerrain(undefined);
 
       self.addAdditionalSourceAndLayer(self.sourcesAndLayers);
       if (self.isStandardMap) {
@@ -253,6 +272,10 @@ export class MapService {
         self.mapbox.setConfigProperty('basemap', 'showTransitLabels', true);
         self.mapbox.setConfigProperty('basemap', 'showRoadLabels', true);
         self.mapbox.setConfigProperty('basemap', 'showPlaceLabels', false);
+        self.mapbox.setConfigProperty('basemap', 'show3dObjects', true);
+        self.mapbox.setConfigProperty('basemap', 'theme', 'faded');
+
+        	
       }
       self.set3D();
       self.mapbox.resize();
@@ -261,82 +284,65 @@ export class MapService {
     }); 
   }
 
-  set3D(){
-    const self = this;
-    this.mapbox.addLayer({
-      id: '3dLocatorPukLayer',
-      type: 'custom',
-      renderingMode: '3d',
-      slot:'top',
-      onAdd: async function (map, mbxContext) {
-        (window as any).setUtils(self.mapbox, self.mapbox.getCanvas().getContext('webgl'));
-        self.tb = (window as any).tb;
-
-         var options = {
-          type: environment.locatorDefault.type,
-          obj: environment.locatorDefault.obj,
-          scale: environment.locatorDefault.scale,
-          units: environment.locatorDefault.units,
-          anchor: environment.locatorDefault.anchor,
-          rotation: environment.locatorDefault.rotation, //rotation to postiion the truck and heading properly
-
-        }
-
-         const added = await self.tb.loadObj(options, function (model:any) {
-          if(!self.carModel){
-            let origin=[0,0];
-            if(self.geoLocationService.getLastCurrentLocation())origin = [self.geoLocationService.getLastCurrentLocation().coords.longitude,self.geoLocationService.getLastCurrentLocation().coords.latitude];
-            self.carModel = model.setCoords(origin);
-            //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
-            self.tb.add(self.carModel);
-          }else{
-            //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
-            self.tb.add(self.carModel);
-          }
-          self.tb.update();
-
-        });
-
-      },
-
-      render: function (gl:any, matrix:any) {
-        self.tb.update();
-        //self.mapbox.triggerRepaint();
-
-      }
-  });
+  setLocator(locator:any){
+    this.current3dUserModel=locator;
+     this.sourceAndLayerManager.setLocator(locator);
   }
 
-  async setLocator(locator:any){
-    const options = locator.options;
-    const self:MapService = this;
-    const origin=this.carModel.coordinates;
-    const rotation = this.carModel.rotation;
-    this.tb.remove(self.carModel);
+  set3D(){
+    this.sourceAndLayerManager.set3D();
+  }
 
-    await this.tb.loadObj(options, function (model:any) {
-      self.carModel = model.setCoords(origin);
-      //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
-      self.tb.add(self.carModel);
-      if(locator.id==='redarrow'){
-        document.body.classList.remove('noCircle');
-      }else{
-        document.body.classList.remove('noCircle');
-        document.body.classList.add('noCircle');
-      }
-    });
-    if(this.carModel){
-      this.carModel.setRotation(rotation);
+  
+  snap3dModel(coords: [number, number],degBasedOnMapNorth:number){
+    let degInvertedOrientation:number = 360-degBasedOnMapNorth;
+    let rad = this.toRad(degInvertedOrientation);
+    let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
+
+   if (this.carModel) {
+
+      this.carModel.setCoords(coords);
+      this.carModel.setRotationFromAxisAngle(zAxis,rad);
+      //this.mapbox.triggerRepaint();
+   }
+  }
+
+  update3DSimulatioModelPosition(map:any, coords:any, degBasedOnMapNorth: number){
+    let degInvertedOrientation:number = 360-degBasedOnMapNorth;
+    let rad = this.toRad(degInvertedOrientation);
+    let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
+
+   if (this.carModelSimulator) {
+
+      this.carModelSimulator.setCoords(coords);
+      this.carModelSimulator.setRotationFromAxisAngle(zAxis,rad);
+      //this.mapbox.triggerRepaint();
+   }
+  }
+
+  snap3dModelOld(coords: [number, number],degBasedOnMapNorth:number){
+    let degInvertedOrientation:number = 360-degBasedOnMapNorth;
+    let rad = this.toRad(degInvertedOrientation);
+    let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
+
+    if (this.carModel) {
+      /*const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
+        coords,
+        0
+      );*/
+      this.carModel.setCoords(coords);
+      this.carModel.setRotationFromAxisAngle(zAxis,rad);
+
+      //this.tb.add(this.carModel);
+      //this.mapbox.triggerRepaint();
     }
-    this.tb.update();
-
   }
 
   updateModelRotation(degBasedOnMapNorth:number){
     let degInvertedOrientation:number = 360-degBasedOnMapNorth;
     let rad = this.toRad(degInvertedOrientation);
     let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
-    //this.carModel.setRotation({ x: 90, y: -90, z: rotationVision });
+   //this.carModel.setRotation({ x: 90, y: -90, z: rotationVision });
     if(this.carModel)
     this.carModel.setRotationFromAxisAngle(zAxis,rad);
     //this.mapbox.triggerRepaint();
@@ -816,25 +822,26 @@ export class MapService {
 
   }
 
-  updateMarkerState(newLocation: [number, number],heading:number): void {
+  updateMarkerState(pos: Position,heading:number, currentStreet?:MapboxGeoJSONFeature): void {
+    const newLocation: [number, number] = [pos.coords.longitude,pos.coords.latitude]; 
     const firstGeolocalizationEvent: boolean = this.isRotating;
     const marker: mapboxgl.Marker = this.getUserMarker();
     const markerVision: mapboxgl.Marker = this.getUserVisionMarker();
 
     if (this.mapbox && marker) {
-      marker.setLngLat([this.sensorService.getSensorLongitude(), this.sensorService.getSensorLatitude()]);
-      markerVision.setLngLat([this.sensorService.getSensorLongitude(), this.sensorService.getSensorLatitude()]);
+      marker.setLngLat(newLocation);
+      markerVision.setLngLat(newLocation);
     }
     const bearing = heading ? heading : this.mapbox.getBearing();
     if (firstGeolocalizationEvent) {
       this.mapEventIsFromTracking = true;
       marker.addTo(this.mapbox)
       markerVision.addTo(this.mapbox);
-      const headingInit: number = this.calculateInitialHeading(new mapboxgl.LngLat(newLocation[0], newLocation[1]));    //   this.userLocationMarkerPrerequisitesOk = true;
+      /*const headingInit: number = this.calculateInitialHeading(new mapboxgl.LngLat(newLocation[0], newLocation[1]));    //   this.userLocationMarkerPrerequisitesOk = true;
       if (headingInit) {
         marker.setRotation(headingInit);
         markerVision.setRotation(headingInit);
-      }
+      }*/
       this.isRotating = false;
       //((window as any).speedService as SpeedService).getSpeedDataFromArround(newLocation);
       this.setupInteractionListeners();
@@ -1056,7 +1063,7 @@ export class MapService {
     ((window as any).mapService as MapService).actualRoute = null;
     ((window as any).mapService as MapService).currentStep = 0;
     ((window as any).mapService as MapService).alreadySpoken = false;
-    ((window as any).tripService as TripService).cancelTrip();
+    //((window as any).tripService as TripService).cancelTrip();
 
   }
 
@@ -1077,7 +1084,94 @@ export class MapService {
     }
   }
 
-  async startTrip(): Promise<void> {
+  add3DModelMarkerSimulator(map:any, origin:any){
+    const self = this;
+    map.addLayer({
+      id: '3dLocatorPukSimulator',
+      type: 'custom',
+      renderingMode: '3d',
+      slot:'top',
+
+      onAdd: async function (map:any, mbxContext:any) {
+        if(!self.tb){
+          self.tb = (window as any).tb;
+        }
+
+          if(self.carModelSimulator){
+            self.tb.remove(self.carModelSimulator);
+          }
+            self.carModelSimulator = self.carModel;
+            self.tb.add(self.carModelSimulator);
+          
+          self.tb.update();
+
+        },
+      render: function (gl:any, matrix:any) {
+        self.tb.update();
+        //self.mapbox.triggerRepaint();
+
+      }
+    });
+  }
+
+  cleanSimulationResources(){
+    this.mapbox.removeLayer('3dLocatorPukSimulator');
+    this.tb.remove(this.carModelSimulator);
+  }
+
+  async startNewSimulationTrip(){
+      if (!this.isTripStarted) {
+        this.cleanRoutePopups();
+        this.popUpDestination?.remove();
+        this.isTripStarted = true;
+        this.mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'none');
+        // Get user's current location
+        const userLocation: Position = this.geoLocationService.getLastCurrentLocation();
+        if (userLocation) {
+          // Get route information
+          const route = ((window as any).mapService as MapService).actualRoute;
+          //console.log("Route:", route);
+          if (route && route.legs && route.legs[0]) {
+            const steps = route.legs[0].steps;
+            // Set initial step index to 0
+            let currentStepIndex = 0;
+            // Speak the instruction associated with the first step
+            this.tripSimulatorService.startSimulation([userLocation.coords.longitude, userLocation.coords.latitude], [this.getDestinationPositionFromRoute(route).coords.longitude,this.getDestinationPositionFromRoute(route).coords.latitude],this.actualRoute, this.getMap());
+
+          }
+        }
+      }
+    }
+
+
+    
+  getDestinationPositionFromRoute(route: any): Position {
+    const legs = route.legs;
+    const lastLeg = legs[legs.length - 1]; // Get the last leg of the route
+    const steps = lastLeg.steps;
+    const lastStep = steps[steps.length - 1]; // Get the last step of the last leg
+  
+    // Extract the destination coordinates from the last step
+    const [longitude, latitude] = lastStep.maneuver.location;
+  
+    // Return a Position object compatible with @capacitor/geolocation
+    const destinationPosition: Position = {
+      coords: {
+        latitude,
+        longitude,
+        accuracy: 0, // You may want to set this if available
+        altitude: null, // Optional, set if available
+        altitudeAccuracy: null, // Optional, set if available
+        heading: null, // Optional, set if available
+        speed: null // Optional, set if available
+      },
+      timestamp: Date.now() // Current timestamp
+    };
+  
+    return destinationPosition;
+  }
+
+  async startTrip(simulation:boolean): Promise<void> {
     if (!this.isTripStarted) {
       this.cleanRoutePopups();
       this.popUpDestination?.remove();
@@ -1094,7 +1188,7 @@ export class MapService {
           // Set initial step index to 0
           let currentStepIndex = 0;
           // Speak the instruction associated with the first step
-          ((window as any).tripService as TripService).startTrip(route);
+          ((window as any).tripService as TripService).startTrip(route,userLocation,simulation);
         }
       }
     }
@@ -1232,151 +1326,11 @@ export class MapService {
   }
 
   async updateBookmarks(){
-    const data:FeatureCollection = {
-      "type": "FeatureCollection",
-      "features": []
-    }
-    const bookmarkService =     (window as any).bookmarkService as BookmarksService;
-    const homeMarker = await bookmarkService.getHomeMarker();
-    if(homeMarker && homeMarker.geometry){
-      const homeMarkerAsGeoJson:any = {
-        "type": "FeatureCollection",
-        "features": [
-          {"type":"Feature",
-          "id":"999999999998",
-          "properties":
-            {"@id":"node/999999999998",
-              "name":"Casa",
-              "label":"Casa",
-              "street":homeMarker.street,
-              "addressNumber":homeMarker.addressNumber,
-              "country":homeMarker.country,
-              "municipality":homeMarker.municipality,
-              "neighborhood":homeMarker.neighborhood,
-              "postalCode":homeMarker.postalCode,
-              "region":homeMarker.region,
-              "subRegion":homeMarker.subRegion
-            },
-            "geometry": {"type":"Point",
-                          "coordinates":[homeMarker.geometry.point[0],homeMarker.geometry.point[1]]
-                        }
-          }
-        ]
-      };
-      (this.mapbox.getSource("homeDataSource") as mapboxgl.GeoJSONSource).setData(homeMarkerAsGeoJson);
-      
-    }else{
-      (this.mapbox.getSource("homeDataSource") as mapboxgl.GeoJSONSource).setData(data);
-
-    }
-    
-    const workMarker = await bookmarkService.getWorkMarker();
-    if(workMarker && workMarker.geometry){
-      const workMarkerAsGeoJson:FeatureCollection = {
-        "type": "FeatureCollection",
-        "features": [
-          {"type":"Feature",
-          "id":"999999999999",
-          "properties":
-            {"@id":"node/999999999999",
-              "name":"Trabajo",
-              "label":"Trabajo",
-              "street":workMarker.street,
-              "addressNumber":workMarker.addressNumber,
-              "country":workMarker.country,
-              "municipality":workMarker.municipality,
-              "neighborhood":workMarker.neighborhood,
-              "postalCode":workMarker.postalCode,
-              "region":workMarker.region,
-              "subRegion":workMarker.subRegion
-            },
-            "geometry": {"type":"Point",
-                          "coordinates":
-                            [workMarker.geometry.point[0],
-                            workMarker.geometry.point[1]]
-                        }
-          }
-        ]
-      };
-      (this.mapbox.getSource("workDataSource") as mapboxgl.GeoJSONSource).setData(workMarkerAsGeoJson);
-    }else{
-
-      (this.mapbox.getSource("workDataSource") as mapboxgl.GeoJSONSource).setData(data);
-
-    }
-    const favouritesMarker = await bookmarkService.getFavoriteMarkers();
-    let index = 0;
-    if(favouritesMarker && favouritesMarker.length>0){
-      const features:any[]=[];
-      favouritesMarker.forEach(fav => {
-       if(fav.geometry){
-        const feature =  {
-          "type":"Feature",
-          "id":"9999999998"+index,
-          "properties":
-            {"@id":"node/999999999999",
-              "name":"Favorito",
-              "label":"Favorito",
-              "street":fav.street,
-              "addressNumber":fav.addressNumber,
-              "country":fav.country,
-              "municipality":fav.municipality,
-              "neighborhood":fav.neighborhood,
-              "postalCode":fav.postalCode,
-              "region":fav.region,
-              "subRegion":fav.subRegion,
-              "favIndex":index
-            },
-            "geometry": {"type":"Point",
-                          "coordinates":
-                            [fav.geometry.point[0],
-                            fav.geometry.point[1]]
-                        }
-          };
-          index++;
-          features.push(feature);
-        }
-  
-          const favouritesMarkerAsGeoJson:FeatureCollection = {
-            "type": "FeatureCollection",
-            "features": features
-          };
-        (this.mapbox.getSource("favouritesDataSource") as mapboxgl.GeoJSONSource).setData(favouritesMarkerAsGeoJson);
-  
-      });
-    }else{
-      (this.mapbox.getSource("favouritesDataSource") as mapboxgl.GeoJSONSource).setData(data);
-
-    }
+    await this.sourceAndLayerManager.updateBookmarks();
   }
 
   createStreetSourceAndLayer(){
-    // Add the source to the Mapbox map
-  this.mapbox.addSource("streetSource", {
-    type: 'geojson',
-    data: {
-      "type": "FeatureCollection",
-      "features": []
-    }
-    });
-
-  // Add the layer to the Mapbox map
-  this.mapbox.addLayer({
-    id: "streetLayer",
-    type: 'line',
-    source: "streetSource",
-    slot:'middle',
-    layout: {
-      'line-join': 'round',
-      'line-cap': 'round',
-      'visibility': 'none'
-    },
-    paint: {
-      'line-color': '#007cbf',
-      'line-width': 4
-    },
-  });
-
+    this.sourceAndLayerManager.createStreetSourceAndLayer();
   }
 
   addBookmarksSourceAndLayer( 
@@ -1387,104 +1341,10 @@ export class MapService {
     imageSize: number,
     layerId: string,
     minZoom: number,
-    maxZoom: number,
+    maxZooam: number,
     bookmarkType:string,
     label:string):void{
-      map.addSource(sourceId, {
-        type: 'geojson',
-        data: {
-          "type": "FeatureCollection",
-          "features": []
-        }
-        });
-    
-      map.loadImage(
-        '/assets/img/map-icons/' + imageFileName,
-        (error, image) => {
-          if (error) throw error;
-          if (image) {
-            if (!map.hasImage(imageName)) map.addImage(imageName, image);
-            map.addLayer(
-              {
-                "id": layerId,
-                "minzoom": minZoom,
-                "maxzoom": maxZoom,
-                "type": "symbol",
-                'paint': {
-                  'text-color': '#ffffff',
-                  'text-halo-color': '#000000',
-                  'text-halo-width': 0.5,
-                  'text-halo-blur': 0.7,
-                  'text-opacity': 1
-                },
-                'layout': {
-                  'icon-image': imageName,
-                  'icon-size': imageSize,
-                  //'icon-allow-overlap': true,
-                  "icon-anchor": 'bottom',
-                  'visibility': 'visible',
-                  'text-field': ['get', "label"],
-                  'text-justify': 'center',
-                  'text-offset': [0, 0.3],
-                  'text-anchor': 'top'
-  
-                  //'icon-rotate': ['get', 'bearing']
-                },
-                //"filter": ["<=", ["distance-from-center"], 0.5],
-  
-                "source": sourceId,
-              });
-            map.on('click', layerId, function (e) {
-              if (e.features && e.features[0] && e.features[0].properties && e.features[0].geometry.type == "Point") {
-                const coordinates = e.features[0].geometry.coordinates.slice();
-                const properties = e.features[0].properties;
-  
-                // Ensure that if the map is zoomed out such that multiple copies of the feature are visible,
-                // the popup appears over the copy being pointed to.
-                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                }
-                const feature = e.features[0];
-                if (!feature.properties || feature.geometry.type != "Point") return;
-                const place: Place = {
-                  label: feature.properties["name"] as string,
-                  addressNumber: "",
-                  country: "",
-                  municipality: "",
-                  neighborhood: "",
-                  postalCode: "",
-                  region: "",
-                  street: "",
-  
-                  geometry: {
-                    point: [
-                      feature.geometry.coordinates[0], // Longitude
-                      feature.geometry.coordinates[1]  // Latitude
-                    ]
-                  }
-                };
-  
-                const self = ((window as any).mapService as MapService);
-              
-                self.selectedBookmarkType = bookmarkType;
-                if(bookmarkType==="favourite"){
-                  self.selectedFavIndex=feature.properties["favIndex"];
-                }
-                
-                //featurePopup.addTo(map);
-                
-                const iconElement = document.querySelector(`[data-id="${feature.id}"]`);
-                if (iconElement) {
-                  iconElement.classList.toggle('highlight-icon');
-                }
-                ((window as any).homePage as HomePage).openBookmarkSavedModal();
-                self.mapbox.flyTo({
-                  center: [coordinates[0], coordinates[1]]
-                });
-              }
-            });
-          }
-        })
+      this.sourceAndLayerManager.addBookmarksSourceAndLayer(map, imageFileName, imageName, sourceId, imageSize, layerId, minZoom, maxZooam, bookmarkType, label);  
     };
 
 
@@ -1564,53 +1424,11 @@ export class MapService {
   }
 
   async hideUserCurrentStreetMaxSpeedWay() {
-    if (this.mapbox.getLayer("maxspeedRenderLayer")) {
-      this.mapbox.setLayoutProperty('maxspeedRenderLayer', "visibility", 'none');
-      this.showingMaxSpeedWayId = null;
-      this.showingMaxSpeedWay = false;
-    }
-    if (this.popUpMaxSpeedWay) {
-      this.popUpMaxSpeedWay.remove();
-      this.popUpMaxSpeedWay = null;
-    }
+    await this.sourceAndLayerManager.hideUserCurrentStreetMaxSpeedWay();
   }
 
   createMaxSpeedWayPopUp(maxSpeed: number, coordinates: number[][]): mapboxgl.Popup {
-    let divider = 2;
-
-    // Convierte la ruta en un objeto GeoJSON
-    const line = turf.lineString(coordinates);
-    // Calcula la longitud total de la línea
-    const lineLength = turf.length(line, { units: 'kilometers' });
-
-    // Encuentra el punto medio
-    const midPoint = turf.along(line, lineLength / divider, { units: 'kilometers' });
-    const popUp = new mapboxgl.Popup({
-      closeOnClick: false,
-      anchor: "top" as mapboxgl.Anchor, // Cast anchor to Anchor type,
-      offset: 10
-      // Cast anchor to Anchor type
-    })
-      .setLngLat(midPoint.geometry.coordinates as [number, number])
-      .setHTML('<div><p> ' + 'MAX: ' + maxSpeed + ' Km/h.</p</div>');
-      this.mapbox.setLayoutProperty('maxspeedRenderLayer', 'visibility', 'visible');
-
-    let className: string = "red";
-    this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#E91E63');
-
-    if (maxSpeed >= 60) {
-      className = "yellow";
-      this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#ffc107');
-    }
-    if (maxSpeed >= 75) {
-      className = "green";
-      this.mapbox.setPaintProperty('maxspeedRenderLayer', 'line-color', '#079421');
-    }
-    popUp.addClassName("maxSpeedWayPopUp");
-
-    popUp.addClassName(className + "PopUp");
-    // Crea un popup y lo añade al mapa en el punto medio
-    return popUp;
+    return this.sourceAndLayerManager.createMaxSpeedWayPopUp(maxSpeed, coordinates);
   }
 
   async showUserCurrentStreetMaxSpeedWay() {
@@ -1618,6 +1436,7 @@ export class MapService {
       this.mapbox.addLayer(
         {
           "id": "maxspeedRenderLayer",
+          "slot": "middle",
           "minzoom": 7,
           "maxzoom": 22,
           "type": "line",
@@ -1669,24 +1488,17 @@ export class MapService {
     linWidth: number,
     lineOpacity: number
   ): void {
-    map.addSource(sourceId, {
-      type: 'vector',
-      url: 'mapbox://' + mapboxTileId
-    });
-    map.addLayer(
-      {
-        "id": layerId,
-        "minzoom": minZoom,
-        "maxzoom": maxZoom,
-        "type": "line",
-        "paint": {
-          "line-color": lineColor,
-          "line-width": linWidth,
-          "line-opacity": lineOpacity
-        },
-        "source": sourceId,
-        "source-layer": sourceLayerId
-      });
+    this.sourceAndLayerManager.addLineTileVectorLayer(map,
+      sourceId,
+      mapboxTileId,
+      layerId,
+      sourceLayerId,
+      minZoom,
+      maxZoom,
+      lineColor,
+      linWidth,
+      lineOpacity
+      );
   }
 
   addSymbolTileVectorLayer(
@@ -1701,38 +1513,19 @@ export class MapService {
     minZoom: number,
     maxZoom: number
   ): void {
-    map.loadImage(
-      '/assets/img/map-icons/' + imageFileName,
-      (error, image) => {
-        if (error) throw error;
-        if (image) {
-          if (!map.hasImage(imageName)) map.addImage(imageName, image);
-          map.addSource(sourceId, {
-            type: 'vector',
-            url: 'mapbox://' + mapboxTileId
-          });
-          map.addLayer(
-            {
-              "id": layerId,
-              "minzoom": minZoom,
-              "maxzoom": maxZoom,
-              "type": "symbol",
-              'layout': {
-                'icon-image': imageName,
-                'icon-size': imageSize,
-                //'icon-allow-overlap': true,
-                "icon-anchor": 'bottom',
-                'visibility': 'visible',
-                //'icon-rotate': ['get', 'bearing']
-              },
-              //"filter": ["<=", ["distance-from-center"], 0.5],
-
-              "source": sourceId,
-              "source-layer": sourceLayerId
-            });
-        }
-      });
-  }
+    this.sourceAndLayerManager.addSymbolTileVectorLayer(map,
+      imageFileName,
+      imageName,
+      sourceId,
+      mapboxTileId,
+      imageSize,
+      layerId,
+      sourceLayerId,
+      minZoom,
+      maxZoom
+      );
+    }
+  
 
 
   addSymbolOSMLayer(
@@ -1748,124 +1541,18 @@ export class MapService {
     categoryName: string,
     category: any
   ): void {
-    map.loadImage(
-      '/assets/img/map-icons/' + imageFileName,
-      (error, image) => {
-        if (error) throw error;
-        if (image) {
-          if (!map.hasImage(imageName)) map.addImage(imageName, image);
-          map.addLayer(
-            {
-              "id": layerId,
-              "minzoom": minZoom,
-              "maxzoom": maxZoom,
-              "type": "symbol",
-              'paint': {
-                'text-color': '#ffffff',
-                'text-halo-color': '#000000',
-                'text-halo-width': 0.5,
-                'text-halo-blur': 0.7,
-                'text-opacity': 1
-              },
-              'layout': {
-                'icon-image': imageName,
-                'icon-size': imageSize,
-                //'icon-allow-overlap': true,
-                "icon-anchor": 'bottom',
-                'visibility': 'visible',
-                'text-field': ['get', labelPropertyIndex],
-                'text-justify': 'center',
-                'text-offset': [0, 0.3],
-                'text-anchor': 'top'
-
-                //'icon-rotate': ['get', 'bearing']
-              },
-              //"filter": ["<=", ["distance-from-center"], 0.5],
-
-              "source": sourceId,
-            });
-          map.on('click', layerId, function (e) {
-            if (e.features && e.features[0] && e.features[0].properties && e.features[0].geometry.type == "Point") {
-              const coordinates = e.features[0].geometry.coordinates.slice();
-              const properties = e.features[0].properties;
-
-              // Ensure that if the map is zoomed out such that multiple copies of the feature are visible,
-              // the popup appears over the copy being pointed to.
-              while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-              }
-              const feature = e.features[0];
-              if (!feature.properties || feature.geometry.type != "Point") return;
-              const place: Place = {
-                label: feature.properties[labelPropertyIndex] as string,
-                addressNumber: "",
-                country: "",
-                municipality: "",
-                neighborhood: "",
-                postalCode: "",
-                region: "",
-                street: "",
-
-                geometry: {
-                  point: [
-                    feature.geometry.coordinates[0], // Longitude
-                    feature.geometry.coordinates[1]  // Latitude
-                  ]
-                }
-              };
-              let topHTML = '<ion-icon class="bookmarkIcon" onclick="window.homePage.addBookmark(\'' + feature.id + '\')" name="star-outline" size="big" color="warning"> </ion-icon>';
-
-              topHTML += '<h6>' + place.label + '</h6>';
-
-              topHTML += '<h7>' + categoryName + '</h7>';
-              const description = Object.keys(properties).map(key => {
-                return `<p>${key}: ${properties[key]}</p>`;
-              }).join('');
-              let innerHtml = topHTML + '<div id="destinationDetails">' + description + '</div>';
-              //innerHtml += '<br><input type="button" id="cancelTripButtonPopUp" value="Cerrar" ></input>';
-              innerHtml += '<div class="flexEqualRow"><ion-icon onclick="window.mapService.closeOSMpopup(\'' + feature.id + '\')" name="close-circle-outline" size="big" color="danger" > </ion-icon>';
-
-              const self = ((window as any).mapService as MapService);
-              //innerHtml += '<input type="button" id="infoButtonPopUp" value="INFO" onclick="window.homePage.openInfoModalOSM(\'' + feature.id + '\')"></input>';
-              innerHtml += '<ion-icon  onclick="window.homePage.openInfoModalOSM(\'' + feature.id + '\')" name="information-circle-outline" size="big" color="secondary" > </ion-icon>';
-
-              if (!self.isTripStarted) {
-                //innerHtml += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta" onclick="window.mapService.setDestinationOSM(\'' + feature.id + '\')"></input>';
-                innerHtml += '<ion-icon  onclick="window.mapService.setDestinationOSM(\'' + feature.id + '\')" name="navigate-circle-outline" size="big" color="success" > </ion-icon>';
-
-              } else {
-                //innerHtml += '<input type="button" id="startTripButtonPopUp" value="Buscar ruta nueva" onclick="window.homePage.setDestinationOSMifAbortCurrent(\'' + feature.id + '\')"></input>';
-                innerHtml += '<ion-icon  onclick="window.homePage.setDestinationOSMifAbortCurrent(\'' + feature.id + '\')" name="navigate-circle-outline" size="big" color="success" > </ion-icon>';
-
-              }
-              innerHtml += '</div>';
-
-
-              const featurePopup = new mapboxgl.Popup({ closeOnClick: true, offset: 0, closeButton: true })
-                .setLngLat(coordinates as mapboxgl.LngLatLike)
-                .setHTML(innerHtml);
-              featurePopup.addClassName('osmFeaturePopUp');
-              if (self.popups.length > 0) {
-                if (self.popups.includes(featurePopup)) self.popups[feature.id as number].remove();
-              }
-              feature.properties['category'] = category;
-              //featurePopup.addTo(map);
-              self.popups[feature.id as number] = featurePopup;
-              self.osmFeatures[feature.id as number] = feature;
-              self.osmPlaces[feature.id as number] = place;
-
-              const iconElement = document.querySelector(`[data-id="${feature.id}"]`);
-              if (iconElement) {
-                iconElement.classList.toggle('highlight-icon');
-              }
-              ((window as any).homePage as HomePage).openOsmModal(feature.id as number);
-              self.mapbox.flyTo({
-                center: [coordinates[0], coordinates[1]]
-              });
-            }
-          });
-        }
-      })
+    
+    this.sourceAndLayerManager.addSymbolOSMLayer(map,
+      imageFileName,
+      imageName,
+      sourceId,
+      imageSize,
+      layerId,
+      minZoom,
+      maxZoom,
+      labelPropertyIndex,
+      categoryName,
+      category);
   };
 
   closeOSMpopup(id: number) {
@@ -2109,7 +1796,7 @@ export class MapService {
 
   }
 
-  private resetMapEventTrackingFlag() {
+  public resetMapEventTrackingFlag() {
     const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 500);
     this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
   }
@@ -2179,102 +1866,16 @@ export class MapService {
     }
   };
 
-
-  //private isAnimating = false; // Flag para controlar si hay una animación en curso
-  private animationQueue: (() => Promise<void>)[] = []; // Cola de animaciones
-  currentMarkerPosition!:{lat:number,lon:number};
-  currentHeading!:number;
-  // Método para actualizar el marcador del usuario con animación
-  async updateUserMarker(snappedPosition:  {
-    coords:
-    {
-      longitude:number,
-      latitude:number,
-      heading:number
-    }
-  } ): Promise<void> {
-    // Añadir la animación a la cola
-    this.enqueueAnimation(() => this.animateMarkerToPosition(snappedPosition));
+  updateMarkerAnd3dModel(position: Position, heading: number){
+    let userMarker=this.getUserMarker();
+    let userMarkerVision = this.getUserVisionMarker();
+    userMarker.setLngLat([position.coords.longitude,position.coords.latitude]).setRotation(heading);
+    userMarkerVision.setLngLat([position.coords.longitude,position.coords.latitude]).setRotation(heading);
+    this.snap3dModel([position.coords.longitude,position.coords.latitude],heading);
   }
 
-  // Añade una animación a la cola y la procesa si no hay animaciones en curso
-  private enqueueAnimation(animation: () => Promise<void>) {
-    this.animationQueue.push(animation);
-    if (!this.isAnimating) {
-      this.processNextAnimation();
-    }
+  public extendGeoService(){
+    return this.geoLocationService;
   }
-
-  // Procesa la siguiente animación en la cola
-   // Método para animar el marcador a la nueva posición y dirección
-  private async animateMarkerToPosition(snappedPosition:  {
-    coords:
-    {
-      longitude:number,
-      latitude:number,
-      heading:number
-    }
-  }  ): Promise<void> {
-    return new Promise<void>((resolve) => {
-      // Configuración de la animación usando requestAnimationFrame
-      const duration = 1000; // Duración de la animación en milisegundos
-      const start = performance.now();
-      const initialPosition = { ...this.currentMarkerPosition };
-      const initialHeading = this.currentHeading;
-
-      const step = (timestamp: number) => {
-        const progress = (timestamp - start) / duration;
-
-        if (progress < 1) {
-          // Interpolación de la posición y dirección
-          const interpolatedPosition = {
-            lat: initialPosition.lat + (snappedPosition.coords.latitude - initialPosition.lat) * progress,
-            lon: initialPosition.lon + (snappedPosition.coords.longitude - initialPosition.lon) * progress,
-          };
-          const interpolatedHeading = initialHeading! + (snappedPosition.coords.heading! - initialHeading!) * progress;
-
-          // Actualiza el marcador con la posición y dirección interpoladas
-          this.updateMarkerOnMap(interpolatedPosition, interpolatedHeading);
-          requestAnimationFrame(step);
-        } else {
-          // Finaliza la animación y resuelve la promesa
-          this.updateMarkerOnMap({lat:snappedPosition.coords.latitude,lon:snappedPosition.coords.longitude}, snappedPosition.coords.heading!);
-          resolve();
-        }
-      };
-
-      requestAnimationFrame(step);
-    });
-  }
-
-  // Actualiza la posición y el heading del marcador en el mapa
-  private updateMarkerOnMap(position: {lat:number,lon:number}, heading: number) {
-    // Aquí va la lógica para actualizar el marcador en el mapa
-    this.currentMarkerPosition = position;
-    this.currentHeading = heading;
-    // Ejemplo de actualización en Mapbox:
-    // this.map.getSource('user-marker').setData(newPosition);
-    // this.map.setLayoutProperty('user-marker', 'icon-rotate', heading);
-  }
-
-  // Ajuste mínimo en el manejo secuencial
-private async processNextAnimation() {
-  if (this.animationQueue.length === 0) return; 
-
-  this.isAnimating = true;
-  const nextAnimation = this.animationQueue.shift();
-
-  if (nextAnimation) {
-    try {
-      await nextAnimation(); // Correcto: se espera la finalización de la animación
-    } catch (error) {
-      console.error('Error en la animación:', error);
-    } finally {
-      this.isAnimating = false;
-      this.processNextAnimation(); // Continua con la siguiente animación en la cola
-    }
-  }
-}
-
 
 }

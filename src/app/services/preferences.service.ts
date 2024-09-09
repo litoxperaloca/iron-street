@@ -2,15 +2,19 @@ import { EventEmitter, Injectable, OnInit } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { TranslateService } from '@ngx-translate/core';
 import { ThemeService } from './theme-service.service';
+import { ConfProperties } from '../models/conf-properties.interface';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PreferencesService implements OnInit{
   languageChanged = new EventEmitter<string>();
+  confChanged = new EventEmitter<ConfProperties>();
 
   private readonly preferencesKey = 'user_preferences';
 
+  
   defaultPreferences: {
     darkTheme: boolean,
     voiceInstructions: boolean,
@@ -35,6 +39,11 @@ export class PreferencesService implements OnInit{
       distanceUnit: 'km'
     };
 
+    async setAudioStatus(audioStatus: boolean):Promise<void>{
+      this.defaultPreferences.voiceInstructions=audioStatus;
+      this.savePreferences(this.defaultPreferences);
+    }
+
   constructor(private translate: TranslateService, private themeService: ThemeService) {
   }
 
@@ -43,18 +52,7 @@ export class PreferencesService implements OnInit{
   }
 
   async restoreSavedPreferences():Promise<void>{
-    const preferences:{
-      darkTheme: boolean,
-      voiceInstructions: boolean,
-      voice: string,
-      voiceId: number,
-      voiceSpeed: number,
-      voiceVolume: number,
-      voiceTone: number,
-      language: string,
-      mapStyle: string,
-      distanceUnit: string
-    } = await this.getPreferences();
+    const preferences = await this.getPreferences();
     if(preferences.language!=this.defaultPreferences.language){
       await this.changeLanguage(preferences.language);
     }
@@ -62,6 +60,8 @@ export class PreferencesService implements OnInit{
       await this.changeTheme(preferences.darkTheme);
     }
     this.defaultPreferences=preferences;
+    
+    this.defaultPreferences.voiceInstructions
   }
 
 
@@ -77,7 +77,8 @@ export class PreferencesService implements OnInit{
     mapStyle: string,
     distanceUnit: string
   }> {
-    const { value } = await Preferences.get({ key: this.preferencesKey });
+    let { value } = await Preferences.get({ key: this.preferencesKey });
+
     return value ? JSON.parse(value) : this.defaultPreferences;
   }
 
@@ -105,7 +106,10 @@ export class PreferencesService implements OnInit{
   }
 
   async loadStoredLanguage() {
-    const { value } = await Preferences.get({ key: 'language' });
+    let { value } = await Preferences.get({ key: 'language' });
+    if(value && value.length>2){
+      value=value.split("-")[0];
+    }
     const language = value || 'es'; // Usa 'es' como idioma predeterminado si no hay valor almacenado
     this.translate.setDefaultLang(language);
     this.translate.use(language);
@@ -114,7 +118,10 @@ export class PreferencesService implements OnInit{
   }
 
   async getLanguage(): Promise<string> {
-    const { value } = await Preferences.get({ key: 'language' });
+    let { value } = await Preferences.get({ key: 'language' });
+    if(value && value.length>2){
+      value=value.split("-")[0];
+    }
     const language = value || 'es'; // Usa 'es' como idioma predeterminado si no hay valor almacenado
     return language;
   }
@@ -127,6 +134,9 @@ export class PreferencesService implements OnInit{
   }
 
   async changeLanguageAndSavePref(lang: string) {
+    if(lang && lang.length>2){
+      lang=lang.split("-")[0];
+    }
     this.translate.setDefaultLang(lang);
     this.translate.use(lang);
     await Preferences.set({ key: 'language', value: lang });
@@ -156,4 +166,41 @@ export class PreferencesService implements OnInit{
       });
     }
   }
+
+
+ // Actualización de los métodos para GPS Settings, Snap Service y Traffic Alert
+  async getGpsSettings(): Promise<any> {
+    const { value } = await Preferences.get({ key: 'gpsSettings' });
+    return value ? JSON.parse(value) : environment.gpsSettings;  // Devolver valor guardado o el valor por defecto del environment
+  }
+
+  async setGpsSettings(settings: any): Promise<void> {
+    await Preferences.set({ key: 'gpsSettings', value: JSON.stringify(settings) });
+    environment.gpsSettings = { ...settings };
+    console.log('gpsSettings Service Config actualizados en environment:', environment.gpsSettings);
+  }
+
+  async getSnapServiceConf(): Promise<any> {
+    const { value } = await Preferences.get({ key: 'snapServiceConf' });
+    return value ? JSON.parse(value) : environment.snapServiceConf;  // Devolver valor guardado o el valor por defecto del environment
+  }
+
+  async setSnapServiceConf(conf: any): Promise<void> {
+    await Preferences.set({ key: 'snapServiceConf', value: JSON.stringify(conf) });
+    environment.snapServiceConf = { ...conf };
+    console.log('Snap Service Config actualizados en environment:', environment.snapServiceConf);
+  }
+
+  async getTrafficAlertServiceConf(): Promise<any> {
+    const { value } = await Preferences.get({ key: 'trafficAlertServiceConf' });
+    return value ? JSON.parse(value) : environment.trafficAlertServiceConf;  // Devolver valor guardado o el valor por defecto del environment
+  }
+
+  async setTrafficAlertServiceConf(conf: any): Promise<void> {
+    await Preferences.set({ key: 'trafficAlertServiceConf', value: JSON.stringify(conf) });
+    environment.trafficAlertServiceConf = { ...conf };
+    console.log('Settings Service Config actualizados en environment:', environment.trafficAlertServiceConf);
+
+  }
+  
 }
