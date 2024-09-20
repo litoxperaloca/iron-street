@@ -54,7 +54,7 @@ export class OsrmService {
         //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
         //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
        // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
-        let url = `https://geov2.ironstreet.com.uy/match`;
+        let url = `https://geo.ironstreet.com.uy/match`;
   
         //let url = `https://api.ironstreet.com.uy/nearest/v1/driving/${userPosition.coords.longitude},${userPosition.coords.latitude}.json`;
         const parms = {
@@ -122,16 +122,21 @@ export class OsrmService {
         uuid=await this.deviceDataService.deviceId();
       }
       console.log(uuid);
+      let coordinatesToSend = [...this.lastestUserLocationsSnaped];
+      coordinatesToSend.push(userPosition);
+      if(coordinatesToSend.length>10){
+        coordinatesToSend.shift();
+      }
       this.lastestUserLocations.push(userPosition);
       if(this.lastestUserLocations.length>10){
         this.lastestUserLocations.shift();
       }
-        let coordinates:string =  this.lastestUserLocations.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
-        let timestamps = this.lastestUserLocations.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
+        let coordinates:string =  coordinatesToSend.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
+        let timestamps = coordinatesToSend.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
         //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
         //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
        // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
-        let url = `https://geov2.ironstreet.com.uy/match`;
+        let url = `https://geo.ironstreet.com.uy/match`;
         let aux = userPosition.coords.speed;
         if(aux==null){
           aux=0;

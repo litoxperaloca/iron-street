@@ -36,7 +36,6 @@
       "resources": {
         "files": [
           "/assets/**",
-
           "/assets/img/**",
           "/assets/img/cars/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",
           "/assets/img/motorbikes/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)",

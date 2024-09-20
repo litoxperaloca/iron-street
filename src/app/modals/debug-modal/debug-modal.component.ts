@@ -30,11 +30,15 @@ export class DebugModalComponent implements OnInit {
   }
 
   getLatitude() {
-    return ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation().coords.latitude;
+    return ((window as any).sensorService as SensorService).latitudeOriginal;
   }
 
   getLongitude() {
-    return ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation().coords.longitude;
+    return ((window as any).sensorService as SensorService).longitudeOriginal;
+  }
+
+  getHeading() {
+    return ((window as any).sensorService as SensorService).headingOriginal;
   }
 
   getSnapedLatitude() {
@@ -46,7 +50,7 @@ export class DebugModalComponent implements OnInit {
   }
 
   getSnapedHeading() {
-    return ((window as any).sensorService as SensorService).getSensorHeadingAbs();
+    return ((window as any).sensorService as SensorService).getSensorHeading();
   }
 
   getCameraLocked() {

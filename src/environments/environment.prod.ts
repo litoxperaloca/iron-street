@@ -488,11 +488,11 @@ export const environment = {
     showUserHeading: true
   },
   gpsSettings:{
-    locationIntervalTimeInMs:800,
+    locationIntervalTimeInMs:600,
     simulationIntervalTimeInMs:200,
     userMarkerAnimationDurationInMs:900,
     positionMaxAge:0,
-    timeOut:3500,
+    timeOut:5000,
     timeBetweenRealAndSimulation: 200,
     timeBeforeStartInMs:400,
     timeRotating:2000

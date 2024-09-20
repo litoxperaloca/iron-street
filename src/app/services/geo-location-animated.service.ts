@@ -285,6 +285,7 @@ export class GeoLocationAnimatedService {
      snapedPos.coords.altitudeAccuracy=positionIsFromUserMovement; //USE ALTITUDE ACCURACY AS USER MOVED (it was useless for this app)
      self.geoLocationService.setLastCurrentPosition(snapedPos);
      self.sensorService.setMatchedPosition(snapedPos,currentFeature,[snapedPos.coords.longitude,snapedPos.coords.latitude]);
+     self.sensorService.setOriginalPosition(position.coords.latitude, position.coords.longitude, position.coords.heading!);
      self.mapService.setStreetFeature(currentFeature);
      self.mapService.setUserCurrentStreet(currentFeature);
      

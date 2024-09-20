@@ -7,6 +7,7 @@ import bearing from '@turf/bearing';
 import { point } from '@turf/helpers';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { MapService } from './map.service';
+import { NumericValueAccessor } from '@ionic/angular';
 
 
 interface SensorData {
@@ -40,6 +41,9 @@ interface SensorData {
   providedIn: 'root'
 })
 export class SensorService {
+  latitudeOriginal:number =  0;
+  longitudeOriginal:number = 0;
+  headingOriginal:number|null= 0;
 
   constructor(private mapService: MapService) { }
 
@@ -176,6 +180,12 @@ export class SensorService {
     this.sensorData.closestStreetFeatureLine = feature;
     this.sensorData.closestPoint = nearestPoint;
     ((window as any).mapService as MapService).updateUserMarkerSnapedPosition(useStreetHeading,userMoved,instantUpdate);
+  }
+
+  setOriginalPosition(lat:number,lon:number,heading:number|null){
+    this.latitudeOriginal=lat;
+    this.longitudeOriginal=lon;
+    this.headingOriginal=heading;
   }
 
   setMatchedPosition(position:Position,feature:any,nearestPoint:any){

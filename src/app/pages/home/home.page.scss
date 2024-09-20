@@ -260,31 +260,46 @@ right: 5px;
 
 .card_stats{
   position: absolute;
-    top: 300px;
-    //border-radius: var(--modal-border-radius);
-    //box-shadow: 0 2px 4px var(--shadow-color);
-    background-color: transparent;
-    color: var(--home-text-color);
-    z-index: 10;
-    right: 0px;
-    width: 67px;
-    height: 300px;
-    margin: 0;
+  top: 190px;
+  background-color: transparent;
+  color: var(--home-text-color);
+  z-index: 10;
+  right: 5px;
+  width: 67px;
+  height: 200px;
+  margin: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .card_stats ion-card-header.kms {
   width: 60px;
-  height: 100px;
+  height: 55px;
   font-size: 16pt;
   color: #fff;
-  padding-top: 57px;
-  padding: 65px 0px 0px 0px;
+  //padding-top: 57px;
+  padding: 40px 0px 0px 0px;
   font-weight: bolder;
   background: url(/assets/img/icons/kms.png);
   background-size: 100% 100%;
-  text-shadow: 1px 1px 8px black;
-  /* text-orientation: upright; */
+  text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000,
+  1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
   text-align: center;
+}
+
+.card_stats ion-card-header.faults{
+  width: 60px;
+  height: 55px;
+  font-size: 16pt;
+  color: #fff;
+  padding-top: 1px;
+  padding-right: 7px;  
+  font-weight: bolder;
+  background: url(/assets/img/icons/alert.png);
+  background-size: 100% 100%;
+  text-shadow: 1px 1px 8px black;
+  text-align: right;
+  margin-top: 15px;
 }
 
 .mapboxgl-user-location-puk-dot:before {

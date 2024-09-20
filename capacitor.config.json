@@ -4,7 +4,7 @@
   "webDir": "www",
   "loggingBehavior": "none",
   "server": {
-    "host":"v2.ironstreet.com.uy",
+    "host":"ironstreet.com.uy",
     "cleartext": false,
     "androidScheme": "https",
      "allowNavigation": [
@@ -14,16 +14,16 @@
       "webDir": "www",
       "loggingBehavior": "none",
       "server": {
-        "host":"v2.ironstreet.com.uy",
+        "host":"ironstreet.com.uy",
         "cleartext": false,
         "androidScheme": "https",
          "allowNavigation": [
           "https://*.ironplatform.com.uy",
           "https://ironplatform.com.uy",
           "https://*.ironstreet.com.uy",
-          "https:/v2.ironstreet.com.uy",
-          "https://apiv2.ironstreet.com.uy",
-          "https://geov2.ironstreet.com.uy",
+          "https:/ironstreet.com.uy",
+          "https://api.ironstreet.com.uy",
+          "https://geo.ironstreet.com.uy",
           "https://*.osm.com",
           "https://*.mapbox.com",
           "https://*.amplifyapp.com",
