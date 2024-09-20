@@ -11,6 +11,9 @@ import { environment } from 'src/environments/environment';
 export class PreferencesService implements OnInit{
   languageChanged = new EventEmitter<string>();
   confChanged = new EventEmitter<ConfProperties>();
+  gpsChanged = new EventEmitter<any>();
+
+
 
   private readonly preferencesKey = 'user_preferences';
 
@@ -176,8 +179,10 @@ export class PreferencesService implements OnInit{
 
   async setGpsSettings(settings: any): Promise<void> {
     await Preferences.set({ key: 'gpsSettings', value: JSON.stringify(settings) });
-    environment.gpsSettings = { ...settings };
+    environment.gpsSettings = settings;
+    console.log(environment);
     console.log('gpsSettings Service Config actualizados en environment:', environment.gpsSettings);
+    this.gpsChanged.emit(settings);
   }
 
   async getSnapServiceConf(): Promise<any> {
@@ -187,8 +192,10 @@ export class PreferencesService implements OnInit{
 
   async setSnapServiceConf(conf: any): Promise<void> {
     await Preferences.set({ key: 'snapServiceConf', value: JSON.stringify(conf) });
-    environment.snapServiceConf = { ...conf };
+    environment.snapServiceConf = conf;
+    console.log(environment);
     console.log('Snap Service Config actualizados en environment:', environment.snapServiceConf);
+    this.gpsChanged.emit(conf);
   }
 
   async getTrafficAlertServiceConf(): Promise<any> {

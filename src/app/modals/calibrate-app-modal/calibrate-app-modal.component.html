@@ -12,16 +12,16 @@
 <ion-content>
   <ion-segment [(ngModel)]="selectedSegment">
 
-    <ion-segment-button  color="success"  value="gps">
-      <ion-label><ion-icon name="locate-outline"></ion-icon>GPS</ion-label>
-    </ion-segment-button">
+    <ion-segment-button    value="gps">
+      <ion-label color="success"><ion-icon name="locate-outline"></ion-icon>GPS</ion-label>
+    </ion-segment-button>
     
-    <ion-segment-button  color="warning"  value="snap">
-      <ion-label><ion-icon name="compass-outline"></ion-icon>SNAP</ion-label>
+    <ion-segment-button    value="snap">
+      <ion-label color="warning"><ion-icon name="compass-outline"></ion-icon>SNAP</ion-label>
     </ion-segment-button>
 
-    <ion-segment-button  color="danger" value="traffic">
-      <ion-label><ion-icon name="warning-outline"></ion-icon>ALERTAS</ion-label>
+    <ion-segment-button   value="traffic">
+      <ion-label color="danger"><ion-icon name="warning-outline"></ion-icon>ALERTAS</ion-label>
     </ion-segment-button>
     
   </ion-segment>
@@ -29,7 +29,7 @@
   <form>
     <!-- GPS Settings Section -->
     <div *ngIf="selectedSegment === 'gps'">
-      <ion-card>
+      <ion-card  *ngIf="!isLoading">
         <ion-card-header>
           <ion-card-title><ion-icon name="locate-outline"></ion-icon> GPS Settings</ion-card-title>
         </ion-card-header>
@@ -40,7 +40,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Tiempo mìnimo lec. gps. (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.locationIntervalTimeInMs"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.locationIntervalTimeInMs}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'locationIntervalTimeInMs', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -51,7 +51,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Tiempo lec. sim. (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.simulationIntervalTimeInMs"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.simulationIntervalTimeInMs}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'simulationIntervalTimeInMs', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -62,7 +62,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Tiempo. animación. (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.userMarkerAnimationDurationInMs"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.userMarkerAnimationDurationInMs}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'userMarkerAnimationDurationInMs', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -73,7 +73,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Lec. expiran tras: (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.positionMaxAge"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.positionMaxAge}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'positionMaxAge', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -84,7 +84,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Espera máx. entre lec. (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.timeOut"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.timeOut}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'timeOut', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -95,7 +95,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Pausa entre Lec. Real / Simular. (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.timeBetweenRealAndSimulation"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.timeBetweenRealAndSimulation}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'timeBetweenRealAndSimulation', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -106,7 +106,7 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Espera post rotación (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.timeBeforeStartInMs"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.timeBeforeStartInMs}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'timeBeforeStartInMs', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -117,7 +117,8 @@
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
             <ion-label>Intro. Rotación. Planetaria: (ms)</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="gpsSettings.timeRotating"></ion-input>
+            <ion-label class="twenty">{{gpsSettings.timeRotating}}</ion-label>
+
             <ion-button slot="end" (click)="increaseValue('gpsSettings', 'timeRotating', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -150,15 +151,104 @@
             <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'maxValidAccuracy', 1)">
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
-            <ion-label>Max Valid Accuracy</ion-label>
-            <ion-input type="number" [(ngModel)]="snapServiceConf.maxValidAccuracy"></ion-input>
+            <ion-label>Margen máximo incertidumbre GPS (metros)</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.maxValidAccuracy}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'maxValidAccuracy', 1)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
           </ion-item>
 
-          <!-- Agrega más campos de configuración de Snap Service siguiendo el mismo patrón -->
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'distanceToConsiderMovementInMeters', 1)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>Distancia mínima para movimiento (metros)</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.distanceToConsiderMovementInMeters}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'distanceToConsiderMovementInMeters', 1)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
 
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'minValidSpeedForMovement', 1)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>Velocidad mínima para movimiento (km)</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.minValidSpeedForMovement}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'minValidSpeedForMovement', 1)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'maxValidHeadingChangeInDeg', 5)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>Rotacion máxima en un sólo cambio (grados)</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.maxValidHeadingChangeInDeg}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'maxValidHeadingChangeInDeg', 5)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'speedThreeholdForHeadingTop', 1)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>Maximo de velocidad para giros (km)</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.speedThreeholdForHeadingTop}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'speedThreeholdForHeadingTop', 1)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'speedThreeholdForHeadingBottom', 1)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>Mínimo de velocidad para giros (km)</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.speedThreeholdForHeadingBottom}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'speedThreeholdForHeadingBottom', 1)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+          
+
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'maxValidHeadingChangeDefault', 5)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>maxValidHeadingChangeDefault</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.maxValidHeadingChangeDefault}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'maxValidHeadingChangeDefault', 5)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'maxValidHeadingChangeInDegForTopSpeedThreehold', 5)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>maxValidHeadingChangeInDegForTopSpeedThreehold</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.maxValidHeadingChangeInDegForTopSpeedThreehold}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'maxValidHeadingChangeInDegForTopSpeedThreehold', 5)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item>
+            <ion-button slot="start" (click)="decreaseValue('snapServiceConf', 'maxValidHeadingChangeInDegForBottomSpeedThreehold', 5)">
+              <ion-icon name="arrow-down-outline"></ion-icon>
+            </ion-button>
+            <ion-label>maxValidHeadingChangeInDegForBottomSpeedThreehold</ion-label>
+            <ion-label class="twenty">{{snapServiceConf.maxValidHeadingChangeInDegForBottomSpeedThreehold}}</ion-label>
+            <ion-button slot="end" (click)="increaseValue('snapServiceConf', 'maxValidHeadingChangeInDegForBottomSpeedThreehold', 5)">
+              <ion-icon name="arrow-up-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+          
+          <!-- Agrega más campos de configuración de Snap Service siguiendo el mismo patrón -->
+-
         </ion-card-content>
       </ion-card>
       <div *ngIf="isLoading">
@@ -180,15 +270,15 @@
         <ion-card-content>
     
           <ion-item>
-            <ion-label class="ion-text-wrap">Speed Camera Alert Duration (ms)</ion-label>
+            <ion-label class="ion-text-wrap">Cámaras de velocidad</ion-label>
           </ion-item>
     
           <ion-item>
             <ion-button slot="start" (click)="decreaseValue('trafficAlertServiceConf.alertsSettings.speedCamera', 'recommendedDuration', 100)">
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
-            <ion-label>Recommended Duration</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="trafficAlertServiceConf.alertsSettings.speedCamera.recommendedDuration"></ion-input>
+            <ion-label>Alerta visual (ms)</ion-label>
+            <ion-label class="twenty">{{trafficAlertServiceConf.alertsSettings.speedCamera.recommendedDuration}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('trafficAlertServiceConf.alertsSettings.speedCamera', 'recommendedDuration', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -198,23 +288,23 @@
             <ion-button slot="start" (click)="decreaseValue('trafficAlertServiceConf.alertsSettings.speedCamera', 'durationForSimulation', 100)">
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
-            <ion-label>Duration for Simulation</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="trafficAlertServiceConf.alertsSettings.speedCamera.durationForSimulation"></ion-input>
+            <ion-label>Alerta visual simulada (ms)</ion-label>
+            <ion-label class="twenty">{{trafficAlertServiceConf.alertsSettings.speedCamera.durationForSimulation}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('trafficAlertServiceConf.alertsSettings.speedCamera', 'durationForSimulation', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
           </ion-item>
     
           <ion-item>
-            <ion-label class="ion-text-wrap">Maneuver Alert Duration (ms)</ion-label>
+            <ion-label class="ion-text-wrap">Maniobras</ion-label>
           </ion-item>
     
           <ion-item>
             <ion-button slot="start" (click)="decreaseValue('trafficAlertServiceConf.alertsSettings.maneuver', 'recommendedDuration', 100)">
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
-            <ion-label>Recommended Duration</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="trafficAlertServiceConf.alertsSettings.maneuver.recommendedDuration"></ion-input>
+            <ion-label>Tiempo en pantalla (ms)</ion-label>
+            <ion-label class="twenty">{{trafficAlertServiceConf.alertsSettings.maneuver.recommendedDuration}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('trafficAlertServiceConf.alertsSettings.maneuver', 'recommendedDuration', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -224,8 +314,8 @@
             <ion-button slot="start" (click)="decreaseValue('trafficAlertServiceConf.alertsSettings.maneuver', 'durationForSimulation', 100)">
               <ion-icon name="arrow-down-outline"></ion-icon>
             </ion-button>
-            <ion-label>Duration for Simulation</ion-label>
-            <ion-input type="number" class="twenty" [(ngModel)]="trafficAlertServiceConf.alertsSettings.maneuver.durationForSimulation"></ion-input>
+            <ion-label>Tiempo en pantalla simuilada (ms)</ion-label>
+            <ion-label class="twenty">{{trafficAlertServiceConf.alertsSettings.maneuver.durationForSimulation}}</ion-label>
             <ion-button slot="end" (click)="increaseValue('trafficAlertServiceConf.alertsSettings.maneuver', 'durationForSimulation', 100)">
               <ion-icon name="arrow-up-outline"></ion-icon>
             </ion-button>
@@ -239,7 +329,7 @@
       </div>
     
       <!-- Botón para guardar Traffic Alert Settings -->
-      <ion-button color="success" expand="full" (click)="saveTrafficAlertSettings()">
+      <ion-button color="success" expand="full" (click)="saveTrafficAlertServiceConf()">
         <ion-icon name="save-outline"></ion-icon> Guardar Traffic Alert Settings
       </ion-button>
     </div>

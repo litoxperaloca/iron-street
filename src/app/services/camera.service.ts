@@ -267,4 +267,44 @@ export class CameraService {
         self.isFlying = false;
       })
     }
+
+    async updateCameraForUserMarkerGeoEventSimulation(position: [number, number], mapBearing: number) {
+      const self = this;
+      self.locked = true;
+      self.isFlying = true;
+      const map = ((window as any).mapService as MapService).getMap();
+      if (!map) {
+        return;
+      }
+      map.flyTo({              
+          duration:200,
+          animate: true,
+          screenSpeed:2,
+          zoom: 17,
+          pitch:55,
+          speed: 2,
+          essential: true,
+          //minZoom: 19,
+          center: position,
+          bearing: mapBearing
+      });
+    /*  map.flyTo(
+        {
+          animate: true,
+          duration: 400,
+          //minZoom: 19,
+          //speed: 1.5,
+          essential: true,
+          //minZoom: 19,
+          center: position,
+          bearing: mapBearing
+        }
+      );*/
+      /*self.locked = false;
+      self.isFlying = false;*/
+      map.once('moveend', () => {
+        self.locked = false;
+        self.isFlying = false;
+      })
+    }
 }

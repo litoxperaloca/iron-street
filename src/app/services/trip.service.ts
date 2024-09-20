@@ -27,6 +27,8 @@ export class TripService {
    lastPositionWasSimulated:boolean=false; 
    tripProgressChanged = new EventEmitter<number>();
    tripStarted = new EventEmitter<Trip>();
+   tripSimulationStarted = new EventEmitter<Trip>();
+
    tripEnded = new EventEmitter<Trip>();
    tripCanceled = new EventEmitter<Trip>();
    tripError = new EventEmitter<Trip>();
@@ -61,32 +63,62 @@ export class TripService {
       tripDestination: this.tripDestination,
       tripDestinationAddress: this.tripDestinationAddress,
       tripIsSimulation:  this.tripIsSimulation,
-      userStartedTripFrom: this.userStartedTripFrom
+      userStartedTripFrom: this.userStartedTripFrom,
+      route:this.route
     }
-    //this.announceManeuver(this.route.legs[0].steps[0]);
-    //this.currentStepIndex=1;  
-
+    this.trip=trip;
     this.lastUserPositionMonitored=initialLocation;
+
     this.tripStarted.emit(trip);
+    this.announceManeuver(this.route.legs[0].steps[0]);
+    this.currentStepIndex=1;  
+  }
+
+  startTripSimulation(route: Route,initialLocation:[number,number]) {
+    this.preannouncedManeuvers.clear();
+    this.announcedManeuvers.clear();
+    this.userIsOnGuidedTrip=false;
+    this.route = route;
+    this.currentStepIndex = 0;
+    this.tripProgress=0.00;
+    this.tripDuration= this.calculateDuration();
+    this.tripDistance = this.calculateTotalDistance();
+    this.tripDestination = this.route.legs[0].steps[this.route.legs[0].steps.length-1].name;
+    this.tripDestinationAddress = this.mapService.destinationAddress;
+    this.tripIsSimulation = true;
+    const trip:Trip = {
+      tripProgress: this.tripProgress,
+      tripDistance: this.tripDistance,
+      tripDuration:  this.tripDuration,
+      tripDestination: this.tripDestination,
+      tripDestinationAddress: this.tripDestinationAddress,
+      tripIsSimulation:  this.tripIsSimulation,
+      userStartedTripFrom: ((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation(),
+      route:this.route
+    }
+    this.trip=trip;
+  
+
+    this.lastUserPositionMonitored=((window as any).geoLocationService as GeoLocationService).getLastCurrentLocation();
+    this.tripSimulationStarted.emit(trip);
+    this.announceManeuver(this.route.legs[0].steps[0]);
+    this.currentStepIndex=1;  
   }
 
   async locationUpdate(tripIsSimulation: boolean,userPosition:Position): Promise<void> {
     if (userPosition && this.lastUserPositionMonitored
-      && userPosition.coords.latitude == this.lastUserPositionMonitored.coords.altitude 
+      && userPosition.coords.latitude == this.lastUserPositionMonitored.coords.latitude 
         && userPosition.coords.longitude == this.lastUserPositionMonitored.coords.longitude) {
       //console.log("No hay cambio de posición");
       return;
     }
-    if(this.lastPositionWasSimulated&&!tripIsSimulation){
-      this.lastPositionWasSimulated=false;
-    }
     this.lastUserPositionMonitored=userPosition;
     const stepCount=this.route!.legs[0].steps.length;
-    if(this.currentStepIndex>0 && this.currentStepIndex<stepCount-1){
+    if(this.currentStepIndex>=0 && this.currentStepIndex<stepCount-1){
       this.updateUserPosition([userPosition.coords.longitude,userPosition.coords.latitude]);
       return;
     }
-    if(this.currentStepIndex>0 && this.currentStepIndex>=stepCount-1){
+    if(this.currentStepIndex>=0 && this.currentStepIndex>=stepCount-1){
       if(this.announcedManeuvers.has(this.currentStepIndex)){
         this.endTrip();
         return;  
@@ -96,8 +128,61 @@ export class TripService {
     }
   }
 
+  async locationUpdateSimulation(userPosition:[number,number]): Promise<void> {
+    const stepCount=this.route!.legs[0].steps.length;
+    if(this.currentStepIndex>=0 && this.currentStepIndex<stepCount-1){
+      this.updateUserPositionSimulation(userPosition);
+      return;
+    }
+    if(this.currentStepIndex==stepCount-1){
+      if(this.announcedManeuvers.has(this.currentStepIndex)){
+        this.endTrip();
+        return;  
+      }
+    }
+    if(this.currentStepIndex>=stepCount){
+        this.endTrip();
+        return;
+    }
+  }
+
   // Actualizar la posición del usuario
   private updateUserPosition(coords: any) {
+    console.log(coords);
+    // Verificar si el usuario está desviado de la ruta
+    const closestStepIndex = this.findClosestStepIndex(coords);
+    const distanceToClosestStep = this.mapboxService.calculateDistance(
+      coords,
+      this.route!.legs[0].steps[closestStepIndex].maneuver.location as [number,number]
+    );
+    let distanceToCurrentStep:number|null=null;
+    if (closestStepIndex > this.currentStepIndex && distanceToClosestStep <= environment.tripserviceConf.stepIntroMinDistance) {
+      this.currentStepIndex = closestStepIndex;
+    } else {
+      distanceToCurrentStep = this.mapboxService.calculateDistance(
+        coords,
+        this.route!.legs[0].steps[this.currentStepIndex].maneuver.location as [number,number]
+      );
+    }
+
+    const currentStep = this.route!.legs[0].steps[this.currentStepIndex];
+    if(!distanceToCurrentStep){
+      distanceToCurrentStep = this.mapboxService.calculateDistance(
+                                coords,
+                                currentStep.maneuver.location as [number,number]
+                              );
+    }
+    this.updateTripProgress(coords,distanceToCurrentStep,this.currentStepIndex);
+    this.preAnnounceManeuver(distanceToCurrentStep, currentStep);
+    if (distanceToCurrentStep < this.getAnnouncementDistance(currentStep.maneuver.type)) {
+      this.announceManeuver(currentStep);
+      this.currentStepIndex++; 
+    }
+  }
+
+  // Actualizar la posición del usuario
+  async updateUserPositionSimulation(coords: any) {
+    console.log(coords);
     // Verificar si el usuario está desviado de la ruta
     const closestStepIndex = this.findClosestStepIndex(coords);
     const distanceToClosestStep = this.mapboxService.calculateDistance(
@@ -113,10 +198,6 @@ export class TripService {
         this.route!.legs[0].steps[this.currentStepIndex].maneuver.location as [number,number]
       );
 
-      if (distanceToCurrentStep > environment.tripserviceConf.deviationThreshold) {
-        //this.recalculateRoute(coords);
-       // return;
-      }
     }
 
     const currentStep = this.route!.legs[0].steps[this.currentStepIndex];
@@ -127,9 +208,9 @@ export class TripService {
                               );
     }
     this.updateTripProgress(coords,distanceToCurrentStep,this.currentStepIndex);
-    this.preAnnounceManeuver(distanceToCurrentStep, currentStep);
+    await this.preAnnounceManeuverSimulation(distanceToCurrentStep, currentStep);
     if (distanceToCurrentStep < this.getAnnouncementDistance(currentStep.maneuver.type)) {
-      this.announceManeuver(currentStep);
+      await this.announceManeuverSimulation(currentStep);
       this.currentStepIndex++; 
     }
   }
@@ -179,6 +260,40 @@ export class TripService {
     }
   }
 
+  async preAnnounceManeuverSimulation(distance: number, step: any) {
+    const maneuverConfig = this.getManeuverConfig(step.maneuver.type);
+    if (maneuverConfig && 
+      maneuverConfig.preAnnounce && 
+      distance < maneuverConfig.preAnnouncementDistance &&       
+      !this.preannouncedManeuvers.has(this.currentStepIndex)
+    ) {
+      let preAnnouncement = maneuverConfig.preAnnouncement
+        .replace('{distance}', Math.round(distance).toString())
+        .replace('{modifier}', step.maneuver.modifier)
+        .replace('{instruction}', step.maneuver.instruction);
+      
+      this.preannouncedManeuvers.add(this.currentStepIndex);
+      await this.trafficAlertService.showAlert(preAnnouncement,"maneuver",this.maneurveIcon(step),true);
+
+    }
+  }
+
+  async announceManeuverSimulation(step: any) {
+    const maneuverConfig = this.getManeuverConfig(step.maneuver.type);
+    if (maneuverConfig && 
+      maneuverConfig.announce &&
+      !this.announcedManeuvers.has(this.currentStepIndex)) {
+        let announcement = maneuverConfig.announcement
+          .replace('{modifier}', step.maneuver.modifier)
+          .replace('{instruction}', step.maneuver.instruction);
+        this.announcedManeuvers.add(this.currentStepIndex);
+        await this.trafficAlertService.showAlert(announcement,"maneuver",this.maneurveIcon(step),true);
+        /*if(step.maneuver.type==="arrive"){
+          this.currentStepIndex = this.route.legs[0].steps.length
+        }*/
+    }
+  }
+
   private getAnnouncementDistance(type: string): number {
     const maneuverConfig = this.getManeuverConfig(type);
     return maneuverConfig ? maneuverConfig.announcementDistance : 50;
@@ -192,9 +307,9 @@ export class TripService {
   // Calcular la distancia restante sumando las distancias de los steps restantes
   private calculateRemainingDistance(coords: [number,number],offset:number,stepIndex:number): number {
     let remainingDistance = offset;
-    if(stepIndex<this.route!.legs[0].steps.length-2){
+    /*if(stepIndex<this.route!.legs[0].steps.length-2){
 
-    }
+    }*/
     for (let i = stepIndex+1; i < this.route!.legs[0].steps.length; i++) {
       /*remainingDistance += this.mapboxService.calculateDistance(
         coords,
@@ -214,13 +329,21 @@ export class TripService {
    //this.tripProgress = (distanceCovered / totalDistance)*100;
 
     this.tripProgress = (distanceCovered / totalDistance);
-    if(lastTripProgress!=this.tripProgress){
+    //if(lastTripProgress!=this.tripProgress){
       this.tripProgressChanged.emit(this.tripProgress);
-    }
+    //}
   }
 
   // Finalizar el viaje y limpiar recursos
   endTrip() {
+    this.route = null;
+    this.currentStepIndex = 0;
+    this.tripProgress = 0;
+    this.lastUserPositionMonitored=null;
+    this.tripDistance = 0;
+    this.preannouncedManeuvers.clear();
+    this.announcedManeuvers.clear();
+    this.userIsOnGuidedTrip=false;
     this.tripEnded.emit(this.trip!);
     //((window as any).homePage as HomePage).cancelTrip(); // Your MapService with cancelTrip method
   }
@@ -248,6 +371,7 @@ export class TripService {
     this.tripDistance = 0;
     this.preannouncedManeuvers.clear();
     this.announcedManeuvers.clear();
+    this.userIsOnGuidedTrip=false;
     this.tripCanceled.emit(
       this.trip!
     );

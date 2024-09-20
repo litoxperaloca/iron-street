@@ -33,6 +33,8 @@ import { MarkerAnimationService } from 'src/app/services/marker-animation.servic
 import { Trip } from 'src/app/models/route.interface';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { PreferencesService } from 'src/app/services/preferences.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -46,6 +48,8 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   currentTrip:Trip|null=null;
   currentMaxSpeed: number = 0;
   currentSpeed: number = 0;
+  currentKm: number = 0;
+  currentFaults: number = 0;
   currentSpeedometerNeedleRotation: number = 60;
   tripDistance: number = 0;
   tripDuration: number = 0;
@@ -95,7 +99,9 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     private mapboxService:MapboxService,
     private osrmService:OsrmService, 
     private markerAnimationService:MarkerAnimationService,
-    private geoLocationAnimatedService: GeoLocationAnimatedService
+    private geoLocationAnimatedService: GeoLocationAnimatedService,
+    private preferencesService:PreferencesService,
+    private router: Router
   ) {
     // Existing constructor code...
     this.isNative = Capacitor.isNativePlatform();
@@ -109,8 +115,11 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   waitAndRenderPage() {
     const timeOut = setTimeout(() => {
       this.mapService.initMap();
-      this.startWatchingPosition();
+      const timeOut2 = setTimeout(() => {      
+        this.startWatchingPosition();
+      },environment.gpsSettings.timeRotating);
     }, environment.gpsSettings.timeBeforeStartInMs);
+    console.log(environment.gpsSettings);
     this.windowService.attachedTimeOut("home", "waitAndRender", timeOut);
   }
 
@@ -122,23 +131,37 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   async startWatchingPosition() {
     const self = this;
     if(self.geoLocationAnimatedService){
-      if(self.simulation){
-        const stop=await self.tripSimulatorService.cancelSimulation();        
-        self.simulation=false;
-      }
-
       let waitTime=setTimeout(async()=>{
         await self.geoLocationAnimatedService!.startWatchingPosition();
-        clearTimeout(waitTime);
+        //clearTimeout(waitTime);
       },environment.gpsSettings.timeBetweenRealAndSimulation);
         
     }
   }
 
   ngOnInit() {
+
   }
 
   private initSubscriptions() {
+
+    this.tripSimulatorService.simulationCanceled
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(ended => {
+        this.tripCanceled(this.currentTrip!);
+          this.simulation=false;
+          //this.simulationFinished()
+          this.mapService.trackingUser=true;
+          this.startWatchingPosition();
+          this.setCameraMode("POV");
+    });
+
+    this.preferencesService.gpsChanged
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(gpsSettings => {
+      this.router.navigateByUrl('/calibrate', { replaceUrl: true });
+    });
+
       this.speedService.speedChanged
         .pipe(takeUntil(this.destroy$))
         .subscribe(speed => {
@@ -149,6 +172,18 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         .pipe(takeUntil(this.destroy$))
         .subscribe(maxSpeed => {
           this.currentMaxSpeed = maxSpeed;
+        });
+
+        this.speedService.kmChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(km => {
+          this.currentKm = km;
+        });
+
+        this.speedService.faultsChanged
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(faults => {
+          this.currentFaults = faults;
         });
   
       this.tripService.tripProgressChanged
@@ -168,6 +203,15 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         .subscribe(trip => {
           this.currentTrip = trip;
           this.showTripProgress(trip);
+          this.setCameraMode("POV");
+        });
+
+        this.tripService.tripSimulationStarted
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(trip => {
+          this.currentTrip = trip;
+          this.showTripProgress(trip);
+          this.setCameraMode("POV");
         });
   
       this.tripService.tripCanceled
@@ -198,6 +242,12 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         .pipe(takeUntil(this.destroy$))
         .subscribe(audio => {
           this.audioOn=audio;
+        });
+
+      this.trafficAlertService.newSpeedExceededAlert
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(alert => {
+          this.showNewSpeedExceededAlert(alert);
         });
     }
 
@@ -265,6 +315,8 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     if(this.currentTrip){
       this.cancelTrip();
     }
+    this.speedService.currentMaxSpeed=0;
+    this.speedService.currentSpeed=0;
     this.positionIndex=0;
     this.snapService.positionIndex=0;
     this.mapService.positionIndex=0;
@@ -312,11 +364,13 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   public simulateTrip() {
 
-    //this.startSimulatingPosition();
+    this.simulation=true;
+    if(this.geoLocationAnimatedService)this.geoLocationAnimatedService.stopWatchingPosition();
     this.mapService.startNewSimulationTrip();
   }
 
   showTripProgress(trip:Trip){
+    this.currentTrip=trip;
     const tripProgressContainer = document.getElementById("tripProgress");
     if (tripProgressContainer) {
       tripProgressContainer.style.display = "block";
@@ -333,23 +387,42 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   }
 
   public tripCanceled(trip:Trip) {
-    let stopSimulatingPosition = false;
+    /*let stopSimulatingPosition = false;
     if (trip.tripIsSimulation) {
        this.resetTripAndPositionsProperties();
        stopSimulatingPosition=true;
-     }
-     this.cancelTripDOMelements();
-     this.mapService.cancelTrip();
-     if(stopSimulatingPosition){
+     }*/
+    if(this.simulation){
+      const tripProgressContainer = document.getElementById("tripProgress");
+      if (tripProgressContainer) {
+        tripProgressContainer.style.display = "none";
+      }
+      const tripDetailsContainer = document.getElementById("tripDetailsContainer");
+      if (tripDetailsContainer) {
+        tripDetailsContainer.style.display = "block";
+      }
+      this.tripProgressIndex=0;
+    }else{
+      this.cancelTripDOMelements();
+      this.mapService.cancelTrip();
+    }
+   
+     /*if(stopSimulatingPosition){
       this.startWatchingPosition();
-     }
+     }*/
      
    }
 
   public cancelTrip() {
-   /*if (this.simulation||this.tripService.trip?.tripIsSimulation) {
-   }*/
-   this.tripService.cancelTrip();
+   if(this.simulation){  
+      this.actionSheetService.askQuestionAorB("¿Desea finalizar la simulación?", "Cerrando el viaje simulado...", "Si, cancelar viaje simulado", "No, continuar viaje simulado y guías").then((result) => {
+        if (result) {
+          this.tripSimulatorService.cancelSimulation();
+        }
+      });
+    } else {
+      this.tripService.cancelTrip();
+    }
 
   }
 
@@ -419,12 +492,12 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
   }
   
   showTrip(trip:Trip): void {
-    this.mapService.setCameraPOVPosition(trip.userStartedTripFrom!);
+    //this.mapService.setCameraPOVPosition(trip.userStartedTripFrom!);
     const tripDetailsContainer = document.getElementById("tripDetailsContainer");
     if (tripDetailsContainer) {
       tripDetailsContainer.style.display = "block";
-      this.tripDistance = parseFloat(Math.round(trip.tripDistance / 1000).toFixed(2));
-      this.tripDuration = parseFloat(Math.round(trip.tripDuration / 60).toFixed(2));
+      this.tripDistance = trip.tripDistance;
+      this.tripDuration = trip.tripDuration;
       this.tripDestination = trip.tripDestination;
       this.tripDestinationAddress = trip.tripDestinationAddress!;
       this.eta = trip.tripDuration;
@@ -442,22 +515,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   tripFinished(trip:Trip) {
     //if (this.geoLocationService.mocking) {
-    if(this.currentTrip?.tripIsSimulation){  
-      this.actionSheetService.askQuestionAorB("¿Desea finalizar la simulación?", "Cerrando el viaje simulado...", "Si, cancelar viaje simulado", "No, continuar viaje simulado y guías").then((result) => {
-        if (result) {
-          this.cancelTrip();
-          //this.geolock();
-          //this.startWatchingPosition();
-        }
-      });
-    } else {
-      this.actionSheetService.askQuestionAorB("Terminar el viaje ahora?", "Cerrar el viaje guiado...", "Si, cancelar viaje", "No, continuar viaje y guías").then((result) => {
-        if (result) {
-          this.cancelTrip();
-        }
-      });
-    }
-
+          this.tripCanceled(trip);
   }
 
   simulationFinished() {
@@ -473,12 +531,14 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   stopTrip() {
     //if (this.geoLocationService.mocking) {
-    if(this.currentTrip?.tripIsSimulation){  
+    if(this.simulation){  
       this.actionSheetService.askQuestionAorB("¿Desea finalizar la simulación?", "Cerrando el viaje simulado...", "Si, cancelar viaje simulado", "No, continuar viaje simulado y guías").then((result) => {
         if (result) {
-          this.cancelTrip();
+          //this.cancelTrip();
+
           //this.geolock();
-          //this.startWatchingPosition();
+          this.tripSimulatorService.cancelSimulation();
+
         }
       });
     } else {
@@ -621,6 +681,27 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         if (tripStepDetails) tripStepDetails.style.display = "none";
       }, alert.recommendedDuration); // Adjust delay as needed
       this.windowService.attachedTimeOut("home", "tripservice", time);
+    }
+  }
+
+  showNewSpeedExceededAlert(alert:{
+    alertText:string, 
+    alertType:string, 
+    alertIconUrl:string,
+    recommendedDuration:number 
+  }){
+    this.triggerSpeedExceededAnimation();
+  }
+
+  triggerSpeedExceededAnimation() {
+    const cardHeader = document.querySelector('#card_left .current');
+    if (cardHeader) {
+      cardHeader.classList.add('speed-exceeded');
+      
+      // Remove the class after the animation completes to allow repeated animations
+      setTimeout(() => {
+        cardHeader.classList.remove('speed-exceeded');
+      }, 2000); // Ajusta el tiempo al mismo valor que el tiempo total de la animación en CSS
     }
   }
 

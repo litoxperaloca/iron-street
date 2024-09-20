@@ -47,18 +47,37 @@ export class MarkerAnimationService {
           if (progress < 1) {
             // Interpolación de la posición y dirección
 
-            const interpolatedHeading:number = initialHeading! + (snappedPosition.coords.heading! - initialHeading!) * progress;
-            const interpolatedPosition:Position = {
-              coords:{
-                latitude: initialPosition.coords.latitude + (snappedPosition.coords.latitude - initialPosition.coords.latitude) * progress,
-                longitude: initialPosition.coords.longitude + (snappedPosition.coords.longitude - initialPosition.coords.longitude) * progress,
-                speed:null,
-                heading:interpolatedHeading,
-                accuracy:snappedPosition.coords.accuracy,
-                altitude:snappedPosition.coords.altitude,
-                altitudeAccuracy:snappedPosition.coords.altitudeAccuracy
+            const interpolatedLatitude = initialPosition.coords.latitude + (snappedPosition.coords.latitude - initialPosition.coords.latitude) * progress;
+            const interpolatedLongitude = initialPosition.coords.longitude + (snappedPosition.coords.longitude - initialPosition.coords.longitude) * progress;
+        
+            // Interpolación del heading (corrección para la rotación en 360 grados)
+            let deltaHeading = snappedPosition.coords.heading! - initialHeading!;
+            
+            // Asegurar que la interpolación ocurra en el camino más corto
+            if (deltaHeading > 180) {
+              deltaHeading -= 360;
+            } else if (deltaHeading < -180) {
+              deltaHeading += 360;
+            }
+        
+            // Calcular el heading interpolado
+            let interpolatedHeading = initialHeading! + deltaHeading * progress;
+        
+            // Normalizar el heading para que esté en el rango [0, 360)
+            interpolatedHeading = (interpolatedHeading + 360) % 360;
+        
+            // Crear la posición interpolada
+            const interpolatedPosition: Position = {
+              coords: {
+                latitude: interpolatedLatitude,
+                longitude: interpolatedLongitude,
+                speed: snappedPosition.coords.speed,
+                heading: interpolatedHeading,
+                accuracy: snappedPosition.coords.accuracy,
+                altitude: snappedPosition.coords.altitude,
+                altitudeAccuracy: snappedPosition.coords.altitudeAccuracy
               },
-              timestamp:snappedPosition.timestamp
+              timestamp: snappedPosition.timestamp
             };
             // Actualiza el marcador con la posición y dirección interpoladas
             this.updateMarkerOnMap(interpolatedPosition, interpolatedHeading);

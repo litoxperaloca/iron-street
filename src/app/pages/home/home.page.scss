@@ -258,6 +258,35 @@ right: 5px;
     margin: 0;
 }
 
+.card_stats{
+  position: absolute;
+    top: 300px;
+    //border-radius: var(--modal-border-radius);
+    //box-shadow: 0 2px 4px var(--shadow-color);
+    background-color: transparent;
+    color: var(--home-text-color);
+    z-index: 10;
+    right: 0px;
+    width: 67px;
+    height: 300px;
+    margin: 0;
+}
+
+.card_stats ion-card-header.kms {
+  width: 60px;
+  height: 100px;
+  font-size: 16pt;
+  color: #fff;
+  padding-top: 57px;
+  padding: 65px 0px 0px 0px;
+  font-weight: bolder;
+  background: url(/assets/img/icons/kms.png);
+  background-size: 100% 100%;
+  text-shadow: 1px 1px 8px black;
+  /* text-orientation: upright; */
+  text-align: center;
+}
+
 .mapboxgl-user-location-puk-dot:before {
     background-color: #079421;
     border-radius: 50%;
@@ -571,3 +600,30 @@ ion-toolbar{
   }
 }
 
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.1);
+  }
+  40% {
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  80% {
+    transform: scale(1.05);
+  }
+}
+
+.speed-exceeded {
+  animation: bounce 1s ease-in-out 2; /* Duración de la animación, 2 bounces */
+  color:rgba(218, 30, 30, 0.897) !important;
+}
+
+#card_left .current.speed-exceeded{
+  color:rgba(218, 30, 30, 0.897) !important;
+
+}

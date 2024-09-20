@@ -74,7 +74,11 @@ const routes: Routes = [
   {
     path: 'profile',
     loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfilePageModule)
+  },  {
+    path: 'calibrate',
+    loadChildren: () => import('./pages/calibrate/calibrate.module').then( m => m.CalibratePageModule)
   }
+
 
 
 

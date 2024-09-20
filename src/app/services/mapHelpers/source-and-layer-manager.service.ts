@@ -87,7 +87,7 @@ export class SourceAndLayerManagerService {
               //'model-color-mix-intensity': 0,
               'model-emissive-strength': 1,
               'model-type':'location-indicator',
-              'model-cast-shadows': true
+              'model-cast-shadows': true as any
           }
       });
       (map.getLayer('modellayer')! as any).scope = '';
@@ -361,6 +361,7 @@ export class SourceAndLayerManagerService {
                 "id": layerId,
                 "minzoom": minZoom,
                 "maxzoom": maxZoom,
+                "slot": "top",
                 "type": "symbol",
                 'paint': {
                   'text-color': '#ffffff',
@@ -457,7 +458,7 @@ export class SourceAndLayerManagerService {
     createMaxSpeedWayPopUp(maxSpeed: number, coordinates: number[][]): mapboxgl.Popup {
       const self = this.mapService;
       const map = ((window as any).mapService as MapService).getMap();
-      let divider = 2;
+      let divider = 1;
   
       // Convierte la ruta en un objeto GeoJSON
       const line = lineString(coordinates);
@@ -468,8 +469,9 @@ export class SourceAndLayerManagerService {
       const midPoint = along(line, lineLength / divider, { units: 'kilometers' });
       const popUp = new mapboxgl.Popup({
         closeOnClick: false,
-        anchor: "top" as mapboxgl.Anchor, // Cast anchor to Anchor type,
-        offset: 10
+        anchor: "bottom-left" as mapboxgl.Anchor, // Cast anchor to Anchor type,
+        offset: 15,
+        closeButton: false
         // Cast anchor to Anchor type
       })
         .setLngLat(midPoint.geometry.coordinates as [number, number])
@@ -504,6 +506,7 @@ export class SourceAndLayerManagerService {
             "minzoom": 7,
             "maxzoom": 22,
             "type": "line",
+            "slot": "middle",
             "paint": {
               "line-color": "red",
               "line-width": 10,
@@ -600,6 +603,7 @@ export class SourceAndLayerManagerService {
                 "minzoom": minZoom,
                 "maxzoom": maxZoom,
                 "type": "symbol",
+                "slot": "middle",
                 'layout': {
                   'icon-image': imageName,
                   'icon-size': imageSize,
@@ -640,7 +644,7 @@ export class SourceAndLayerManagerService {
             map.addLayer(
               {
                 "id": layerId,
-                'slot': 'middle',
+                'slot': 'top',
                 "minzoom": minZoom,
                 "maxzoom": maxZoom,
                 "type": "symbol",

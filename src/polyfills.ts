@@ -22,7 +22,7 @@
   env: { DEBUG: undefined, NODE_ENV: "production" }
 };
 // Required polyfills for Angular and modern browser support
-import 'core-js/stable';                 // ES6+ features
+/*import 'core-js/stable';                 // ES6+ features
 import 'regenerator-runtime/runtime';   // Generator functions and async/await
 import 'whatwg-fetch';                  // Fetch API support
 import 'intersection-observer';         // Intersection Observer for lazy loading
@@ -31,7 +31,7 @@ import 'classlist.js';                  // Element.classList support in IE
 import 'proxy-polyfill/proxy.min.js';   // Proxy support for older browsers
 
 // Cross-fetch for a consistent fetch API in all environments
-import 'cross-fetch/polyfill';
+import 'cross-fetch/polyfill';*/
 /**
  * By default, zone.js will patch all possible macroTask and DomEvents
  * user can disable parts of macroTask/DomEvents patch by setting following flags

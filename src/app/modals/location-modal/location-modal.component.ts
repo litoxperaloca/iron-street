@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { Place } from '@aws-amplify/geo';
+import { Coordinates, Place } from 'src/app/models/route.interface';
 import { ModalController, NavParams } from '@ionic/angular';
 import { HomePage } from 'src/app/pages/home/home.page';
-import { AmazonLocationServiceService } from 'src/app/services/amazon-location-service.service';
 import { BookmarksService } from 'src/app/services/bookmarks.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
 import { ModalService } from '../../services/modal.service';
+import { IronLocationServiceService } from 'src/app/services/iron-location-service.service';
 
 @Component({
   selector: 'app-location-modal',
@@ -37,7 +37,7 @@ export class LocationModalComponent {
     private navParams: NavParams,
     private modalService: ModalService,
     private mapService: MapService,
-    private amazonLocationServiceService: AmazonLocationServiceService,
+    private ironLocationServiceService: IronLocationServiceService,
     private bookmarksService: BookmarksService// Servicio dedicado para operaciones del mapa
   ) {
     if (this.navParams.get('isFinalDestination')) {
@@ -60,12 +60,29 @@ export class LocationModalComponent {
     if (this.coordinatesPressed && this.coordinatesPressed[0] != 0 && this.coordinatesPressed[1] != 0) {
       this.loading = true;
 
-      await this.amazonLocationServiceService.searchByCoordinates(this.coordinatesPressed).then((response: Place | undefined) => {
+      const response = await this.ironLocationServiceService.searchByCoordinates(this.coordinatesPressed);
         //console.log(response);
-        if (response) this.place = response;
+        if (response) {
+          const place = {
+            addressNumber: response.data.address.house_number,
+            country: response.data.address.country,
+            geometry: {
+              point: [response.data.lon as number,response.data.lat as number] as Coordinates
+            },
+            label: response.data.display_name,
+            municipality: response.data.address.state,
+            neighborhood: response.data.address.neighbourhood,
+            postalCode: response.data.address.postcode,
+            region: response.data.address.city,
+            street: response.data.address.road,
+            subRegion: response.data.address.suburb
+          }
+          this.place=place;
+         
+        }
         this.loading = false;
         this.infoLoaded = true;
-      });
+      
     } else {
     }
 

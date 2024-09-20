@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { Place, SearchForSuggestionsResult, SearchForSuggestionsResults } from '@aws-amplify/geo';
+import {Place} from 'src/app/models/route.interface'
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { InfiniteScrollCustomEvent, ModalController, NavParams } from '@ionic/angular';
 import { Feature } from 'geojson';
 import { environment } from 'src/environments/environment';
-import { AmazonLocationServiceService } from '../../services/amazon-location-service.service';
+import { IronLocationServiceService } from '../../services/iron-location-service.service';
+
 import { BookmarksService } from '../../services/bookmarks.service';
 import { GeoLocationService } from '../../services/geo-location.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
@@ -48,10 +49,10 @@ export class SearchModalComponent {
     private navParams: NavParams,
     private modalService: ModalService,
     private mapService: MapService,
-    private amazonLocationServiceService: AmazonLocationServiceService,
     private osmService: OsmService,
     private geoLocationService: GeoLocationService,
-    private bookmarksService: BookmarksService
+    private bookmarksService: BookmarksService, 
+    private ironLocationServiceService: IronLocationServiceService
   ) {
     if (this.navParams.get('isFinalDestination')) {
       this.extraParam = this.navParams.get('extraParam'); // Accessing the passed parameter
@@ -110,12 +111,12 @@ export class SearchModalComponent {
       )*/
       if (searchMpde == "strContains") {
         this.groupedPlaces = {};
-        await this.amazonLocationServiceService.searchByText(this.searchTerm).then((response: Place[] | undefined) => {
-          //console.log(response);
-          if (response) this.suggestions = response;
+        await this.ironLocationServiceService.suggestPlace(this.searchTerm).then((response) => {
+          console.log(response);
+          if (response) this.suggestions = response.data.results;
           this.suggestions.forEach(place => {
             const countryCode: string = place.country;
-            place.country = this.amazonLocationServiceService.getCountryName(countryCode);
+            place.country = this.ironLocationServiceService.getCountryName(countryCode);
             if (!this.groupedPlaces[place.country]) {
               this.groupedPlaces[place.country] = {};
             }
@@ -150,11 +151,6 @@ export class SearchModalComponent {
         this.segmentIsLoading[this.currentSegment] = false;
         //console.log(this.groupedPlaces);
 
-      } else {
-        await this.amazonLocationServiceService.suggestPlace(this.searchTerm).then((response: SearchForSuggestionsResults) => {
-          this.suggestions = response;
-          this.segmentIsLoading[this.currentSegment] = false;
-        });
       }
     } else {
       this.suggestions = [];
@@ -321,14 +317,14 @@ export class SearchModalComponent {
 
   }
 
-  setDestinationFromSuggestion(destination: SearchForSuggestionsResult) {
+  /*setDestinationFromSuggestion(destination: SearchForSuggestionsResult) {
     if (destination.placeId) {
       this.amazonLocationServiceService.searchByPlaceId(destination.placeId).then((place) => {
         if (place) this.mapService.setDestination(place);
         this.dismiss();
       });
     }
-  }
+  }*/
 
   homeMarker: Place | null = null;
   workMarker: Place | null = null;

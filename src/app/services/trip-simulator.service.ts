@@ -4,14 +4,16 @@ import * as turf from '@turf/turf';
 import { MapService } from './map.service';
 import { Position } from '@capacitor/geolocation';
 import { TrafficAlertService } from './traffic-alert-service'; // Importamos el servicio de alertas
+import polyline from '@mapbox/polyline';
+import { TripService } from './trip.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TripSimulatorService{
 
-  simulationCompleted = new EventEmitter<void>();  // Evento emitido cuando la simulación se completa
-  simulationCanceled = new EventEmitter<void>();   // Evento emitido cuando la simulación se cancela
+  simulationCanceled = new EventEmitter<boolean>();   // Evento emitido cuando la simulación se cancela
   private counter = 0;
   private maxSteps = 0;
   private running = false;
@@ -22,9 +24,10 @@ export class TripSimulatorService{
   constructor(private mapService: MapService, private trafficAlertService: TrafficAlertService) {}
 
   // Método para iniciar la simulación
-  startSimulation(origin: [number, number], destination: [number, number], route: any, map: mapboxgl.Map) {
+  async startSimulation(origin: [number, number], destination: [number, number], route: any, map: mapboxgl.Map) {
+    
     const coordinates = this.setRouteCoordinatesFromSelectedRoute(route);
-
+    ((window as any).tripService as TripService).startTripSimulation(route,origin);
     // Creación de un FeatureCollection con una línea que representa la ruta
     const routeFeature = {
       'type': 'FeatureCollection',
@@ -59,7 +62,7 @@ export class TripSimulatorService{
     this.arc = [];
     this.alertedSteps.clear(); // Limpiar los pasos alertados cuando inicia una nueva simulación
 
-    const steps = 500; // Número de pasos para una animación suave
+    const steps = environment.gpsSettings.simulationIntervalTimeInMs; // Número de pasos para una animación suave
 
     // Generar una interpolación de puntos a lo largo de la ruta para suavizar el movimiento
     for (let i = 0; i < lineDistance; i += lineDistance / steps) {
@@ -71,7 +74,7 @@ export class TripSimulatorService{
     routeFeature.features[0].geometry.coordinates = this.arc;
 
     // Inicializar el marcador 3D en la posición inicial
-    ((window as any).mapService as MapService).add3DModelMarkerSimulator(map, origin);
+    await ((window as any).mapService as MapService).add3DModelMarkerSimulator(map, origin);
 
     // Añadimos las fuentes y capas para la ruta y el marcador (punto)
     if (!map.getSource('route')){
@@ -81,36 +84,36 @@ export class TripSimulatorService{
         });
     }
 
-    map.addSource('point', {
-      'type': 'geojson',
-      'data': pointFeature as any
-    });
-
+    if (!map.getSource('point')){
+      map.addSource('point', {
+        'type': 'geojson',
+        'data': pointFeature as any
+      });
+     }
     // Añadir la línea de la ruta al mapa
+    if (!map.getLayer('route')){
+
     map.addLayer({
       'id': 'route',
       'source': 'route',
       'type': 'line',
+      'layout': {'visibility':'none'},
       'paint': {
         'line-width': 3,
         'line-color': '#007cbf'
       }
     });
-
+  }
     // Añadir el punto al mapa, inicialmente en el origen
+    if (!map.getLayer('point')){
     map.addLayer({
       'id': 'point',
       'source': 'point',
       'type': 'symbol',
-      'layout': {
-        'icon-image': 'airport', // Puedes cambiar esto por tu icono personalizado
-        'icon-size': 1.5,
-        'icon-rotate': ['get', 'bearing'],
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true
-      }
+      'layout': {'visibility':'none'}
+
     });
+  }
 
     this.counter = 0;
     this.maxSteps = this.arc.length;
@@ -121,14 +124,14 @@ export class TripSimulatorService{
   }
 
   // Método para animar el punto a lo largo de la ruta
-  private animate(map: mapboxgl.Map, pointFeature: any, route: any, steps: any[]) {
+  private async animate(map: mapboxgl.Map, pointFeature: any, route: any, steps: any[]) {
     if (this.counter < this.maxSteps && this.running) {
       const start = this.arc[this.counter];
       const end = this.arc[this.counter + 1] || start;
 
       // Actualizamos la posición del punto en la ruta
       pointFeature.features[0].geometry.coordinates = start;
-
+      
       // Calculamos el ángulo de rotación para que el marcador siga la ruta
       const bearing = turf.bearing(turf.point(start), turf.point(end));
       pointFeature.features[0].properties.bearing = bearing;
@@ -137,16 +140,17 @@ export class TripSimulatorService{
       (map.getSource('point') as mapboxgl.GeoJSONSource).setData(pointFeature);
 
       // Actualizamos la posición del modelo 3D
-      this.mapService.update3DSimulatioModelPosition(map, start, bearing);
+      ((window as any).mapService as MapService).update3DSimulatioModelPosition(map, start, bearing);
 
       // Comprobamos si estamos cerca del próximo paso y mostramos una alerta
-      this.checkForStepAlert(start, steps);
+      //this.checkForStepAlert(start, steps);
 
       this.counter++;
+      await ((window as any).tripService as TripService).locationUpdateSimulation(start);
       requestAnimationFrame(() => this.animate(map, pointFeature, route, steps));
     } else if (this.counter >= this.maxSteps) {
       // Emitir el evento de simulación completada cuando termine
-      this.simulationCompleted.emit();
+      this.finishSimulation();
     }
   }
 
@@ -161,7 +165,7 @@ export class TripSimulatorService{
       // Si estamos dentro del rango de alerta y no hemos alertado sobre este paso antes
       if (distanceToStep <= this.stepAlertDistance && !this.alertedSteps.has(stepKey)) {
         // Invocar la alerta usando el servicio de tráfico
-        await this.trafficAlertService.showAlert(step.maneuver.instruction, 'navigation', 'iconUrl', true);
+        await ((window as any).trafficAlertService as TrafficAlertService).showAlert(step.maneuver.instruction, 'navigation', 'iconUrl', true);
         
         // Marcar este step como alertado
         this.alertedSteps.add(stepKey);
@@ -170,20 +174,37 @@ export class TripSimulatorService{
     }
   }
 
+  finishSimulation(){
+    this.running = false;
+    this.counter = 0;
+    this.arc = [];
+    this.alertedSteps.clear(); // Limpiar la lista de pasos alertados
+    ((window as any).mapService as MapService).getMap().removeLayer('route');
+    ((window as any).mapService as MapService).getMap().removeLayer('point');
+    ((window as any).mapService as MapService).tb.remove(((window as any).mapService as MapService).carModelSimulator);
+    ((window as any).mapService as MapService).tb.update();
+    this.simulationCanceled.emit(true);  // Emitir el evento cuando la simulación es cancelada
+  }
   // Método para cancelar la simulación
   cancelSimulation() {
     this.running = false;
     this.counter = 0;
     this.arc = [];
     this.alertedSteps.clear(); // Limpiar la lista de pasos alertados
-    this.simulationCanceled.emit();  // Emitir el evento cuando la simulación es cancelada
+    ((window as any).mapService as MapService).getMap().removeLayer('route');
+    ((window as any).mapService as MapService).getMap().removeLayer('point');
+    ((window as any).mapService as MapService).tb.remove(((window as any).mapService as MapService).carModelSimulator);
+    ((window as any).mapService as MapService).tb.update();
+    this.simulationCanceled.emit(false);  // Emitir el evento cuando la simulación es cancelada
   }
 
   // Método auxiliar para transformar la ruta en un array de coordenadas
   setRouteCoordinatesFromSelectedRoute(route: any): [number, number][] {
-    return route.legs.reduce((coords: [number, number][], leg: any) => {
+    /*return route.legs.reduce((coords: [number, number][], leg: any) => {
       return [...coords, ...leg.steps.map((step: any) => step.geometry.coordinates).flat()];
-    }, []);
+    }, []);*/
+    const coords = polyline.decode(route.geometry).map(coord => [coord[1], coord[0]]);
+    return (coords as any);
   }
 
   getDestinationPositionFromRoute(route: any): Position {

@@ -14,7 +14,7 @@ import { WindowService } from "./window.service";
 
 //import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 //import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-import { Place, PlaceGeometry } from '@aws-amplify/geo';
+import { Place, PlaceGeometry } from 'src/app/models/route.interface';
 import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
@@ -24,6 +24,7 @@ import { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import { Trip,Route } from '../models/route.interface';
 import { SourceAndLayerManagerService } from './mapHelpers/source-and-layer-manager.service';
 import { TripSimulatorService } from './trip-simulator.service';
+import { GeoLocationAnimatedService } from './geo-location-animated.service';
 @Injectable({
   providedIn: 'root'
 })
@@ -120,7 +121,23 @@ export class MapService {
       antialias:environment.mapboxMapConfig.antialias
     });
 
+    /*const geoControl = new mapboxgl.GeolocateControl({
+      positionOptions: {
+          enableHighAccuracy: true
+      },
+      // When active the map will receive updates to the device's location as it changes.
+      trackUserLocation: true,
+      // Draw an arrow next to the location dot to indicate which direction the device is heading.
+      showUserHeading: true
+  });*/
+ /* geoControl.on('geolocate', (event) => {
+        console.log('A geolocate event has occurred.', event);
+    });
 
+    map.addControl(
+      geoControl,
+      'bottom-right'
+    );*/
 
 
     const MapboxDirections: any = require('@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions');
@@ -157,7 +174,7 @@ export class MapService {
         mapService.cleanRoutePopups();
 
         const setMainRouteStyle = () => {
-          mapService.mapbox.setPaintProperty('directions-route-line','line-occlusion-opacity',0.5);
+          mapService.mapbox.setPaintProperty('directions-route-line','line-occlusion-opacity',0.2);
           mapService.mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 2);
           mapService.mapbox.setPaintProperty('directions-route-line', 'line-width', 12);
           mapService.mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
@@ -168,12 +185,13 @@ export class MapService {
 
           mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-opacity', 0.2);
           mapService.mapbox.setLayoutProperty('directions-origin-point', 'visibility', 'none');
+          mapService.mapbox.setLayoutProperty('directions-destination-point', 'visibility', 'none');
 
           mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-opacity', 0.2);
         };
 
         const setAltRouteStyle = () => {
-          mapService.mapbox.setPaintProperty('directions-route-line-alt','line-occlusion-opacity',0.5);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt','line-occlusion-opacity',0.2);
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 1);
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 7);
           mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
@@ -229,13 +247,14 @@ export class MapService {
 
         const center = directionsBounds.getCenter();
         const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
-        this.mapbox.fitBounds(directionsBounds, { padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: true });
+        this.mapbox.fitBounds(directionsBounds, {essential:true, padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: true });
         const trip:Trip = {
+          route:(mapService.actualRoute as Route),
           tripDuration:tripDuration,
           tripDistance:tripDistance,
-          tripIsSimulation:null,
+          tripIsSimulation:false,
           tripDestinationAddress:'',
-          userStartedTripFrom:null,
+          userStartedTripFrom:mapService.geoLocationService.getLastCurrentLocation(),
           tripProgress:0,
           tripDestination:(mapService.actualRoute as Route).legs[0].steps[(mapService.actualRoute as Route).legs[0].steps.length-1].name
         }
@@ -262,18 +281,18 @@ export class MapService {
 
     const self = this;
     map.on('style.load', (event) => {
-      //map.setTerrain(undefined);
+      map.setTerrain(undefined);
 
       self.addAdditionalSourceAndLayer(self.sourcesAndLayers);
       if (self.isStandardMap) {
-        const defaultLightPreset = this.light;
+        const defaultLightPreset = this.light||'dusk';
         self.mapbox.setConfigProperty('basemap', 'lightPreset', defaultLightPreset);
         self.mapbox.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
         self.mapbox.setConfigProperty('basemap', 'showTransitLabels', true);
         self.mapbox.setConfigProperty('basemap', 'showRoadLabels', true);
         self.mapbox.setConfigProperty('basemap', 'showPlaceLabels', false);
         self.mapbox.setConfigProperty('basemap', 'show3dObjects', true);
-        self.mapbox.setConfigProperty('basemap', 'theme', 'faded');
+        //self.mapbox.setConfigProperty('basemap', 'theme', 'faded');
 
         	
       }
@@ -307,7 +326,7 @@ export class MapService {
    }
   }
 
-  update3DSimulatioModelPosition(map:any, coords:any, degBasedOnMapNorth: number){
+  public update3DSimulatioModelPosition(map:any, coords:any, degBasedOnMapNorth: number){
     let degInvertedOrientation:number = 360-degBasedOnMapNorth;
     let rad = this.toRad(degInvertedOrientation);
     let zAxis = new (window as any).THREE.Vector3(0, 0, 1);
@@ -317,6 +336,11 @@ export class MapService {
       this.carModelSimulator.setCoords(coords);
       this.carModelSimulator.setRotationFromAxisAngle(zAxis,rad);
       //this.mapbox.triggerRepaint();
+      this.mapEventIsFromTracking = true;
+      ((window as any).cameraService as CameraService).updateCameraForUserMarkerGeoEventSimulation(coords, degBasedOnMapNorth);
+      const timeOut: any = setTimeout(() => this.mapEventIsFromTracking = false, 1000); // Reset after a delay to ensure event is finished
+      this.windowService.attachedTimeOut("home", "mapService_unflagEventIsFromTracking", timeOut);
+
    }
   }
 
@@ -1083,54 +1107,77 @@ export class MapService {
       this.sourcesAndLayers = { sources: { directions: null, userMarkerSource: null }, layers: [] };
     }
   }
-
-  add3DModelMarkerSimulator(map:any, origin:any){
+async add3DModelMarkerSimulator(map:any, origin:any){
     const self = this;
-    map.addLayer({
-      id: '3dLocatorPukSimulator',
-      type: 'custom',
-      renderingMode: '3d',
-      slot:'top',
-
-      onAdd: async function (map:any, mbxContext:any) {
-        if(!self.tb){
-          self.tb = (window as any).tb;
-        }
-
+    /*if(!map.getLayer('3dLocatorPukSimulator')){
+      map.addLayer({
+        id: '3dLocatorPukSimulator',
+        type: 'custom',
+        renderingMode: '3d',
+        slot:'top',
+  
+        onAdd: async function (map:any, mbxContext:any) {
+          if(!self.tb){
+            self.tb = (window as any).tb;
+ }*/      var options = {
+            type: environment.locatorDefault.type,
+            obj: environment.locatorDefault.obj,
+            scale: environment.locatorDefault.scale,
+            units: environment.locatorDefault.units,
+            anchor: environment.locatorDefault.anchor,
+            rotation: environment.locatorDefault.rotation, //rotation to postiion the truck and heading properly
+          }     
           if(self.carModelSimulator){
             self.tb.remove(self.carModelSimulator);
           }
-            self.carModelSimulator = self.carModel;
-            self.tb.add(self.carModelSimulator);
-          
+          self.carModelSimulator=null;
+
+            const added = await self.tb.loadObj(options, function (model:any) {
+              if(!self.carModelSimulator){
+                let origin=[0,0];
+                if(self.extendGeoService().getLastCurrentLocation())origin = [self.extendGeoService().getLastCurrentLocation().coords.longitude,self.extendGeoService().getLastCurrentLocation().coords.latitude];
+                self.carModelSimulator = model.setCoords(origin);
+                //self.carModel.addEventListener('ObjectChanged', self.onModelChanged, false);
+                self.tb.add(self.carModelSimulator);
+              }else{
+
+              }
+              self.tb.update();
+    
+            });
+
+
+            
+           //self.tb.update();
+  /*
+          },
+        render: function (gl:any, matrix:any) {
           self.tb.update();
-
-        },
-      render: function (gl:any, matrix:any) {
-        self.tb.update();
-        //self.mapbox.triggerRepaint();
-
-      }
-    });
+          //self.mapbox.triggerRepaint();
+  
+        }
+      });
+    }
+    */
   }
 
   cleanSimulationResources(){
-    this.mapbox.removeLayer('3dLocatorPukSimulator');
+    //this.mapbox.removeLayer('3dLocatorPukSimulator');
     this.tb.remove(this.carModelSimulator);
   }
 
   async startNewSimulationTrip(){
-      if (!this.isTripStarted) {
+      //if (!this.isTripStarted) {
         this.cleanRoutePopups();
         this.popUpDestination?.remove();
-        this.isTripStarted = true;
+        //this.isTripStarted = true;
         this.mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'none');
         // Get user's current location
         const userLocation: Position = this.geoLocationService.getLastCurrentLocation();
         if (userLocation) {
           // Get route information
           const route = ((window as any).mapService as MapService).actualRoute;
-          //console.log("Route:", route);
+          console.log("Route:", route);
           if (route && route.legs && route.legs[0]) {
             const steps = route.legs[0].steps;
             // Set initial step index to 0
@@ -1140,7 +1187,7 @@ export class MapService {
 
           }
         }
-      }
+      //}
     }
 
 
@@ -1347,8 +1394,88 @@ export class MapService {
       this.sourceAndLayerManager.addBookmarksSourceAndLayer(map, imageFileName, imageName, sourceId, imageSize, layerId, minZoom, maxZooam, bookmarkType, label);  
     };
 
+    getOSMStreetHeading(street: mapboxgl.MapboxGeoJSONFeature): number {
+      let  previousUserLocation: [number, number] | null = null;
+      if(((window as any).GeoLocationAnimatedService as GeoLocationAnimatedService).preLastPosition){
+        previousUserLocation= [((window as any).GeoLocationAnimatedService as GeoLocationAnimatedService).preLastPosition!.coords.longitude,((window as any).GeoLocationAnimatedService as GeoLocationAnimatedService).preLastPosition!.coords.latitude];;
 
-  getOSMStreetHeading(street: mapboxgl.MapboxGeoJSONFeature): number {
+      }
+      let  currentUserLocation: [number, number] = [((window as any).GeoLocationAnimatedService as GeoLocationAnimatedService).lastPosition!.coords.longitude,((window as any).GeoLocationAnimatedService as GeoLocationAnimatedService).lastPosition!.coords.latitude];
+      // Reiniciar el estado antes de cada cálculo
+      this.userCurrentStreetHeadingNotFound = false;
+    
+      // Validar las propiedades de la calle y su geometría
+      if (!street.properties || street.geometry.type !== "LineString") {
+        this.userCurrentStreetHeadingNotFound = true;
+        return 0;
+      }
+    
+      // Obtener la propiedad "oneway"
+      const oneway = street.properties["oneway"];
+      const coordinates = street.geometry.coordinates;
+    
+      // Asegurarse de que la línea tenga al menos dos puntos
+      if (coordinates.length < 2) {
+        this.userCurrentStreetHeadingNotFound = true;
+        return 0;
+      }
+    
+      // Manejo de calles unidireccionales
+      if (oneway && oneway !== 'no' && oneway !== 'false') {
+        // Si "oneway" es '-1', invierte la dirección de los puntos
+        const [start, end] = oneway === '-1' ? [coordinates[1], coordinates[0]] : [coordinates[0], coordinates[1]];
+        const coordsFrom = new mapboxgl.LngLat(start[0], start[1]);
+        const coordsTo = new mapboxgl.LngLat(end[0], end[1]);
+        return turf.bearing(
+          turf.point([coordsFrom.lng, coordsFrom.lat]),
+          turf.point([coordsTo.lng, coordsTo.lat])
+        );
+      }
+    
+      // Manejo de calles de doble sentido
+      if (!oneway || oneway === 'no' || oneway === 'false') {
+        // Comparar la ubicación anterior y actual del usuario para determinar el sentido correcto
+        const [start, end] = [coordinates[0], coordinates[1]];
+        const coordsFrom = new mapboxgl.LngLat(start[0], start[1]);
+        const coordsTo = new mapboxgl.LngLat(end[0], end[1]);
+    
+        // Calcular los bearings para ambos sentidos de la calle
+        const bearingForward = turf.bearing(
+          turf.point([coordsFrom.lng, coordsFrom.lat]),
+          turf.point([coordsTo.lng, coordsTo.lat])
+        );
+    
+        const bearingBackward = turf.bearing(
+          turf.point([coordsTo.lng, coordsTo.lat]),
+          turf.point([coordsFrom.lng, coordsFrom.lat])
+        );
+    
+        // Si no hay ubicación anterior, devolver el bearing "forward" como predeterminado
+        if (!previousUserLocation) {
+          return bearingForward;
+        }
+    
+        // Calcular el bearing entre la ubicación anterior del usuario y la actual
+        const userBearing = turf.bearing(
+          turf.point(previousUserLocation),
+          turf.point(currentUserLocation)
+        );
+    
+        // Calcular la diferencia absoluta entre los bearings del usuario y la calle
+        const diffForward = Math.abs(turf.helpers.bearingToAzimuth(bearingForward) - turf.helpers.bearingToAzimuth(userBearing));
+        const diffBackward = Math.abs(turf.helpers.bearingToAzimuth(bearingBackward) - turf.helpers.bearingToAzimuth(userBearing));
+    
+        // Seleccionar el sentido de la calle con la menor diferencia de bearing
+        return diffForward < diffBackward ? bearingForward : bearingBackward;
+      }
+    
+      // Si no se pudo determinar la dirección
+      this.userCurrentStreetHeadingNotFound = true;
+      return 0;
+    }
+
+
+  getOSMStreetHeadingOld(street: mapboxgl.MapboxGeoJSONFeature): number {
     // Reiniciar el estado antes de cada cálculo
     this.userCurrentStreetHeadingNotFound = false;
 

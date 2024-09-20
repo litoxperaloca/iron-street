@@ -36,6 +36,12 @@ export class TrafficAlertService {
                       alertIconUrl:string,
                       recommendedDuration:number 
                  }>();
+  newSpeedExceededAlert = new EventEmitter<{
+      alertText:string, 
+      alertType:string, 
+      alertIconUrl:string,
+      recommendedDuration:number 
+  }>();
 
   constructor(
     private voiceService: VoiceService,
@@ -48,13 +54,17 @@ export class TrafficAlertService {
 
   async showAlert(alertText:string, alertType:string, alertIconUrl:string, speakAlert:boolean){
     if(alertType === "maneuver"){
-      const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.speedCamera.recommendedDuration;
+      const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.maneuver.recommendedDuration;
       this.newSpeedCamaraAlert.emit({alertText,alertType,alertIconUrl,recommendedDuration});
      
     }
     if(alertType === "speedCamera"){
       const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.speedCamera.recommendedDuration;
       this.newSpeedCamaraAlert.emit({alertText,alertType,alertIconUrl,recommendedDuration});
+    }
+    if(alertType === "speedExceeded"){
+      const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.speedExceeded.recommendedDuration;
+      this.newSpeedExceededAlert.emit({alertText,alertType,alertIconUrl,recommendedDuration});
     }
     if(speakAlert){
       const voiceInstructions = alertText;

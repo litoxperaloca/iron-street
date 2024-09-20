@@ -5,12 +5,19 @@ import { Device, DeviceId } from '@capacitor/device';
   providedIn: 'root'
 })
 export class DeviceDataService {
-
-  constructor() { }
+  public uuid:DeviceId|null=null;
+  constructor() {
+   }
 
   async deviceId():Promise<DeviceId>{
-    const id = await Device.getId();
-    return id;
+    if(this.uuid){
+      return this.uuid;
+    }else{
+      const id = await Device.getId();
+      this.uuid=id;
+      return id;
+    }
+    
   }
 
   async deviceInfo(){

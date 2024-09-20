@@ -6,11 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'www',
   loggingBehavior: 'none',
   server: {
-    hostname: 'ironstreet.com.uy',
+    hostname: 'v2.ironstreet.com.uy',
     cleartext: false,  // Enforce HTTPS, disallow HTTP to improve security
     androidScheme: 'https',
     allowNavigation: [
       'https://*.ironplatform.com.uy',
+      'https://*.v2.ironstreet.com.uy',
       'https://*.ironstreet.com.uy',
       'https://*.osm.com',
       'https://*.mapbox.com',
@@ -23,8 +24,8 @@ const config: CapacitorConfig = {
       "https://*.firebaseio.com",
       "https://firebasehosting.googleapis.com",
       "https://*.web.app",
-      "https://api.ironstreet.com.uy",
-      "https://geo.ironstreet.com.uy",
+      "https://apiv2.ironstreet.com.uy",
+      "https://geov2.ironstreet.com.uy",
 
 
       // Mapbox URLs

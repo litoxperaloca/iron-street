@@ -1,5 +1,24 @@
 import { Position } from "@capacitor/geolocation";
 
+export type Longitude = number;
+export type Latitude = number;
+export type Coordinates = [Longitude, Latitude];
+export interface PlaceGeometry {
+  point: Coordinates;
+}
+export interface Place {
+  addressNumber?: string;
+  country?: string;
+  geometry: PlaceGeometry | undefined;
+  label?: string;
+  municipality?: string;
+  neighborhood?: string;
+  postalCode?: string;
+  region?: string;
+  street?: string;
+  subRegion?: string;
+}
+
 export interface Route {
     weight_typical: number;
     duration_typical: number;
@@ -83,4 +102,5 @@ export interface Route {
     tripDestinationAddress:string|null;
     tripIsSimulation:boolean|null;
     userStartedTripFrom:Position|null;
+    route:Route|null;
   }

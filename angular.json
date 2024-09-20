@@ -37,8 +37,16 @@
               "src/manifest.webmanifest",
               "src/assets"
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": [],
+            "styles": [
+              "src/global.scss", 
+              "src/theme/variables.scss", 
+              "src/assets/utils/mapbox/mapbox-gl.css",
+              "src/assets/utils/mapbox/mapbox-gl-directions.css",
+              "src/assets/utils/threebox/threebox.css"
+            ],
+            "scripts": [              
+              "src/assets/utils/threebox/threebox.js"
+            ],
             "optimization": true,
             "sourceMap": false,
             "namedChunks": true,

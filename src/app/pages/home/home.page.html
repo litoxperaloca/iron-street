@@ -61,6 +61,18 @@
       </ion-card-header>
     </ion-card>
 
+    <ion-card class="card_stats" id="card_stats">
+      <ion-card-header class="reward">
+        1244
+      </ion-card-header>
+      <ion-card-header class="kms">
+        {{currentKm}}
+      </ion-card-header>
+      <ion-card-header class="faults">
+        {{currentFaults}}
+      </ion-card-header>
+    </ion-card>
+
     <div id="geolocating">
       <h4>{{ 'buscando_ubicación...' | translate }}</h4>
       <ion-spinner name="crescent"></ion-spinner>
@@ -104,14 +116,12 @@
         <ion-fab-button *ngIf="!audioOn" color="light" (click)="toggleAudio()">
           <ion-icon color="warning" name="volume-mute-outline"></ion-icon>
         </ion-fab-button>
-
         <ion-fab-button color="light" (click)="openModal('CalibrateApp')">
           <ion-icon color="success" name="car-outline"></ion-icon>
         </ion-fab-button>
         <ion-fab-button color="light" (click)="openModal('Debug')">
           <ion-icon color="success" name="bug-outline"></ion-icon>
         </ion-fab-button>
-
       </ion-fab>
     </div>
 </div>

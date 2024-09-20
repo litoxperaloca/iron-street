@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { IronLocationServiceService } from './services/iron-location-service.service';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { Amplify } from 'aws-amplify';
+//import { Amplify } from 'aws-amplify';
 import { UserMarkerSettingsModalComponent } from './modals/user-marker-settings-modal/user-marker-settings-modal.component';
 import { MapboxService } from './services/mapbox.service';
 import { TrafficAlertService } from './services/traffic-alert-service';
@@ -32,7 +33,7 @@ import { OsmService } from 'src/app/services/osm.service';
 import { SearchService } from 'src/app/services/search.service';
 import { SpeedService } from 'src/app/services/speed.service';
 import { TripService } from 'src/app/services/trip.service';
-import awsconfig from '../aws-exports';
+//import awsconfig from '../aws-exports';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { GeoLocationMockService } from './mocks/geo-location-mock.service';
@@ -64,7 +65,7 @@ import { WordpressService } from './services/wordpress-service.service';
 import { SourceAndLayerManagerService } from './services/mapHelpers/source-and-layer-manager.service';
 import { CalibrateAppModalComponent } from './modals/calibrate-app-modal/calibrate-app-modal.component';
 
-Amplify.configure(awsconfig);
+//Amplify.configure(awsconfig);
 
 // Función para crear un loader de traducción
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
@@ -154,7 +155,9 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       GeoLocationAnimatedService,
       MarkerAnimationService,
       CookiesService, 
-      DeviceDataService
+      DeviceDataService,
+      IronLocationServiceService
+      
     ],
   bootstrap: [AppComponent],
 })

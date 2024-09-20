@@ -190,10 +190,10 @@ ion-list.ios.list-ios.hydrated, ion-list.md.list-md.hydrated, ion-list{
     height: 50px;
     width: 50px;
     left: -25px;
-    top: -25px;
+    //top: -25px;
     animation: pulse 1.1s infinite;
     content: "";
-    position: absolute;
+    position: fixed;
     //box-shadow: 0px 0px 10px 3px #E91E63;
     //display: none;
 }
@@ -343,7 +343,7 @@ body, #container{
     text-align: left !important;
     font-weight: 600;
     line-height: 1.3;
-    opacity: 0.6;
+    opacity: 0.8;
 }
 .maxSpeedWayPopUp .mapboxgl-popup-content p {
     margin: 0;
@@ -353,6 +353,9 @@ body, #container{
 
 .maxSpeedWayPopUp.redPopUp.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
       border-top-color: #E91E63 !important;
+}
+.maxSpeedWayPopUp.redPopUp.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip{
+  border-top-color: #E91E63 !important;
 }
 .maxSpeedWayPopUp.redPopUp.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
       border-right-color: #E91E63 !important;
@@ -366,6 +369,9 @@ body, #container{
 
 .maxSpeedWayPopUp.yellowPopUp.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
       border-top-color: #ffc107 !important;
+}
+.maxSpeedWayPopUp.yellowPopUp.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip{
+  border-top-color: #ffc107 !important;
 }
 .maxSpeedWayPopUp.yellowPopUp.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
       border-right-color: #ffc107 !important;
@@ -383,6 +389,9 @@ body, #container{
 .maxSpeedWayPopUp.greenPopUp.mapboxgl-popup-anchor-left .mapboxgl-popup-tip{
       border-right-color: #079421 !important;
 }
+.maxSpeedWayPopUp.greenPopUp.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip{
+  border-left-color: #079421 !important;
+}
 .maxSpeedWayPopUp.greenPopUp.mapboxgl-popup-anchor-right .mapboxgl-popup-tip{
       border-left-color: #079421 !important;
 }
@@ -391,7 +400,7 @@ body, #container{
 }
 
 .maxSpeedWayPopUp{
-  opacity: 0.6;
+  opacity: 0.8;
 
 }
 

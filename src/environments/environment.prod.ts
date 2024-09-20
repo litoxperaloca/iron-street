@@ -13,7 +13,7 @@ export const environment = {
   locatorDefault: {
     type: 'gltf',
     obj: '/assets/models/car_arrow.glb',
-    scale: 6,
+    scale: 5,
     units: 'meters',
     anchor: "top",
     rotation: { x: 270, y: 0, z: 0 },
@@ -28,7 +28,7 @@ export const environment = {
     options: {
       type: 'gltf',
       obj: '/assets/models/car_arrow.glb',
-      scale: 6,
+      scale: 5,
       units: 'meters',
       anchor: "top",
       rotation: { x: 270, y: 0, z: 0 },
@@ -47,7 +47,7 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/car_arrow.glb',
-        scale: 6,
+        scale: 5,
         units: 'meters',
         anchor: "top",
         rotation: { x: 270, y: 0, z: 0 },
@@ -169,7 +169,11 @@ export const environment = {
       maneuver: {
           recommendedDuration: 4000,
           durationForSimulation: 1000
-      }
+      },
+      speedExceeded: {
+        recommendedDuration: 4000,
+        durationForSimulation: 1000
+       }
     },
     alertables:[
       {
@@ -484,14 +488,14 @@ export const environment = {
     showUserHeading: true
   },
   gpsSettings:{
-    locationIntervalTimeInMs:1500,
-    simulationIntervalTimeInMs:1500,
-    userMarkerAnimationDurationInMs:1000,
-    positionMaxAge:500,
-    timeOut:6000,
-    timeBetweenRealAndSimulation: 1200,
+    locationIntervalTimeInMs:800,
+    simulationIntervalTimeInMs:200,
+    userMarkerAnimationDurationInMs:900,
+    positionMaxAge:0,
+    timeOut:3500,
+    timeBetweenRealAndSimulation: 200,
     timeBeforeStartInMs:400,
-    timeRotating:800
+    timeRotating:2000
   },
   mapboxMapConfig: {
     accessToken: 'pk.eyJ1IjoibGl0b3hwZXJhbG9jYSIsImEiOiJjbGc3ZW95OGQwNXRtM2V0bHM3ZTcwajVmIn0.rZXdOoZoUFuJ2K4eFyxamg',

@@ -11,11 +11,33 @@ export class SpeedService {
   currentSpeed!: number;
   speedChanged = new EventEmitter<number>();
   maxSpeedChanged = new EventEmitter<number>();
-
+  totalKM:number=0;
+  totalFaults:number=0;
+  kmChanged = new EventEmitter<number>();
+  faultsChanged = new EventEmitter<number>();
 
   constructor(
   ) { }
 
+
+  setCurrentKm(km:number|null){
+    if (km) {
+      let roundedKm = parseFloat(km.toFixed(2)); // Redondea a 1 decimal
+      this.totalKM = roundedKm;
+      this.kmChanged.emit(this.totalKM);
+
+    }
+
+  }
+
+  setCurrentFaults(faults:number|null){
+    if (faults) {
+      this.totalFaults = faults;
+      this.faultsChanged.emit(this.totalFaults);
+
+    }
+
+  }
 
   setCurrentSpeed(speed:number|null){
     let lastSpeed = this.currentSpeed;
@@ -28,9 +50,9 @@ export class SpeedService {
     } else {
       this.currentSpeed = 0;
     }
-    if(lastSpeed!=this.currentSpeed){
+    //if(lastSpeed!=this.currentSpeed){
       this.speedChanged.emit(this.currentSpeed);
-    }
+    //}
   }
 
   setCurrentMaxSpeed(maxspeed:number|null){
@@ -40,9 +62,9 @@ export class SpeedService {
     } else {
       this.currentMaxSpeed = 0;
     }
-    if(lastMaxSpeed!=this.currentMaxSpeed){
+    //if(lastMaxSpeed!=this.currentMaxSpeed){
       this.maxSpeedChanged.emit(this.currentMaxSpeed);
-    }
+    //}
   }
 
 

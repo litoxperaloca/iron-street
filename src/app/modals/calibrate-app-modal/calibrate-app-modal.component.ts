@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { ConnectableObservable } from 'rxjs';
 import { PreferencesService } from 'src/app/services/preferences.service';
 import { environment } from 'src/environments/environment';
 
@@ -43,6 +44,8 @@ export class CalibrateAppModalComponent implements OnInit {
     this.initialGpsSettings = { ...this.gpsSettings };
     this.initialSnapServiceConf = { ...this.snapServiceConf };
     this.initialTrafficAlertServiceConf = { ...this.trafficAlertServiceConf };
+
+    console.log(this.gpsSettings, this.snapServiceConf,this.trafficAlertServiceConf);
   }
 
   // Guardar los cambios de GPS Settings
@@ -51,7 +54,6 @@ export class CalibrateAppModalComponent implements OnInit {
       this.isLoading=true;
       // Guardar los cambios en Preferences y en el environment
       await this.preferencesService.setGpsSettings(this.gpsSettings);
-      environment.gpsSettings = { ...this.gpsSettings };
       console.log('GPS Settings actualizados en environment:', environment.gpsSettings);
       this.isLoading=false;
     }
@@ -65,6 +67,8 @@ export class CalibrateAppModalComponent implements OnInit {
       // Guardar los cambios en Preferences y en el environment
       this.isLoading=true;
       await this.preferencesService.setSnapServiceConf(this.snapServiceConf);
+      console.log('Snap Conf actualizada en environment:', environment.snapServiceConf);
+
       this.isLoading=false;
     }
 
@@ -77,7 +81,6 @@ export class CalibrateAppModalComponent implements OnInit {
       // Guardar los cambios en Preferences y en el environment
       this.isLoading=true;
       await this.preferencesService.setTrafficAlertServiceConf(this.trafficAlertServiceConf);
-      environment.trafficAlertServiceConf = { ...this.trafficAlertServiceConf };
       console.log('Traffic Alert Config actualizados en environment:', environment.trafficAlertServiceConf);
       this.isLoading=false;
     }
@@ -102,8 +105,9 @@ export class CalibrateAppModalComponent implements OnInit {
     if(config && config==='snapServiceConf'){
       this.snapServiceConf[field] += increment;
       return;
-    }    if(config && config==='trafficAlertServiceConf'){
-      this.trafficAlertServiceConf[field] += increment;
+    }    
+    if(config && config==='trafficAlertServiceConf'){
+      this.trafficAlertServiceConf[field]+= increment;
       return;
     }
   }
