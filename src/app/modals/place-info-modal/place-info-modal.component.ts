@@ -1,6 +1,6 @@
 
 import { Component } from '@angular/core';
-import { Place } from '@aws-amplify/geo';
+import { Place } from 'src/app/models/route.interface';
 import { ModalController, NavParams } from '@ionic/angular';
 import { HomePage } from 'src/app/pages/home/home.page';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
@@ -78,7 +78,7 @@ export class PlaceInfoModalComponent {
 
   getIconSRC(): string {
     if (this.osmFeature && this.osmFeature.properties && this.osmFeature.properties['category']) {
-      const iconName = this.osmFeature?.properties['category']?.marker + ".svg";
+      const iconName = this.osmFeature?.properties['category']?.marker + ".png";
       return `assets/img/map-icons/${iconName}`;
     }
     return "";

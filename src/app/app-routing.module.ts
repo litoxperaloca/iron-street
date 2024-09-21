@@ -23,10 +23,10 @@ const routes: Routes = [
     path: 'blog',
     loadChildren: () => import('./pages/blog/blog.module').then(m => m.BlogPageModule)
   },
-  {
+  /*{
     path: 'auth',
     loadChildren: () => import('./pages/auth/auth.module').then(m => m.AuthPageModule)
-  },
+  },*/
   {
     path: 'conf',
     loadChildren: () => import('./pages/conf/conf.module').then(m => m.ConfPageModule)
@@ -71,10 +71,11 @@ const routes: Routes = [
     path: 'post/:id',
     loadChildren: () => import('./pages/post/post.module').then(m => m.PostPageModule)
   },
-  {
+  /*{
     path: 'profile',
     loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfilePageModule)
-  },  {
+  },*/
+  {
     path: 'calibrate',
     loadChildren: () => import('./pages/calibrate/calibrate.module').then( m => m.CalibratePageModule)
   }

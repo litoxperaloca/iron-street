@@ -165,7 +165,7 @@ export class TripSimulatorService{
       // Si estamos dentro del rango de alerta y no hemos alertado sobre este paso antes
       if (distanceToStep <= this.stepAlertDistance && !this.alertedSteps.has(stepKey)) {
         // Invocar la alerta usando el servicio de tráfico
-        await ((window as any).trafficAlertService as TrafficAlertService).showAlert(step.maneuver.instruction, 'navigation', 'iconUrl', true);
+        await ((window as any).trafficAlertService as TrafficAlertService).showAlert(step.maneuver.instruction, 'navigation', 'iconUrl', false);
         
         // Marcar este step como alertado
         this.alertedSteps.add(stepKey);

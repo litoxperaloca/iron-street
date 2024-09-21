@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { Place, SearchForSuggestionsResult } from '@aws-amplify/geo';
+import { Place } from 'src/app/models/route.interface';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { InfiniteScrollCustomEvent, ModalController, NavParams } from '@ionic/angular';
 import mapboxgl from 'mapbox-gl';
 import { environment } from 'src/environments/environment';
-import { AmazonLocationServiceService } from '../../services/amazon-location-service.service';
+import { IronLocationServiceService } from '../../services/iron-location-service.service';
 import { GeoLocationService } from '../../services/geo-location.service';
 import { MapService } from '../../services/map.service'; // Asumiendo que tienes este servicio
 import { ModalService } from '../../services/modal.service';
@@ -48,7 +48,7 @@ export class SearchReverseModalComponent {
     private navParams: NavParams,
     private modalService: ModalService,
     private mapService: MapService,
-    private amazonLocationServiceService: AmazonLocationServiceService,
+    private ironLocationServiceService: IronLocationServiceService,
     private osmService: OsmService,
     private geoLocationService: GeoLocationService
   ) {
@@ -97,9 +97,9 @@ export class SearchReverseModalComponent {
     if (this.coordinates[0] != 0 && this.coordinates[1] != 0) {
       this.isLoading = true;
 
-      await this.amazonLocationServiceService.searchByCoordinates(this.coordinates).then((response: Place | undefined) => {
+      await this.ironLocationServiceService.searchByCoordinates(this.coordinates).then((response: HttpResponse | undefined) => {
         //console.log(response);
-        if (response) this.place = response;
+        if (response) this.place = response.data;
         this.isLoading = false;
 
       });
@@ -110,7 +110,7 @@ export class SearchReverseModalComponent {
   }
 
   iconUrl(icon: string): string {
-    return `assets/img/map-icons/${icon}.svg`;
+    return `assets/img/map-icons/${icon}.png`;
   }
 
   async loadPlaces(category: { name: string, icon: string, type: string, marker: string, labelPropertyIndex: string }) {
@@ -188,14 +188,14 @@ export class SearchReverseModalComponent {
 
   }
 
-  setDestinationFromSuggestion(destination: SearchForSuggestionsResult) {
+  /*setDestinationFromSuggestion(destination: SearchForSuggestionsResult) {
     if (destination.placeId) {
-      this.amazonLocationServiceService.searchByPlaceId(destination.placeId).then((place) => {
+      this.ironLocationServiceService.searchByPlaceId(destination.placeId).then((place) => {
         if (place) this.mapService.setDestination(place);
 
         this.dismiss();
 
       });
     }
-  }
+  }*/
 }

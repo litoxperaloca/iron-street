@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MapService } from '../map.service';
 import { environment } from 'src/environments/environment';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
-import { Place } from '@aws-amplify/geo';
+import { Place } from 'src/app/models/route.interface';
 import { HomePage } from 'src/app/pages/home/home.page';
 import { BookmarksService } from '../bookmarks.service';
 import mapboxgl, { AnyLayer, GeoJSONFeature, LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';

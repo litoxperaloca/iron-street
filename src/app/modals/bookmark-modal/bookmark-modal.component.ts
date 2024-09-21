@@ -1,6 +1,6 @@
 
 import { Component } from '@angular/core';
-import { Place } from '@aws-amplify/geo';
+import { Place } from 'src/app/models/route.interface';
 import { ModalController, NavParams } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { HomePage } from 'src/app/pages/home/home.page';

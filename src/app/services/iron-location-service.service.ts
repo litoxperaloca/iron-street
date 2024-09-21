@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coordinates, Geo, Place, SearchForSuggestionsResults } from "@aws-amplify/geo";
+import { Coordinates, Place, } from "src/app/models/route.interface";
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 
 @Injectable({
@@ -30,14 +30,14 @@ export class IronLocationServiceService {
     return (await this.doGet(url,parms));
   }
 
-  async searchByPlaceId(placeId: string): Promise<Place | undefined> {
+  /*async searchByPlaceId(placeId: string): Promise<Place | undefined> {
     return Geo.searchByPlaceId(placeId);
   }
 
 
   async searchByText(searchTerm: string): Promise<Place[] | undefined> {
     return Geo.searchByText(searchTerm);
-  }
+  }*/
 
   async searchByCoordinates(coordinates: Coordinates): Promise<HttpResponse> {
     let url = 'https://nominatim.openstreetmap.org/reverse.php';

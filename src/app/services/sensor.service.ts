@@ -7,7 +7,6 @@ import bearing from '@turf/bearing';
 import { point } from '@turf/helpers';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { MapService } from './map.service';
-import { NumericValueAccessor } from '@ionic/angular';
 
 
 interface SensorData {

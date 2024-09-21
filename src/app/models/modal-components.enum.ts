@@ -11,7 +11,6 @@ export enum ModalComponents {
   MaxSpeed = 'MaxSpeed',
   YourSpeed = 'YourSpeed',
   Debug = 'Debug',
-  IronBot = 'IronBot',
   UserMarkerSettings = 'UserMarkerSettingsModal',
   BookmarkSaved = 'BookmarkSaved',
   CalibrateApp ='CalibrateApp'
@@ -23,7 +22,6 @@ import { BookmarkSavedModalComponent } from '../modals/bookmark-saved-modal/book
 import { CalibrateAppModalComponent } from '../modals/calibrate-app-modal/calibrate-app-modal.component';
 import { ConfModalComponent } from '../modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from '../modals/debug-modal/debug-modal.component';
-import { IronBotModalComponent } from '../modals/iron-bot-modal/iron-bot-modal.component';
 import { LocationModalComponent } from '../modals/location-modal/location-modal.component';
 // Importa los componentes modales
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
@@ -50,7 +48,6 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.MaxSpeed]: MaxSpeedDetailsModalComponent,
   [ModalComponents.YourSpeed]: YourSpeedModalComponent,
   [ModalComponents.Debug]: DebugModalComponent,
-  [ModalComponents.IronBot]: IronBotModalComponent,
   [ModalComponents.UserMarkerSettings]: UserMarkerSettingsModalComponent,
   [ModalComponents.BookmarkSaved]: BookmarkSavedModalComponent,
   [ModalComponents.CalibrateApp]: CalibrateAppModalComponent

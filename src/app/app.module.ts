@@ -20,9 +20,7 @@ import { BookmarkSavedModalComponent } from './modals/bookmark-saved-modal/bookm
 import { GeoLocationAnimatedService } from './services/geo-location-animated.service';
 import { CookiesService } from './services/cookies.service';
 import { DeviceDataService } from './services/device-data.service';
-import { ManeurveModalComponent } from 'src/app/modals/maneurve/maneurve-modal.component';
 import { PermissionModalComponent } from 'src/app/modals/permission/permission-modal.component';
-import { RouteModalComponent } from 'src/app/modals/route/route-modal.component';
 import { SearchModalComponent } from 'src/app/modals/search/search-modal.component';
 import { SettingsModalComponent } from 'src/app/modals/settings/settings-modal.component';
 import { SpeedModalComponent } from 'src/app/modals/speed/speed-modal.component';
@@ -30,7 +28,7 @@ import { TripProgressModalComponent } from 'src/app/modals/trip-progress/trip-pr
 import { CameraService } from 'src/app/services/camera.service';
 import { GeoLocationService } from 'src/app/services/geo-location.service';
 import { OsmService } from 'src/app/services/osm.service';
-import { SearchService } from 'src/app/services/search.service';
+//import { SearchService } from 'src/app/services/search.service';
 import { SpeedService } from 'src/app/services/speed.service';
 import { TripService } from 'src/app/services/trip.service';
 //import awsconfig from '../aws-exports';
@@ -40,7 +38,6 @@ import { GeoLocationMockService } from './mocks/geo-location-mock.service';
 import { BookmarkModalComponent } from './modals/bookmark-modal/bookmark-modal.component';
 import { ConfModalComponent } from './modals/conf-modal/conf-modal.component';
 import { DebugModalComponent } from './modals/debug-modal/debug-modal.component';
-import { IronBotModalComponent } from './modals/iron-bot-modal/iron-bot-modal.component';
 import { LocationModalComponent } from './modals/location-modal/location-modal.component';
 import { MapSettingsModalComponent } from './modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from './modals/max-speed-details-modal/max-speed-details-modal.component';
@@ -49,11 +46,11 @@ import { PlaceInfoModalComponent } from './modals/place-info-modal/place-info-mo
 import { SearchReverseModalComponent } from './modals/search-reverse-modal/search-reverse-modal.component';
 import { YourSpeedModalComponent } from './modals/your-speed-modal/your-speed-modal.component';
 import { AlertService } from './services/alert.service';
-import { AmazonLocationServiceService } from './services/amazon-location-service.service';
-import { AuthService } from './services/auth.service';
+//import { AmazonLocationServiceService } from './services/amazon-location-service.service';
+//import { AuthService } from './services/auth.service';
 import { BookmarksService } from './services/bookmarks.service';
 import { DeviceOrientationService } from './services/device-orientation.service';
-import { FirebaseService } from './services/firebase.service';
+//import { FirebaseService } from './services/firebase.service';
 import { MapService } from './services/map.service';
 import { ModalService } from './services/modal.service';
 import { PreferencesService } from './services/preferences.service';
@@ -81,8 +78,6 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       TripProgressModalComponent,
       SearchModalComponent,
       SearchReverseModalComponent,
-      ManeurveModalComponent,
-      RouteModalComponent,
       SettingsModalComponent,
       MapSettingsModalComponent,
       PlaceInfoModalComponent,
@@ -93,7 +88,6 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       MaxSpeedDetailsModalComponent,
       YourSpeedModalComponent,
       DebugModalComponent,
-      IronBotModalComponent,
       UserMarkerSettingsModalComponent,
       BookmarkSavedModalComponent,
       CalibrateAppModalComponent
@@ -133,10 +127,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       OsmService,
       SpeedService,
       CameraService,
-      SearchService,
       TripService,
       DeviceOrientationService,
-      AmazonLocationServiceService,
       ThemeService,
       WordpressService,
       GeoLocationMockService,
@@ -146,8 +138,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       BookmarksService,
       PreferencesService,
       TranslateService,
-      FirebaseService,
-      AuthService,
+      //AuthService,
       MapboxService,
       TrafficAlertService,
       SnapService,

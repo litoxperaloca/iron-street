@@ -489,7 +489,7 @@ export const environment = {
   },
   gpsSettings:{
     locationIntervalTimeInMs:600,
-    simulationIntervalTimeInMs:200,
+    simulationIntervalTimeInMs:600,
     userMarkerAnimationDurationInMs:900,
     positionMaxAge:0,
     timeOut:5000,

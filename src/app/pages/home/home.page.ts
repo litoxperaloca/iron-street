@@ -26,7 +26,7 @@ import { VoiceService } from '../../services/voice.service';
 import { TrafficAlertService } from 'src/app/services/traffic-alert-service';
 import { SnapService } from 'src/app/services/snap.service';
 import { MapboxService } from 'src/app/services/mapbox.service';
-import { Place } from '@aws-amplify/geo';
+import { Place } from 'src/app/models/route.interface';
 import { GeoLocationAnimatedService } from 'src/app/services/geo-location-animated.service';
 import { OsrmService } from 'src/app/services/osrm.service';
 import { MarkerAnimationService } from 'src/app/services/marker-animation.service';

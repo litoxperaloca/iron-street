@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Place } from '@aws-amplify/geo';
+import { Place } from 'src/app/models/route.interface';
 import { Preferences } from '@capacitor/preferences';
 import { MapService } from './map.service';
 export interface Marker {

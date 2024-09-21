@@ -54,9 +54,7 @@
             "buildOptimizer": true,
             "aot": true,
             "allowedCommonJsDependencies": [
-                "@aws-crypto/sha256-js",
                 "camelcase-keys",
-                "@aws-crypto/sha256-browser",
                 "geojson-equality",
                 "turf-jsts",
                 "skmeans",
