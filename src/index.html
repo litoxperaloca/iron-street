@@ -12,9 +12,9 @@
   <link rel="apple-touch-icon" href="assets/icon/apple-touch-icon.png"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
-  <link href="assets/utils/mapbox/mapbox-gl.css" rel="stylesheet"/>
+  <!--<link href="assets/utils/mapbox/mapbox-gl.css" rel="stylesheet"/>
   <link href="assets/utils/mapbox/mapbox-gl-directions.css" rel="stylesheet"/>
-	<link href="assets/utils/threebox/threebox.css" rel="stylesheet" />
+	<link href="assets/utils/threebox/threebox.css" rel="stylesheet" />-->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#1976d2" />
   <style>
@@ -71,6 +71,31 @@
   <script>
     function selectRoute(routeIndex) {
       window.mapService.selectRoute(routeIndex);
+    }
+    window.startOdometer= function(){
+      var el = document.querySelector('.odometer-theme-car');
+
+        od = new Odometer({
+          el: el,
+          value: '1000000',
+          duration: '250',
+          // Any option (other than auto and selector) can be passed in here
+          format: '(dddddd.dd)',
+          theme: 'car',
+          animation: 'count'
+        });
+
+        var el2 = document.querySelector('.odometer-theme-digital');
+
+        odo = new Odometer({
+          el: el2,
+          value: '10250',
+          duration: '400',
+          // Any option (other than auto and selector) can be passed in here
+          format: '(ddddd)',
+          theme: 'digital',
+          //animation: 'count'
+        });
     }
 
     window.setUtils = function(map, mbxContext){

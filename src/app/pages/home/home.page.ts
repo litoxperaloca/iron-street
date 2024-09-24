@@ -177,7 +177,8 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         this.speedService.kmChanged
         .pipe(takeUntil(this.destroy$))
         .subscribe(km => {
-          this.currentKm = km;
+          this.currentKm=km;
+          this.setOdometer(km);
         });
 
         this.speedService.faultsChanged
@@ -197,7 +198,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         .subscribe(trip => {
           this.tripFinished(trip);
         });
-  
+
       this.tripService.tripStarted
         .pipe(takeUntil(this.destroy$))
         .subscribe(trip => {
@@ -254,6 +255,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   
   ngAfterViewInit() {
+    (window as any).startOdometer();
     (window as any).mapService = this.mapService;
     (window as any).geoLocationService = this.geoLocationService;
     (window as any).speedService = this.speedService;
@@ -278,6 +280,28 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     (window as any).osrmService = this.osrmService;
     this.initSubscriptions();
     this.waitAndRenderPage();
+  }
+
+  async setOdometer(km:number){
+    setTimeout(function(){
+      console.log(km);
+      var el = document.querySelector('.odometer-theme-car');
+      if(el){
+        const fakeKm=km+10000
+        let kmStr=''+fakeKm;
+        kmStr = kmStr.replace('.','');
+        if(kmStr.length<7){
+          if(kmStr.length==5){
+            kmStr = kmStr+'00';
+          }else if(kmStr.length==6){
+            kmStr = kmStr+'0';
+          }
+        }
+        console.log(kmStr);
+        el.innerHTML = kmStr;
+      }
+    
+    }, 200);
   }
 
   toggleDarkLightMode() {

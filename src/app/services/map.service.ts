@@ -299,6 +299,7 @@ export class MapService {
       self.set3D();
       self.mapbox.resize();
        // eslint-disable-next-line no-undef
+      map.setTerrain(undefined);
 
     }); 
   }
@@ -1339,6 +1340,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
     this.trackingUser = false;
 
     ((window as any).cameraService as CameraService).setCameraSKYPosition(position);
+    this.mapbox.setTerrain(undefined);
 
   }
 

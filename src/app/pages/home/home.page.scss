@@ -203,7 +203,7 @@ margin-bottom: 15px !important;
 /* Header Max & Current Styles */
 ion-card-header.max, ion-card-header.current {
     font-size: 20pt;
-    padding-top: 16px;
+    padding-top: 20px;
     padding-left: 5px;
     border-radius: 50%;
     width: 72px;
@@ -278,7 +278,7 @@ right: 5px;
   font-size: 16pt;
   color: #fff;
   //padding-top: 57px;
-  padding: 40px 0px 0px 0px;
+  padding: 31px 0px 0px 0px;
   font-weight: bolder;
   background: url(/assets/img/icons/kms.png);
   background-size: 100% 100%;
@@ -640,5 +640,36 @@ ion-toolbar{
 
 #card_left .current.speed-exceeded{
   color:rgba(218, 30, 30, 0.897) !important;
-
 }
+
+.odometer-container{
+  position: absolute;
+  top: 168px;
+  right: 1px;
+}
+
+.odometer-container-cash{
+  position: absolute;
+  top: 19px;
+  left: calc(50% - 80px);
+}
+
+.odometer.odometer-auto-theme, .odometer.odometer-theme-car {
+
+  font-size: 12pt !important;
+}
+
+.odometer.odometer-auto-theme, .odometer.odometer-theme-digital { 
+  font-size: 15pt;
+}
+
+
+/*.odometer.odometer-theme-car .odometer-digit:last-child {
+  font-size: 12pt !important;
+  color: red !important;
+}
+
+.odometer.odometer-theme-car .odometer-digit:first-child {
+  display:none !important;
+}*/
+

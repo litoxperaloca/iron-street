@@ -124,11 +124,11 @@ export class OsrmService {
       console.log(uuid);
       let coordinatesToSend = [...this.lastestUserLocationsSnaped];
       coordinatesToSend.push(userPosition);
-      if(coordinatesToSend.length>10){
+      if(coordinatesToSend.length>20){
         coordinatesToSend.shift();
       }
       this.lastestUserLocations.push(userPosition);
-      if(this.lastestUserLocations.length>10){
+      if(this.lastestUserLocations.length>20){
         this.lastestUserLocations.shift();
       }
         let coordinates:string =  coordinatesToSend.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
@@ -136,7 +136,7 @@ export class OsrmService {
         //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
         //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
        // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
-        let url = `https://geo.ironstreet.com.uy/match`;
+        let url = `https://geo.ironstreet.com.uy/snapValhalla`;
         let aux = userPosition.coords.speed;
         if(aux==null){
           aux=0;

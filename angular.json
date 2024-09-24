@@ -40,12 +40,14 @@
             "styles": [
               "src/global.scss", 
               "src/theme/variables.scss", 
-              "src/assets/utils/mapbox/mapbox-gl.css",
-              "src/assets/utils/mapbox/mapbox-gl-directions.css",
-              "src/assets/utils/threebox/threebox.css"
+              "src/mapbox-gl.scss",
+              "src/mapbox-gl-directions.scss",
+              "src/threebox.scss",
+              "src/odometer.scss"
             ],
             "scripts": [              
-              "src/assets/utils/threebox/threebox.js"
+              "src/threebox.js",
+              "src/odometer.js"
             ],
             "optimization": true,
             "sourceMap": false,

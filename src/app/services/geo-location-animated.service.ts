@@ -222,7 +222,7 @@ export class GeoLocationAnimatedService {
       timestamp: matchedPosition.timestamp
     }
     this.osrmService.lastestUserLocationsSnaped.push(snapedPos);
-    if(this.osrmService.lastestUserLocationsSnaped.length>10){
+    if(this.osrmService.lastestUserLocationsSnaped.length>20){
       this.osrmService.lastestUserLocationsSnaped.shift();
     }
     self.isBusy=false;
