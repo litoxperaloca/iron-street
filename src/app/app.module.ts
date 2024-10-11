@@ -61,6 +61,7 @@ import { VoiceService } from './services/voice.service';
 import { WordpressService } from './services/wordpress-service.service';
 import { SourceAndLayerManagerService } from './services/mapHelpers/source-and-layer-manager.service';
 import { CalibrateAppModalComponent } from './modals/calibrate-app-modal/calibrate-app-modal.component';
+import { ParkingModalComponent } from './modals/parking-modal/parking-modal.component';
 
 //Amplify.configure(awsconfig);
 
@@ -90,7 +91,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
       DebugModalComponent,
       UserMarkerSettingsModalComponent,
       BookmarkSavedModalComponent,
-      CalibrateAppModalComponent
+      CalibrateAppModalComponent,
+      ParkingModalComponent
     ],
   imports: [
 

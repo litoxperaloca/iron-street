@@ -81,7 +81,7 @@ export class AboutPage implements OnInit, OnDestroy {
 
 
   feedback() {
-    window.open('https://ironplatform.com.uy/ironplatform/ironstreet/feedback/');
+    window.open('https://ironplatform.com.uy/ironplatformv1/ironstreet/feedback/');
   }
 
 }

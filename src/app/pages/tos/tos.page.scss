@@ -1,0 +1,37 @@
+.terms-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: black !important;
+    margin-top: 35px;
+  }
+  
+  .terms-container ion-card {
+    width: 95%;
+    margin: 20px 0;
+    background-color: black !important;
+  }
+  
+  .terms-container ion-card-content {
+    color: #ffffff;
+    font-size: 10pt;
+  }
+  
+  .terms-container ion-list ion-item {
+    --background: transparent;
+    color: #ffffff;
+  }
+  
+  .terms-container ion-icon {
+    margin-right: 10px;
+  }
+  
+  .terms-container .warning-text {
+    text-align: left;
+    color: #ff4d4d;
+    font-size: 1.1em;
+    margin-top: 10px;
+  }
+  

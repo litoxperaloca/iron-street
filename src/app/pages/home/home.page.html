@@ -61,9 +61,9 @@
       </ion-card-header>
     </ion-card>
   <div class="odometer-container-cash">
-    <span>          
-      <ion-icon color="success" name="cash-outline" size="small"></ion-icon> </span> 
-    <div class="odometer odometer-theme-digital odometer-animating-down odometer-animating"></div>
+           
+      <!--<ion-icon color="success" name="cash-outline" size="small"></ion-icon> -->
+    <span class='odometer dollars'>$USD</span> <div class="odometer odometer-theme-digital odometer-animating-down odometer-animating"></div>
   </div>
     <ion-card class="card_stats" id="card_stats">
       <ion-card-header class="faults">
@@ -73,7 +73,9 @@
     <div class="odometer-container">
       <div id="odometer" class="odometer odometer-theme-car"></div>
     </div>
-    <div id="geolocating">
+   <div id="parking_button" (click)="openParkingModal()"></div>
+
+   <div id="geolocating">
       <h4>{{ 'buscando_ubicación...' | translate }}</h4>
       <ion-spinner name="crescent"></ion-spinner>
     </div>
@@ -116,6 +118,7 @@
         <ion-fab-button *ngIf="!audioOn" color="light" (click)="toggleAudio()">
           <ion-icon color="warning" name="volume-mute-outline"></ion-icon>
         </ion-fab-button>
+        
         <!--<ion-fab-button color="light" (click)="openModal('CalibrateApp')">
           <ion-icon color="success" name="car-outline"></ion-icon>
         </ion-fab-button>

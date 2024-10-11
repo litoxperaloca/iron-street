@@ -1,4 +1,8 @@
 export const environment = {
+  parking:{
+    costPerHour:52,
+    SMSnumber:466
+  },
   snapServiceConf:{
     maxValidAccuracy:15,
     distanceToConsiderMovementInMeters:5,
@@ -13,9 +17,9 @@ export const environment = {
   locatorDefault: {
     type: 'gltf',
     obj: '/assets/models/car_arrow.glb',
-    scale: 5,
+    scale: 6,
     units: 'meters',
-    anchor: "top",
+    anchor: 'center',
     rotation: { x: 270, y: 0, z: 0 },
     rotationDeg: {x:0, y:0, z:0}
   },
@@ -28,9 +32,9 @@ export const environment = {
     options: {
       type: 'gltf',
       obj: '/assets/models/car_arrow.glb',
-      scale: 5,
+      scale: 6,
       units: 'meters',
-      anchor: "top",
+      anchor: 'center',
       rotation: { x: 270, y: 0, z: 0 },
       rotationDeg: {x:0, y:0, z:0}
 
@@ -47,9 +51,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/car_arrow.glb',
-        scale: 5,
+        scale: 6,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 270, y: 0, z: 0 },
         rotationDeg: {x:0, y:0, z:0}
 
@@ -64,9 +68,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/car.glb',
-        scale: 2,
+        scale: 3,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 90, y: 0, z: 0 },
         rotationDeg: {x:270, y:0, z:0}
 
@@ -81,9 +85,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/1949_-_cadillac_series_62.glb',
-        scale: 9,
+        scale: 12,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 90, y: 0, z: 0 },
         rotationDeg: {x:270, y:0, z:0}
 
@@ -98,9 +102,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/bumble_bee.glb',
-        scale: 9,
+        scale: 12,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 90, y: 0, z: 0 },
         rotationDeg: {x:270, y:0, z:0}
 
@@ -115,9 +119,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/izh-2715-pickup.glb',
-        scale: 9,
+        scale: 12,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 90, y: 0, z: 0 },
         rotationDeg: {x:270, y:0, z:0}
 
@@ -132,9 +136,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/moto_vespa.glb',
-        scale: 14,
+        scale: 25,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 90, y: 180, z: 0 },
         rotationDeg: {x:270, y:180, z:0}
 
@@ -149,9 +153,9 @@ export const environment = {
       options: {
         type: 'gltf',
         obj: '/assets/models/motorcycle_harley_davidson_fat_boy.glb',
-        scale: 14,
+        scale: 25,
         units: 'meters',
-        anchor: "top",
+        anchor: "center",
         rotation: { x: 90, y: 0, z: 0 },
         rotationDeg: {x:270, y:0, z:0}
 
@@ -195,6 +199,12 @@ export const environment = {
     ]
   },
   tripserviceConf: {
+    rerouteConf:{
+      maxAllowedDeviationDistanceInMeters: 50,
+      maxAllowedOffRoutePositions: 3,
+      maxAllowedtimeOffRouteInSeconds: 60
+
+    },
     maneuvers: [
       {
         maneuverType: 'depart',
@@ -407,7 +417,7 @@ export const environment = {
       {
         maneuverType: 'exit roundabout',
         preAnnounce: true,
-        preAnnouncement: 'En {distance}, salga de la rotonda en la salida {exit}.',
+        preAnnouncement: 'En {distance} metros, salga de la rotonda en la salida {exit}.',
         preAnnouncementDistance: 200,
         announce: true,
         announcement: 'Salga de la rotonda en la salida {exit}.',
@@ -585,6 +595,7 @@ export const environment = {
     unit: "metric",
     language: "es-ES",
     alternatives: true,
+    congestion:true,
     annotations: "maxspeed, distance, duration, congestion, closure",
     banner_instructions: true,
     geometries: "polyline",
@@ -611,7 +622,6 @@ export const environment = {
     },
     zoom: 15,
     routePadding: 150,
-    congestion: true,
     flyTo: true,
     geocoder: undefined
   },

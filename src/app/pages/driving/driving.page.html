@@ -3,14 +3,71 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>{{ 'TRÁNSITO:_INFO,_DOCS,_LINKS...' | translate }}</ion-title>
+    <ion-title>{{ 'INFORMACIÓN DE TRÁNSITO' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
 
   <div id="container">
+    <div class="info-container">
+      <ion-card color="medium">
+        <ion-card-content>
+          <p>
+            En esta sección encontrarás enlaces a sitios oficiales con información relevante sobre tránsito en Uruguay, incluyendo leyes, normativas y organismos principales que regulan la seguridad vial.
+          </p>
+        </ion-card-content>
+      </ion-card>
 
+      <!-- Enlace 1: Normativa de Tránsito y Seguridad Vial -->
+      <ion-card>
+        <ion-item href="https://www.gub.uy/unidad-nacional-seguridad-vial/comunicacion/publicaciones/normativa-especifica-sobre-transito-seguridad-vial" target="_blank">
+          <ion-icon slot="start" name="file-tray-full-outline" color="primary"></ion-icon>
+          <ion-label>Normativa de Tránsito y Seguridad Vial - UNASEV</ion-label>
+        </ion-item>
+      </ion-card>
+
+      <!-- Enlace 2: Ley N° 18.191 de Tránsito y Seguridad Vial -->
+      <ion-card>
+        <ion-item href="https://www.impo.com.uy/bases/leyes/18191-2007" target="_blank">
+          <ion-icon slot="start" name="book-outline" color="secondary"></ion-icon>
+          <ion-label>Ley N° 18.191 de Tránsito y Seguridad Vial - IMPO</ion-label>
+        </ion-item>
+      </ion-card>
+
+      <!-- Enlace 3: Reglamento Nacional de Circulación Vial -->
+      <ion-card>
+        <ion-item href="https://montevideo.gub.uy/tramites-y-servicios/reglamento-nacional-de-circulacion-vial" target="_blank">
+          <ion-icon slot="start" name="document-text-outline" color="tertiary"></ion-icon>
+          <ion-label>Reglamento Nacional de Circulación Vial - Intendencia de Montevideo</ion-label>
+        </ion-item>
+      </ion-card>
+
+      <!-- Enlace 4: Permiso Único Nacional de Conducir -->
+      <ion-card>
+        <ion-item href="https://www.gub.uy/unidad-nacional-seguridad-vial/punc" target="_blank">
+          <ion-icon slot="start" name="id-card-outline" color="warning"></ion-icon>
+          <ion-label>Permiso Único Nacional de Conducir - UNASEV</ion-label>
+        </ion-item>
+      </ion-card>
+
+      <!-- Enlace 5: Manual del Conductor - UNASEV -->
+      <ion-card>
+        <ion-item href="https://montevideo.gub.uy/sites/default/files/biblioteca/manualautosymotos_0.pdf" target="_blank">
+          <ion-icon slot="start" name="school-outline" color="success"></ion-icon>
+          <ion-label>Manual del Conductor - UNASEV</ion-label>
+        </ion-item>
+      </ion-card>
+
+      <ion-card color="contrast">
+        <ion-card-content>
+          <p class="info-text">
+            ⚠️ Todos los enlaces llevan a fuentes oficiales y confiables del gobierno uruguayo y organismos relacionados con la seguridad vial.
+          </p>
+        </ion-card-content>
+      </ion-card>
+
+    </div>
   </div>
 
 </ion-content>

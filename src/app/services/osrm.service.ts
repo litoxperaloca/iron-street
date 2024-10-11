@@ -32,89 +32,6 @@ export class OsrmService {
     this.positionIndex=0;
   }
 
-  public async getOsrmGeoLocation(userPosition: Position): Promise<any> {
-    try {
-      let coordinatesToSend = [...this.lastestUserLocationsSnaped];
-      coordinatesToSend.push(userPosition);
-      if(coordinatesToSend.length>10){
-        coordinatesToSend.shift();
-      }
-      this.lastestUserLocations.push(userPosition);
-      if(this.lastestUserLocations.length>10){
-        this.lastestUserLocations.shift();
-      }
-      let uuid= this.deviceDataService.uuid;
-      if(!uuid){
-        uuid=await this.deviceDataService.deviceId();
-      }
-      console.log(uuid);
-
-        let coordinates:string =  coordinatesToSend.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
-        let timestamps = coordinatesToSend.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
-        //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
-        //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
-       // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
-        let url = `https://geo.ironstreet.com.uy/match`;
-  
-        //let url = `https://api.ironstreet.com.uy/nearest/v1/driving/${userPosition.coords.longitude},${userPosition.coords.latitude}.json`;
-        const parms = {
-          coordinates: coordinates,
-          timestamps: timestamps,
-          n:uuid.identifier
-        }
-        const data = await this.doGet(url,parms);
-          //console.log(data);
-        if(data.data){
-          const tracepoint= data.data.lastTracePoint;
-          const roadName = tracepoint.name;
-          const lon = tracepoint.location[0];
-          const lat = tracepoint.location[1];
-          const maxspeed = tracepoint.maxSpeed;
-          const cameras = tracepoint.cameras;
-          const heading = tracepoint.bearing;
-          const currentFeature = tracepoint.feature;
-          const streetId = tracepoint.firstId;
-        // Verifica si la respuesta contiene coincidencias y ajusta la posición.
-          const response:any = {
-            lat: lat,
-            lon: lon,
-            roadName: roadName,
-            maxspeed:maxspeed,
-            cameras:cameras,
-            heading: heading,
-            currentFeature: currentFeature,
-            streetId: streetId,
-            speed: userPosition.coords.speed,
-            accuracy: userPosition.coords.accuracy,
-            altitude: userPosition.coords.altitude,
-            timeStamp: userPosition.timestamp,
-            altitudeAccuracy: userPosition.coords.altitudeAccuracy 
-          }
-          return response;
-        }
-      
-    } catch (error) {
-      console.error('Error al ajustar la posición con OSRM:', error);
-      // En caso de error, devuelve la posición original.
-      const response:any =     {
-        lat: userPosition.coords.latitude,
-        lon: userPosition.coords.longitude,
-        roadName: null,
-        maxspeed:null,
-        cameras:[],
-        heading: userPosition.coords.heading,
-        currentFeature: null,
-        streetId: null,
-        speed: userPosition.coords.speed,
-        accuracy: userPosition.coords.accuracy,
-        altitude: userPosition.coords.altitude,
-        timeStamp: userPosition.timestamp 
-       }
-       return response;
-    }
-  }
-
-
   public async getMatchedPosition(userPosition: Position): Promise<any> {
     try {
       let uuid= this.deviceDataService.uuid;
@@ -122,17 +39,16 @@ export class OsrmService {
         uuid=await this.deviceDataService.deviceId();
       }
       console.log(uuid);
-      let coordinatesToSend = [...this.lastestUserLocationsSnaped];
-      coordinatesToSend.push(userPosition);
-      if(coordinatesToSend.length>20){
-        coordinatesToSend.shift();
-      }
       this.lastestUserLocations.push(userPosition);
       if(this.lastestUserLocations.length>20){
         this.lastestUserLocations.shift();
       }
-        let coordinates:string =  coordinatesToSend.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
-        let timestamps = coordinatesToSend.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
+        //let coordinates:string =  coordinatesToSend.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
+        //let timestamps = coordinatesToSend.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
+
+        let coordinates:string =  this.lastestUserLocations.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
+
+        let timestamps = this.lastestUserLocations.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
         //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
         //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
        // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
@@ -162,6 +78,8 @@ export class OsrmService {
           const heading = tracepoint.bearing;
           const currentFeature = tracepoint.feature;
           const streetId = tracepoint.firstId;
+          const segments = tracepoint.segments;
+
         // Verifica si la respuesta contiene coincidencias y ajusta la posición.
           const response:any = {
             lat: lat,
@@ -171,6 +89,7 @@ export class OsrmService {
             cameras:cameras,
             heading: heading,
             currentFeature: currentFeature,
+            segments:segments,
             streetId: streetId,
             speed: userPosition.coords.speed,
             accuracy: userPosition.coords.accuracy,
@@ -186,26 +105,7 @@ export class OsrmService {
     } catch (error) {
       console.error('Error al ajustar la posición con OSRM:', error);
       this.clear();
-      // En caso de error, devuelve la posición original.
-      /*const response:any =     {
-        lat: userPosition.coords.latitude,
-        lon: userPosition.coords.longitude,
-        roadName: null,
-        maxspeed:null,
-        cameras:[],
-        heading: userPosition.coords.heading,
-        currentFeature: null,
-        streetId: null,
-        speed: userPosition.coords.speed,
-        accuracy: userPosition.coords.accuracy,
-        altitude: userPosition.coords.altitude,
-        timeStamp: userPosition.timestamp ,
-        totalKm: 0,
-        totalSpeedViolations: 0,
-        isOverSpeeding: false
-       }*/
-       throw error;
-       //return response;
+      throw error;
     }
   }
 
@@ -218,4 +118,37 @@ export class OsrmService {
 
     return await CapacitorHttp.get(options);
   };
+
+  public async getRouteForWaypoints(waypoints:[]): Promise<any> {
+    try {
+      let uuid= this.deviceDataService.uuid;
+      if(!uuid){
+        uuid=await this.deviceDataService.deviceId();
+      }
+        //let coordinates:string =  coordinatesToSend.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
+        //let timestamps = coordinatesToSend.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
+
+        let locations:string =  waypoints.map(position => `${position[0]},${position[1]}`).join(';');
+
+        //let radiuses = this.lastestUserLocations.map(position=> `${position.coords.accuracy}`).join(";");
+        //let hints = this.lastestHints.map(hint=> `${hint}`).join(";");
+       // let url = `https://api.ironstreet.com.uy/match/v1/driving/${coordinates}?tidy=true&timestamps=${timestamps}&radiuses=${radiuses}&steps=false&geometries=geojson&overview=full&annotations=true`;
+        let url = `https://geo.ironstreet.com.uy/traceRouteValhalla`;
+        const parms = {
+          locations: locations,
+          n:uuid.identifier,
+        }
+        const data = await this.doGet(url,parms);
+        console.log(data);
+          //console.log(data);
+        if(data){
+          return data;
+        }
+      
+    } catch (error) {
+      console.error('Error al bUSCAR RUTAS VALHALLA:', error);
+       throw error;
+    }
+  }
+
 }

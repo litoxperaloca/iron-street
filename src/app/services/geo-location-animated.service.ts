@@ -189,130 +189,128 @@ export class GeoLocationAnimatedService {
   // Maneja la actualización de la posición
   async handlePositionUpdate(position: Position):Promise<void> {
     const self = this;
+
+    //EVITAR CONCURRENCIA DE SNAPS
     if(self.isBusy){
       return;
     }
     if(self.lastPosition){
       console.log("LASTPOSITION",self.lastPosition,position.timestamp,self.lastPosition!.timestamp)
-
       const timeDifference = position.timestamp - self.lastPosition.timestamp;
       console.log(timeDifference);
       if(timeDifference<environment.gpsSettings.locationIntervalTimeInMs){
         return;
       }
     }
+
+    //LOCK
     self.isBusy=true;
     try{
-    // Llama al servicio de snap para ajustar la posición
-    const matchedPosition = await self.osrmService.getMatchedPosition(position);
-    const currentFeature = matchedPosition.currentFeature;
-    const heading: number= matchedPosition.heading as number;
-    let snapedPos=
-    {
-      coords:
-      {
-        longitude:matchedPosition.lon as number,
-        latitude:matchedPosition.lat as number,
-        heading:heading,
-        speed:matchedPosition.speed,
-        altitude: matchedPosition.altitude,
-        altitudeAccuracy: matchedPosition.altitudeAccuracy,
-        accuracy: matchedPosition.accuracy
-      },
-      timestamp: matchedPosition.timestamp
-    }
-    this.osrmService.lastestUserLocationsSnaped.push(snapedPos);
-    if(this.osrmService.lastestUserLocationsSnaped.length>20){
-      this.osrmService.lastestUserLocationsSnaped.shift();
-    }
-    self.isBusy=false;
+      // Llama al servicio de snap para ajustar la posición
+      const matchedPosition = await self.osrmService.getMatchedPosition(position);
+      //UNLOCK
+      self.isBusy=false;
 
-
-    const max = Number.parseInt(matchedPosition.maxspeed)
-    self.speedService.setCurrentSpeed(matchedPosition.speed);
-    self.speedService.setCurrentMaxSpeed(max); 
-    self.speedService.setCurrentFaults(matchedPosition.totalSpeedViolations);
-    self.speedService.setCurrentKm(matchedPosition.totalKm);
-
-    
-
-    if(matchedPosition.isOverSpeeding==true){
-      self.trafficAlertService.showAlert("Exceso de velocidad detectado. Comienza de nuevo", "speedExceeded", "", true);
-    }
-   
-
-    let userMoved,useStreetHeading:boolean=false;
-    if(
-      !self.lastPosition 
-      || !self.lastCurrentStreet 
-      || (self.lastPosition && self.lastCurrentStreet && self.lastCurrentStreet.id!=currentFeature.id)){
-        //First match or enter new street
-      userMoved=true;
-    }else{
-      //EVALUATE IF MOVED OR GPS MARGIN
-      userMoved=self.hasMoved([self.lastPosition.coords.longitude,self.lastPosition.coords.latitude],[snapedPos.coords.longitude,snapedPos.coords.latitude],snapedPos.coords.accuracy)
-    }
-    /*if(!self.lastHeading){
-      useStreetHeading=false;
-    }else{
-      //DEBO EVALUAR SI CAMBIO HEADING O GPS ERROR.
-
-      const diffHeadingsInDeg:number=this.calculateHeadingDifference(this.lastHeading,heading);
-      let speed = matchedPosition.speed;
-      if(!speed)speed = 0;
-      //let shouldUseNewHeading=true;
-      const shouldUseNewHeading = this.shouldUseCalculatedHeading(userMoved,diffHeadingsInDeg,speed)
-      if(shouldUseNewHeading){
-        useStreetHeading=false;
-      }else{
-        useStreetHeading=true;
+      //Procesar resultado de snap:
+      const currentFeature = matchedPosition.currentFeature;
+      const segments = matchedPosition.segments;
+      let currentSegment = null;
+      if(segments && segments.length>0){
+          currentSegment=segments[0];
       }
-    }*/
+      const heading: number= matchedPosition.heading as number;
+      let snapedPos=
+      {
+        coords:
+        {
+          longitude:matchedPosition.lon as number,
+          latitude:matchedPosition.lat as number,
+          heading:heading,
+          speed:matchedPosition.speed,
+          altitude: matchedPosition.altitude,
+          altitudeAccuracy: matchedPosition.altitudeAccuracy,
+          accuracy: matchedPosition.accuracy
+        },
+        timestamp: matchedPosition.timestamp
+      }
+      /*this.osrmService.lastestUserLocationsSnaped.push(snapedPos);
+      if(this.osrmService.lastestUserLocationsSnaped.length>20){
+        this.osrmService.lastestUserLocationsSnaped.shift();
+      }*/
 
+
+      const max = Number.parseInt(matchedPosition.maxspeed)
+      self.speedService.setCurrentSpeed(matchedPosition.speed);
+      self.speedService.setCurrentMaxSpeed(max); 
+      self.speedService.setCurrentFaults(matchedPosition.totalSpeedViolations);
+      self.speedService.setCurrentKm(matchedPosition.totalKm);
+
+      
+
+      if(matchedPosition.isOverSpeeding==true){
+        self.trafficAlertService.showAlert("Exceso de velocidad detectado. Comienza de nuevo", "speedExceeded", "", true);
+      }
     
 
-    self.lastHeading=heading;
-    self.lastCurrentStreet=currentFeature;
-    if(self.lastPosition){
-      self.preLastPosition = self.lastPosition;
-    } 
-    self.lastPosition=snapedPos;
+      let userMoved,useStreetHeading:boolean=false;
+      if(!self.lastPosition 
+        || !self.lastCurrentStreet 
+        || (self.lastPosition && self.lastCurrentStreet && self.lastCurrentStreet.id!=currentFeature.id)){
+          //First match or enter new street
+        userMoved=true;
+      }else{
+        //EVALUATE IF MOVED OR GPS MARGIN
+        userMoved=self.hasMoved([self.lastPosition.coords.longitude,self.lastPosition.coords.latitude],[snapedPos.coords.longitude,snapedPos.coords.latitude],snapedPos.coords.accuracy)
+      }
+    
+      self.lastHeading=heading;
+      self.lastCurrentStreet=currentFeature;
+      if(self.lastPosition){
+        self.preLastPosition = self.lastPosition;
+      } 
+      self.lastPosition=snapedPos;
 
-     let positionIsFromUserMovement:0|1=0;
-     if(userMoved){
-      positionIsFromUserMovement=1;
-     }
-     snapedPos.coords.altitudeAccuracy=positionIsFromUserMovement; //USE ALTITUDE ACCURACY AS USER MOVED (it was useless for this app)
-     self.geoLocationService.setLastCurrentPosition(snapedPos);
-     self.sensorService.setMatchedPosition(snapedPos,currentFeature,[snapedPos.coords.longitude,snapedPos.coords.latitude]);
-     self.sensorService.setOriginalPosition(position.coords.latitude, position.coords.longitude, position.coords.heading!);
-     self.mapService.setStreetFeature(currentFeature);
-     self.mapService.setUserCurrentStreet(currentFeature);
+      let positionIsFromUserMovement:0|1=0;
+      if(userMoved){
+        positionIsFromUserMovement=1;
+      }
+      snapedPos.coords.altitudeAccuracy=positionIsFromUserMovement; //USE ALTITUDE ACCURACY AS USER MOVED (it was useless for this app)
+      self.geoLocationService.setLastCurrentPosition(snapedPos);
+      self.sensorService.setMatchedPosition(snapedPos,currentFeature,[snapedPos.coords.longitude,snapedPos.coords.latitude]);
+      self.sensorService.setOriginalPosition(position.coords.latitude, position.coords.longitude, position.coords.heading!);
+      self.mapService.setStreetFeature(currentFeature);
+      self.mapService.setUserCurrentStreet(currentFeature);
+      self.mapService.setStreetSegment(currentSegment);
+      self.mapService.setUserCurrentSegment(currentSegment);
+
+      if (self.mapService.isRotating) {
+      console.log(snapedPos)
+        const streetHeading = self.mapService.userCurrentStreetHeading;
+        self.markerAnimationService.currentMarkerPosition=snapedPos;
+        self.markerAnimationService.currentHeading=streetHeading;
+        self.mapService.updateMarkerState(snapedPos,streetHeading,currentFeature);
+        //self.isBusy=false;
+        return;
+      }
      
-     if (self.mapService.isRotating) {
-     console.log(snapedPos)
-      const streetHeading = self.mapService.userCurrentStreetHeading;
-      self.markerAnimationService.currentMarkerPosition=snapedPos;
-      self.markerAnimationService.currentHeading=streetHeading;
-      self.mapService.updateMarkerState(snapedPos,streetHeading,currentFeature);
-      //self.isBusy=false;
+      console.log(matchedPosition);
+      // Ejecuta las tareas en paralelo después de obtener la posición ajustada
+      if(useStreetHeading||heading===0){
+        snapedPos.coords.heading=self.mapService.userCurrentStreetHeading;
+      }
+     
+      const promises=[];
+        promises.push(self.markerAnimationService.updateUserMarker(snapedPos));
+        if(self.mapService.isTripStarted){
+          promises.push(self.tripService.locationUpdate(false,snapedPos));
+        }
+        if(matchedPosition.roadName && matchedPosition.cameras && matchedPosition.cameras.length>0){
+          promises.push(self.trafficAlertService.checkAlertableObjectsOnNewUserPositionFromArray(snapedPos,matchedPosition.roadName,matchedPosition.cameras));
+        }
+        await Promise.all(promises);
+      
       return;
-     }
-     console.log(matchedPosition);
-     // Ejecuta las tareas en paralelo después de obtener la posición ajustada
-     if(useStreetHeading||heading===0){
-      snapedPos.coords.heading=self.mapService.userCurrentStreetHeading;
-     }
-     const promises=[];
-     promises.push(self.markerAnimationService.updateUserMarker(snapedPos));
-     if(self.mapService.isTripStarted){
-      promises.push(self.tripService.locationUpdate(false,snapedPos));
-     }
-     if(matchedPosition.roadName && matchedPosition.cameras && matchedPosition.cameras.length>0){
-      promises.push(self.trafficAlertService.checkAlertableObjectsOnNewUserPositionFromArray(snapedPos,matchedPosition.roadName,matchedPosition.cameras));
-     }
-     await Promise.all(promises);
-     return;
+    
     }catch(err){
       self.isBusy=false;
       return;

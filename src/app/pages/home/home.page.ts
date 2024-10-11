@@ -621,6 +621,10 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   }
 
+  openParkingModal(): void {
+    this.openModal("Parking");
+  }
+
   openBookmarkSavedModal(): void {
     this.openModal("BookmarkSaved");
   }
@@ -676,7 +680,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
       /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
       if (instructions) instructions.style.display = "block";*/
       const progress = document.getElementById("tripProgress");
-      if (progress) { progress.style.display = "block"; }
+      //if (progress) { progress.style.display = "block"; }
       ((window as any).homePage as HomePage).currentManeuver = alert.alertText;
       ((window as any).homePage as HomePage).currentManeuvreIcon = alert.alertIconUrl;
       const time: any = setTimeout(() => {
@@ -698,7 +702,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
       /*const instructions = document.getElementsByClassName("mapboxgl-ctrl-directions")[0] as HTMLElement;
       if (instructions) instructions.style.display = "block";*/
       const progress = document.getElementById("tripProgress");
-      if (progress) { progress.style.display = "block"; }
+      //if (progress) { progress.style.display = "block"; }
       ((window as any).homePage as HomePage).currentManeuver = alert.alertText;
       ((window as any).homePage as HomePage).currentManeuvreIcon = alert.alertIconUrl;
       const time: any = setTimeout(() => {
@@ -719,12 +723,15 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   triggerSpeedExceededAnimation() {
     const cardHeader = document.querySelector('#card_left .current');
+    const cardFaults = document.querySelector('.faults');
     if (cardHeader) {
       cardHeader.classList.add('speed-exceeded');
-      
+      cardFaults!.classList.add('speed-exceeded');
+
       // Remove the class after the animation completes to allow repeated animations
       setTimeout(() => {
         cardHeader.classList.remove('speed-exceeded');
+        cardFaults!.classList.remove('speed-exceeded');
       }, 2000); // Ajusta el tiempo al mismo valor que el tiempo total de la animación en CSS
     }
   }

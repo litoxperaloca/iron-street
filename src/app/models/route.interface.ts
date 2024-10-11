@@ -27,7 +27,7 @@ export interface Route {
     duration: number;
     distance: number;
     legs: Leg[];
-    geometry:any;
+    geometry:any
   }
   
   export interface Leg {

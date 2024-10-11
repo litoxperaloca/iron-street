@@ -25,6 +25,7 @@ import { Trip,Route } from '../models/route.interface';
 import { SourceAndLayerManagerService } from './mapHelpers/source-and-layer-manager.service';
 import { TripSimulatorService } from './trip-simulator.service';
 import { GeoLocationAnimatedService } from './geo-location-animated.service';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -42,6 +43,7 @@ export class MapService {
   destinationAddress!: string;
   destinationPlace!: Place;
   userCurrentStreet: MapboxGeoJSONFeature | null = null;
+  userCurrentStreetSegment: MapboxGeoJSONFeature | null = null;
   isTripStarted: boolean = false;
   actualRoute!: any;
   currentStep: number = 0;
@@ -90,7 +92,7 @@ export class MapService {
   positionIndex:number=0;
   lastLocationAnimationCompleted:number=0;
   current3dUserModel:any =environment.locatorDefaultObj;
-
+  isRerouting:boolean=false;
 
   constructor(private tripSimulatorService:TripSimulatorService,
     private windowService: WindowService,
@@ -164,101 +166,14 @@ export class MapService {
       self.setDefaults();
 
       self.mapControls.directions.on('route', (event: any) => {
-        const selectedIndex: number = self.mapControls.directions._stateSnapshot.routeIndex;
         const mapService = ((window as any).mapService as MapService);
-        const homePage = ((window as any).homePage as HomePage);
 
-        mapService.actualRoute = event.route[selectedIndex];
-        mapService.currentStep = 0;
-        mapService.alreadySpoken = false;
-        mapService.cleanRoutePopups();
-
-        const setMainRouteStyle = () => {
-          mapService.mapbox.setPaintProperty('directions-route-line','line-occlusion-opacity',0.2);
-          mapService.mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 2);
-          mapService.mapbox.setPaintProperty('directions-route-line', 'line-width', 12);
-          mapService.mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
-          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
-          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-color', '#2fdf75');
-          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.2);
-          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.2);
-
-          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-opacity', 0.2);
-          mapService.mapbox.setLayoutProperty('directions-origin-point', 'visibility', 'none');
-          mapService.mapbox.setLayoutProperty('directions-destination-point', 'visibility', 'none');
-
-          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-opacity', 0.2);
-        };
-
-        const setAltRouteStyle = () => {
-          mapService.mapbox.setPaintProperty('directions-route-line-alt','line-occlusion-opacity',0.2);
-          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 1);
-          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 7);
-          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
-        };
-        let directionsBounds: LngLatBounds;
-        const routeMain = event.route[selectedIndex];
-
-        const coordinatesMain = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
-        mapService.coordinatesMainRoute = coordinatesMain;
-
-        if (event.route.length < 2) {
-          setMainRouteStyle();
-          directionsBounds = mapService.calculateBounds([mapService.coordinatesMainRoute]);
-
-        } else {
-          const altIndex = selectedIndex === 0 ? 1 : 0;
-          const routeAlt = event.route[altIndex];
-          //const routeMain = event.route[selectedIndex];
-
-          const mainAnchor = mapService.compareLinePositions(polyline.decode(routeMain.geometry), polyline.decode(routeAlt.geometry)) === "right" ? "left" : "right";
-          const altAnchor = mainAnchor === "right" ? "left" : "right";
-
-          //const coordinatesMain = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
-          const coordinatesAlt = polyline.decode(routeAlt.geometry).map(coord => [coord[1], coord[0]]);
-          mapService.coordinatesAltRoute = coordinatesAlt;
-          const uniqueFromLine2 = this.uniqueCoordinates(coordinatesAlt, coordinatesMain);
-          directionsBounds = mapService.calculateBounds([mapService.coordinatesMainRoute, mapService.coordinatesAltRoute]);
-
-          const popUpAltRoute = mapService.createRoutePopUpFromCoords(uniqueFromLine2.length < 3 ? coordinatesAlt : uniqueFromLine2, routeAlt, 'mapboxgl-popup-alt-route', altIndex, altAnchor);
-          popUpAltRoute.addTo(this.mapbox);
-          mapService.popUpAltRoute = popUpAltRoute;
-
-          const popUpMainRoute = mapService.createRoutePopUp(routeMain, 'mapboxgl-popup-main-route', selectedIndex, mainAnchor);
-          popUpMainRoute.addTo(this.mapbox);
-          mapService.popUpMainRoute = popUpMainRoute;
-
-          mapService.mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'visible');
-          setMainRouteStyle();
-          setAltRouteStyle();
+        if(mapService.isRerouting){
+          mapService.processRerouteResult(event);
+        }else{
+          mapService.directionsOnNewRouteAction(event);
         }
-        const feature = mapService.mapControls.directions._stateSnapshot.destination;
-        const popup = mapService.createDestinationPopup(feature.geometry.coordinates as [number, number]);
-        popup.addTo(this.mapbox);
-        mapService.popUpDestination = popup;
-
-        const distanceMain = mapService.actualRoute.distance / 1000;
-        const durationMain = mapService.actualRoute.duration / 60;
-        const tripDistance = parseFloat(distanceMain.toFixed(2));
-        const tripDuration = parseFloat(durationMain.toFixed(2));
-
-        this.trackingUser = false;
-        this.mapEventIsFromTracking = false;
-
-        const center = directionsBounds.getCenter();
-        const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
-        this.mapbox.fitBounds(directionsBounds, {essential:true, padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: true });
-        const trip:Trip = {
-          route:(mapService.actualRoute as Route),
-          tripDuration:tripDuration,
-          tripDistance:tripDistance,
-          tripIsSimulation:false,
-          tripDestinationAddress:'',
-          userStartedTripFrom:mapService.geoLocationService.getLastCurrentLocation(),
-          tripProgress:0,
-          tripDestination:(mapService.actualRoute as Route).legs[0].steps[(mapService.actualRoute as Route).legs[0].steps.length-1].name
-        }
-        homePage.showTrip(trip);
+        
 
       });
 
@@ -817,6 +732,18 @@ export class MapService {
     
   }
 
+  setStreetSegment(feature:Feature<LineString>){
+    if(feature && feature.geometry){
+      if(this.mapbox.getSource('streetSourceFromSegment')){
+        (this.mapbox.getSource('streetSourceFromSegment') as mapboxgl.GeoJSONSource).setData({
+          "type": "FeatureCollection",
+          "features": [feature]
+        });
+      }
+     }
+    
+  }
+
   getMap(): mapboxgl.Map {
     return this.mapbox;
   }
@@ -976,6 +903,7 @@ export class MapService {
       'workDataSource',
       'favouritesDataSource',
       'streetSource',
+      'streetSourceFromSegment',
       'speedCamerasDataSource'
       //'stopDataSource'
     ];
@@ -1012,6 +940,7 @@ export class MapService {
       'directions:markers',
       //'maxspeedDataSource',
       'streetSource',
+      'streetSourceFromSegment',
 
       'homeDataSource',
       'workDataSource',
@@ -1290,6 +1219,153 @@ async add3DModelMarkerSimulator(map:any, origin:any){
 
   };
 
+  async reRoute(coordsOrigin:[number,number]):Promise<void>{
+    //Para reroute solo asigno el origen nuevamente y mapboxDirections hace todo oeri basado en ese  origen
+    try{
+      this.isRerouting=true;
+      await this.mapControls.directions.setOrigin(coordsOrigin);
+    }catch(error){
+      console.log(error);
+      this.isRerouting=false;
+    }
+    return;
+  }
+
+  processRerouteResult(event:any){
+    console.log(event);
+    const mapService:MapService = ((window as any).mapService as MapService);
+    const selectedIndex: number = mapService.mapControls.directions._stateSnapshot.routeIndex;
+    mapService.actualRoute = event.route[selectedIndex];
+    mapService.currentStep = 0;
+    mapService.alreadySpoken = false;
+    this.isRerouting=false;
+
+    if(mapService)
+      if(mapService.getMap().getLayer('directions-route-line-alt')){
+        mapService.getMap().setLayoutProperty('directions-route-line-alt','visibility', 'none');
+      }
+      if(mapService.getMap().getLayer('directions-origin-point')){
+        mapService.getMap().setLayoutProperty('directions-origin-point', 'visibility', 'none');
+      }
+      if(mapService.getMap().getLayer('directions-destination-point')){
+        mapService.getMap().setLayoutProperty('directions-destination-point', 'visibility', 'none');
+      }
+      mapService.getMap().setPaintProperty('directions-route-line','line-occlusion-opacity',0.2);
+      mapService.getMap().setPaintProperty('directions-route-line', 'line-emissive-strength', 2);
+      mapService.getMap().setPaintProperty('directions-route-line', 'line-width', 12);
+      mapService.getMap().setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
+
+    const tripService:TripService = ((window as any).tripService as TripService);
+    tripService.reRouteTrip(mapService.actualRoute);
+    const geoLocationAnimatedService = ((window as any).GeoLocationAnimatedService as GeoLocationAnimatedService);
+    mapService.trackingUser=true;
+    if (mapService.trackingUser) {
+      this.mapEventIsFromTracking = true;
+      mapService.setCameraPOVPosition(geoLocationAnimatedService.getLastPosition());
+      this.resetMapEventTrackingFlag();
+    }
+    return mapService.actualRoute;
+  }
+
+  directionsOnNewRouteAction(event:any){
+    console.log(event);
+    const mapService = ((window as any).mapService as MapService);
+    const selectedIndex: number = mapService.mapControls.directions._stateSnapshot.routeIndex;
+        const homePage = ((window as any).homePage as HomePage);
+
+        mapService.actualRoute = event.route[selectedIndex];
+        mapService.currentStep = 0;
+        mapService.alreadySpoken = false;
+        mapService.cleanRoutePopups();
+
+        const setMainRouteStyle = () => {
+          mapService.mapbox.setPaintProperty('directions-route-line','line-occlusion-opacity',0.2);
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-emissive-strength', 1);
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-width', 12);
+          mapService.mapbox.setPaintProperty('directions-route-line', 'line-color', '#09a2e7');
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-color', '#ff4961');
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-color', '#2fdf75');
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-emissive-strength', 0.2);
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-emissive-strength', 0.2);
+
+          mapService.mapbox.setPaintProperty('directions-origin-point', 'circle-opacity', 0.2);
+          mapService.mapbox.setLayoutProperty('directions-origin-point', 'visibility', 'none');
+          mapService.mapbox.setLayoutProperty('directions-destination-point', 'visibility', 'none');
+
+          mapService.mapbox.setPaintProperty('directions-destination-point', 'circle-opacity', 0.2);
+        };
+
+        const setAltRouteStyle = () => {
+          mapService.mapbox.setPaintProperty('directions-route-line-alt','line-occlusion-opacity',0.2);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-emissive-strength', 1);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-width', 7);
+          mapService.mapbox.setPaintProperty('directions-route-line-alt', 'line-color', '#ffc107');
+        };
+        let directionsBounds: LngLatBounds;
+        const routeMain = event.route[selectedIndex];
+
+        const coordinatesMain = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
+        mapService.coordinatesMainRoute = coordinatesMain;
+
+        if (event.route.length < 2) {
+          setMainRouteStyle();
+          directionsBounds = mapService.calculateBounds([mapService.coordinatesMainRoute]);
+
+        } else {
+          const altIndex = selectedIndex === 0 ? 1 : 0;
+          const routeAlt = event.route[altIndex];
+          //const routeMain = event.route[selectedIndex];
+
+          const mainAnchor = mapService.compareLinePositions(polyline.decode(routeMain.geometry), polyline.decode(routeAlt.geometry)) === "right" ? "left" : "right";
+          const altAnchor = mainAnchor === "right" ? "left" : "right";
+
+          //const coordinatesMain = polyline.decode(routeMain.geometry).map(coord => [coord[1], coord[0]]);
+          const coordinatesAlt = polyline.decode(routeAlt.geometry).map(coord => [coord[1], coord[0]]);
+          mapService.coordinatesAltRoute = coordinatesAlt;
+          const uniqueFromLine2 = this.uniqueCoordinates(coordinatesAlt, coordinatesMain);
+          directionsBounds = mapService.calculateBounds([mapService.coordinatesMainRoute, mapService.coordinatesAltRoute]);
+
+          const popUpAltRoute = mapService.createRoutePopUpFromCoords(uniqueFromLine2.length < 3 ? coordinatesAlt : uniqueFromLine2, routeAlt, 'mapboxgl-popup-alt-route', altIndex, altAnchor);
+          popUpAltRoute.addTo(this.mapbox);
+          mapService.popUpAltRoute = popUpAltRoute;
+
+          const popUpMainRoute = mapService.createRoutePopUp(routeMain, 'mapboxgl-popup-main-route', selectedIndex, mainAnchor);
+          popUpMainRoute.addTo(this.mapbox);
+          mapService.popUpMainRoute = popUpMainRoute;
+
+          mapService.mapbox.setLayoutProperty('directions-route-line-alt', 'visibility', 'visible');
+          setMainRouteStyle();
+          setAltRouteStyle();
+        }
+        const feature = mapService.mapControls.directions._stateSnapshot.destination;
+        const popup = mapService.createDestinationPopup(feature.geometry.coordinates as [number, number]);
+        popup.addTo(this.mapbox);
+        mapService.popUpDestination = popup;
+
+        const distanceMain = mapService.actualRoute.distance / 1000;
+        const durationMain = mapService.actualRoute.duration / 60;
+        const tripDistance = parseFloat(distanceMain.toFixed(2));
+        const tripDuration = parseFloat(durationMain.toFixed(2));
+
+        this.trackingUser = false;
+        this.mapEventIsFromTracking = false;
+
+        const center = directionsBounds.getCenter();
+        const bearing = this.calculateBearing(center, feature.geometry.coordinates as [number, number]);
+        this.mapbox.fitBounds(directionsBounds, {essential:true, padding: {right:100,bottom: 100,top: 100,left: 100}, bearing: bearing, animate: true });
+        const trip:Trip = {
+          route:(mapService.actualRoute as Route),
+          tripDuration:tripDuration,
+          tripDistance:tripDistance,
+          tripIsSimulation:false,
+          tripDestinationAddress:'',
+          userStartedTripFrom:mapService.geoLocationService.getLastCurrentLocation(),
+          tripProgress:0,
+          tripDestination:(mapService.actualRoute as Route).legs[0].steps[(mapService.actualRoute as Route).legs[0].steps.length-1].name
+        }
+        homePage.showTrip(trip);
+  }
+
   setDestinationBookmark(place:Place) {
     this.mapControls.directions.actions.setRouteIndex(0);
     this.cleanRoutePopups();
@@ -1340,7 +1416,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
     this.trackingUser = false;
 
     ((window as any).cameraService as CameraService).setCameraSKYPosition(position);
-    this.mapbox.setTerrain(undefined);
+    //this.mapbox.setTerrain(undefined);
 
   }
 
@@ -1381,7 +1457,10 @@ async add3DModelMarkerSimulator(map:any, origin:any){
   createStreetSourceAndLayer(){
     this.sourceAndLayerManager.createStreetSourceAndLayer();
   }
-
+  
+  createDirectionsSourcesAndLayer(){
+    this.sourceAndLayerManager.createDirectionsSourcesAndLayer();
+  }
   addBookmarksSourceAndLayer( 
      map: mapboxgl.Map,
     imageFileName: string,
@@ -1552,6 +1631,28 @@ async add3DModelMarkerSimulator(map:any, origin:any){
     }
   }
 
+  setUserCurrentSegment(currentStreet: mapboxgl.MapboxGeoJSONFeature | null) {
+    this.userCurrentStreetSegment = currentStreet;
+    
+    /*if (this.showingMaxSpeedWay) {
+      if (this.userCurrentStreet && this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
+        if (this.showingMaxSpeedWay && this.showingMaxSpeedWayId != this.userCurrentStreet.properties['@id']) {
+          this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
+          if (this.userCurrentStreet.geometry!.type === "LineString") {
+            if (this.popUpMaxSpeedWay) {
+              this.popUpMaxSpeedWay.remove();
+              this.popUpMaxSpeedWay = null;
+            }
+            const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry!.coordinates);
+            this.popUpMaxSpeedWay = maxSpeedPopUp;
+            this.popUpMaxSpeedWay.addTo(this.mapbox);
+          }
+        }
+
+      }
+    }*/
+  }
+
   async hideUserCurrentStreetMaxSpeedWay() {
     await this.sourceAndLayerManager.hideUserCurrentStreetMaxSpeedWay();
   }
@@ -1561,48 +1662,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
   }
 
   async showUserCurrentStreetMaxSpeedWay() {
-    if (!this.mapbox.getLayer("maxspeedRenderLayer")) {
-      this.mapbox.addLayer(
-        {
-          "id": "maxspeedRenderLayer",
-          "slot": "middle",
-          "minzoom": 7,
-          "maxzoom": 22,
-          "type": "line",
-          "paint": {
-            "line-color": "red",
-            "line-width": 10,
-            "line-opacity": 1,
-            "line-emissive-strength": 2,
-          },
-          "layout": {
-            "visibility": "visible",
-          },
-          "source": "streetSource",
-        });
-    }
-    if (this.userCurrentStreet) {
-      this.mapbox.setLayoutProperty("maxspeedRenderLayer", "visibility", "visible");
-
-      if (this.userCurrentStreet.properties && this.userCurrentStreet.properties['@id']) {
-        this.showingMaxSpeedWayId = this.userCurrentStreet.properties['@id'];
-        this.showingMaxSpeedWay = true;
-        if (this.userCurrentStreet.geometry!.type === "LineString") {
-          const maxSpeedPopUp = this.createMaxSpeedWayPopUp(this.userCurrentStreet.properties['maxspeed'], this.userCurrentStreet.geometry!.coordinates);
-          this.popUpMaxSpeedWay = maxSpeedPopUp;
-          this.popUpMaxSpeedWay.addTo(this.mapbox);
-        }
-      } else {
-        this.showingMaxSpeedWayId = null;
-        this.showingMaxSpeedWay = false;
-        if (this.popUpMaxSpeedWay) {
-          this.popUpMaxSpeedWay.remove();
-          this.popUpMaxSpeedWay = null;
-        }
-
-      }
-
-    }
+    await this.sourceAndLayerManager.showUserCurrentStreetMaxSpeedWay();
   }
 
   addLineTileVectorLayer(

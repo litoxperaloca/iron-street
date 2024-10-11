@@ -7,6 +7,10 @@ import { Subject } from 'rxjs';
 import { TrafficAlertService } from './traffic-alert-service';
 import { environment } from 'src/environments/environment';
 import { Route,Trip } from 'src/app/models/route.interface';
+import { Feature, LineString, lineString, point } from '@turf/helpers';
+import { nearestPointOnLine, pointToLineDistance } from '@turf/turf';
+import polyline from '@mapbox/polyline';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -27,13 +31,16 @@ export class TripService {
    lastPositionWasSimulated:boolean=false; 
    tripProgressChanged = new EventEmitter<number>();
    tripStarted = new EventEmitter<Trip>();
+   tripReRouted = new EventEmitter<Trip>();
    tripSimulationStarted = new EventEmitter<Trip>();
 
    tripEnded = new EventEmitter<Trip>();
    tripCanceled = new EventEmitter<Trip>();
    tripError = new EventEmitter<Trip>();
    trip:Trip|null=null;
-
+   offRouteCounter: number = 0;  // Contador para persistencia de desviación
+   lastRerouteTime: number = 0;  // Tiempo en el que se realizó el último recalculado
+   
   constructor(
     private mapboxService: MapboxService, 
     private mapService:MapService,
@@ -71,8 +78,37 @@ export class TripService {
 
     this.tripStarted.emit(trip);
     this.announceManeuver(this.route.legs[0].steps[0]);
-    this.currentStepIndex=1;  
+    this.currentStepIndex=1;
+    this.offRouteCounter = 0;   // Reiniciar contador de desviación
+    this.lastRerouteTime = 0;  // Actualizar tiempo del último recalculado  
   }
+
+    // Iniciar un nuevo viaje con una ruta específica
+    reRouteTrip(newRoute: Route) {
+      this.preannouncedManeuvers.clear();
+      this.announcedManeuvers.clear();
+      this.userIsOnGuidedTrip=true;
+      this.route = newRoute;
+      this.currentStepIndex = 1;
+      this.tripProgress=0.00;
+      this.tripDuration= this.calculateDuration();
+      this.tripDistance = this.calculateTotalDistance();
+      this.tripDestination = this.route.legs[0].steps[this.route.legs[0].steps.length-1].name;
+      this.tripDestinationAddress = this.mapService.destinationAddress;
+      this.tripIsSimulation = false;
+      const trip:Trip = {
+        tripProgress: this.tripProgress,
+        tripDistance: this.tripDistance,
+        tripDuration:  this.tripDuration,
+        tripDestination: this.tripDestination,
+        tripDestinationAddress: this.tripDestinationAddress,
+        tripIsSimulation:  this.tripIsSimulation,
+        userStartedTripFrom: this.userStartedTripFrom,
+        route:this.route
+      }
+      this.trip=trip;
+      this.tripReRouted.emit(trip);
+    }
 
   startTripSimulation(route: Route,initialLocation:[number,number]) {
     this.preannouncedManeuvers.clear();
@@ -106,6 +142,9 @@ export class TripService {
   }
 
   async locationUpdate(tripIsSimulation: boolean,userPosition:Position): Promise<void> {
+
+
+
     if (userPosition && this.lastUserPositionMonitored
       && userPosition.coords.latitude == this.lastUserPositionMonitored.coords.latitude 
         && userPosition.coords.longitude == this.lastUserPositionMonitored.coords.longitude) {
@@ -115,7 +154,7 @@ export class TripService {
     this.lastUserPositionMonitored=userPosition;
     const stepCount=this.route!.legs[0].steps.length;
     if(this.currentStepIndex>=0 && this.currentStepIndex<stepCount-1){
-      this.updateUserPosition([userPosition.coords.longitude,userPosition.coords.latitude]);
+      await this.updateUserPosition([userPosition.coords.longitude,userPosition.coords.latitude]);
       return;
     }
     if(this.currentStepIndex>=0 && this.currentStepIndex>=stepCount-1){
@@ -123,10 +162,12 @@ export class TripService {
         this.endTrip();
         return;  
       }else{
-        this.updateUserPosition([userPosition.coords.longitude,userPosition.coords.latitude]);
+        await this.updateUserPosition([userPosition.coords.longitude,userPosition.coords.latitude]);
       }
     }
   }
+
+
 
   async locationUpdateSimulation(userPosition:[number,number]): Promise<void> {
     const stepCount=this.route!.legs[0].steps.length;
@@ -146,9 +187,87 @@ export class TripService {
     }
   }
 
-  // Actualizar la posición del usuario
-  private updateUserPosition(coords: any) {
+
+  
+// Suponiendo que `map` es la instancia de Mapbox y `userPosition` contiene la última posición del usuario
+updateRouteRemainigLineString(userPosition:[number,number], originalRoute:any) {
+  // 1. Encuentra el punto más cercano al usuario en la ruta
+  const nearestPoint = nearestPointOnLine(originalRoute, point(userPosition));
+
+  // 2. Encuentra el índice del punto más cercano en la geometría de la línea
+  const nearestIndex = nearestPoint.properties.index;
+
+  // 3. Recorta la ruta desde el punto más cercano hasta el final
+  const remainingCoordinates = originalRoute.geometry.coordinates.slice(nearestIndex);
+
+  // 4. Crea una nueva geometría GeoJSON con la parte restante de la ruta
+
+  // 5. Actualiza la source en Mapbox para reflejar la nueva ruta recortada
+ const directionsSource = ((window as any).mapService as MapService).getMap().getSource('directions'); 
+  if(directionsSource && directionsSource.type==="geojson")
+    
+    directionsSource.setData({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: remainingCoordinates
+          },
+          properties: originalRoute.properties
+    }]
+  });
+}
+
+
+
+  // Verificar si el usuario está desviado de la ruta utilizando la geometría decodificada de `route` con `turf`
+private isUserOffRoute(userCoords: [number, number], lineString: Feature<LineString>): boolean {
+  // Crear un punto con la posición actual del usuario
+  const userPoint = point(userCoords);
+
+  // Calcular la distancia del usuario a la línea de la ruta
+  const distanceToRoute = pointToLineDistance(userPoint, lineString, { units: 'meters' });
+  const maxAllowedDeviation = environment.tripserviceConf.rerouteConf.maxAllowedDeviationDistanceInMeters; // Por ejemplo, 50 metros
+  console.log('isUseOffRoute:',distanceToRoute,maxAllowedDeviation,userCoords,userPoint,lineString);
+  // Determinar si el usuario está fuera del rango permitido
+  return distanceToRoute > maxAllowedDeviation;
+}
+
+
+async updateUserPosition(coords: any) {
     console.log(coords);
+     // Decodificar la geometría de la ruta completa (nivel de `route` en la respuesta)
+  const routeGeometry = this.route!.geometry;
+  const lineCoords = polyline.decode(routeGeometry).map((coord) => [coord[1], coord[0]]) as Array<[number, number]>;
+
+  // Crear un LineString de turf con la geometría decodificada
+  const lineStringRoute = lineString(lineCoords);
+
+  // Verificar si el usuario está desviado de la ruta
+  const isUserOffRoute = this.isUserOffRoute(coords, lineStringRoute);
+  console.log('UpdateUserPostion',routeGeometry,lineCoords,lineStringRoute,isUserOffRoute)
+
+  if (isUserOffRoute) {
+    this.offRouteCounter++;
+    console.log(`Usuario fuera de la ruta - Contador de desviación: ${this.offRouteCounter}`);
+    // Verificar si el contador de desviación supera el umbral y el tiempo desde el último recalculado
+    if (this.offRouteCounter >=  environment.tripserviceConf.rerouteConf.maxAllowedOffRoutePositions && (Date.now() - this.lastRerouteTime) > environment.tripserviceConf.rerouteConf.maxAllowedtimeOffRouteInSeconds) { // 3 lecturas consecutivas y al menos 5 segundos
+      console.log("Usuario desviado durante un tiempo considerable, recalculando ruta...");
+      this.trafficAlertService.showAlert("Reajustando ruta...","speakOnly",'none',true);
+      await this.mapService.reRoute(coords);
+      // Reiniciar el estado del viaje después del recalculado
+      this.currentStepIndex = 1;  // Comenzar desde step 1 (evitando 'depart')
+      this.offRouteCounter = 0;   // Reiniciar contador de desviación
+      this.lastRerouteTime = Date.now();  // Actualizar tiempo del último recalculado
+      this.announcedManeuvers.clear;
+      this.preannouncedManeuvers.clear;
+    }
+  } else {
+    this.offRouteCounter = 0;  // Reiniciar contador si el usuario vuelve a la ruta
+   //this.updateRouteRemainigLineString(coords,lineStringRoute);
+  }
+
     // Verificar si el usuario está desviado de la ruta
     const closestStepIndex = this.findClosestStepIndex(coords);
     const distanceToClosestStep = this.mapboxService.calculateDistance(
@@ -273,7 +392,7 @@ export class TripService {
         .replace('{instruction}', step.maneuver.instruction);
       
       this.preannouncedManeuvers.add(this.currentStepIndex);
-      await this.trafficAlertService.showAlert(preAnnouncement,"maneuver",this.maneurveIcon(step),true);
+      await this.trafficAlertService.showAlert(preAnnouncement,"maneuver",this.maneurveIcon(step),false);
 
     }
   }
@@ -287,7 +406,7 @@ export class TripService {
           .replace('{modifier}', step.maneuver.modifier)
           .replace('{instruction}', step.maneuver.instruction);
         this.announcedManeuvers.add(this.currentStepIndex);
-        await this.trafficAlertService.showAlert(announcement,"maneuver",this.maneurveIcon(step),true);
+        await this.trafficAlertService.showAlert(announcement,"maneuver",this.maneurveIcon(step),false);
         /*if(step.maneuver.type==="arrive"){
           this.currentStepIndex = this.route.legs[0].steps.length
         }*/

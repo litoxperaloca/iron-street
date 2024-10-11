@@ -10,7 +10,46 @@
 <ion-content [fullscreen]="true">
 
   <div id="container">
-
+    <div class="terms-container">
+      <ion-card color="medium">
+        <ion-card-content>
+          <ion-icon name="document-text-outline" size="large" color="primary"></ion-icon>
+          <p>
+            Al utilizar Iron Street y sus funcionalidades, aceptas los siguientes términos y condiciones:
+          </p>
+          <ion-list>
+            <ion-item>
+              <ion-icon slot="start" name="checkmark-outline" color="success"></ion-icon>
+              <ion-label>
+                El usuario se compromete a proporcionar información real y precisa durante la creación de su cuenta.
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon slot="start" name="checkmark-outline" color="success"></ion-icon>
+              <ion-label>
+                La suscripción es opcional y solo es necesaria para participar en las recompensas monetarias.
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon slot="start" name="checkmark-outline" color="success"></ion-icon>
+              <ion-label>
+                Las recompensas se calculan de acuerdo con los kilómetros recorridos y el comportamiento del conductor en la vía.
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon slot="start" name="checkmark-outline" color="success"></ion-icon>
+              <ion-label>
+                El incumplimiento de las reglas de tránsito puede resultar en la pérdida de kilómetros acumulados.
+              </ion-label>
+            </ion-item>
+          </ion-list>
+          <p class="warning-text">
+            ⚠️ La aplicación recopila datos anónimos ubicación para poder monitorear la conducción, pero no se comparte con terceros sin el consentimiento expreso del usuario.
+          </p>
+        </ion-card-content>
+      </ion-card>
+    </div>
   </div>
 
 </ion-content>
+

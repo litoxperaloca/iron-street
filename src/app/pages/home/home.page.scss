@@ -67,7 +67,7 @@ ion-fab ion-icon{
 /* Speed Indicators and Geolocation Status */
 #card_left {
   position: absolute;
-  top: 10px;
+  top: 50px;
   border-radius: var(--modal-border-radius);
   box-shadow: 0 2px 4px var(--shadow-color);
   background-color: transparent;
@@ -260,13 +260,13 @@ right: 5px;
 
 .card_stats{
   position: absolute;
-  top: 190px;
+  top: 350px;
   background-color: transparent;
   color: var(--home-text-color);
   z-index: 10;
-  right: 5px;
+  right: 1px;
   width: 67px;
-  height: 200px;
+  height: 80px;
   margin: 0;
   border: none;
   box-shadow: none;
@@ -286,11 +286,14 @@ right: 5px;
   1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
   text-align: center;
 }
+.card_stats ion-card-header.faults.speed-exceeded{
+  display: block;
 
+}
 .card_stats ion-card-header.faults{
   width: 60px;
   height: 55px;
-  font-size: 16pt;
+  font-size: 10pt;
   color: #fff;
   padding-top: 1px;
   padding-right: 7px;  
@@ -300,6 +303,7 @@ right: 5px;
   text-shadow: 1px 1px 8px black;
   text-align: right;
   margin-top: 15px;
+  display: none;
 }
 
 .mapboxgl-user-location-puk-dot:before {
@@ -644,7 +648,7 @@ ion-toolbar{
 
 .odometer-container{
   position: absolute;
-  top: 168px;
+  top: 225px;
   right: 1px;
 }
 
@@ -663,7 +667,18 @@ ion-toolbar{
   font-size: 15pt;
 }
 
-
+#parking_button{
+  background-image: url(/assets/img/map-icons/parking.png);
+  width: 69px;
+  height: 69px;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 277px;
+  right: 5px;
+  box-shadow: 1px 2px 4px 2px black;
+  border-radius: 50%;
+}
 /*.odometer.odometer-theme-car .odometer-digit:last-child {
   font-size: 12pt !important;
   color: red !important;

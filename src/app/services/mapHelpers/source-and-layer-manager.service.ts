@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, ɵtruncateMiddle } from '@angular/core';
 import { MapService } from '../map.service';
 import { environment } from 'src/environments/environment';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
@@ -9,6 +9,7 @@ import mapboxgl, { AnyLayer, GeoJSONFeature, LngLatBounds, MapboxGeoJSONFeature,
 import { lineString } from '@turf/helpers';
 import length from '@turf/length';
 import { along } from '@turf/turf';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -298,20 +299,59 @@ export class SourceAndLayerManagerService {
     }
   }
 
-  createStreetSourceAndLayer(){
+  createDirectionsSourcesAndLayer(){
     const self:MapService = ((window as any).mapService as MapService);
     const map = ((window as any).mapService as MapService).getMap();  // Add the source to the Mapbox map
-  map.addSource("streetSource", {
-    type: 'geojson',
-    data: {
-      "type": "FeatureCollection",
-      "features": []
-    }
-    });
+      if(!map.getSource('streetSource')){
+        map.addSource('directions', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: []
+          }
+       });
+      
+        // Luego, agrega una capa asociada a la source 'directions'
+        map.addLayer({
+          id: 'directions-route-line-alt',
+          type: 'line', // El tipo de capa (puede ser 'line', 'circle', 'symbol', etc.)
+          source: 'directions', // Referencia al ID de la source
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#007cbf',
+            'line-width': 4
+          }
+        });
 
+        map.addLayer({
+          id: 'directions-route-line-alt',
+          type: 'line', // El tipo de capa (puede ser 'line', 'circle', 'symbol', etc.)
+          source: 'directions', // Referencia al ID de la source
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#007cbf',
+            'line-width': 4
+          }
+        });
+     }
+    if(!map.getSource('streetSourceFromSegment')){
+      map.addSource("streetSourceFromSegment", {
+        type: 'geojson',
+        data: {
+          "type": "FeatureCollection",
+          "features": []
+        }
+        });
+    }
   // Add the layer to the Mapbox map
   map.addLayer({
-    id: "streetLayer",
+    id: "maxspeedRenderLayer",
     type: 'line',
     source: "streetSource",
     slot:'middle',
@@ -321,12 +361,97 @@ export class SourceAndLayerManagerService {
       'visibility': 'none'
     },
     paint: {
+      "line-opacity": 0.6,
       'line-color': '#007cbf',
-      'line-width': 4,
-      "line-occlusion-opacity": 0.6
+      'line-width': 15,
+      "line-occlusion-opacity": 0.2
     },
   });
 
+  map.addLayer({
+    id: "maxspeedRenderLayerFromSegments",
+    type: 'line',
+    source: "streetSourceFromSegment",
+    slot:'middle',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round',
+      'visibility': 'none'
+    },
+    paint: {
+      "line-opacity": 0.6,
+      "line-occlusion-opacity": 0.2,
+      'line-color': 'black', // Parallel line color (green)
+      'line-width': 15,
+      'line-offset': -5 // Offset the second line by -5 pixels to the left (parallel to the original)
+    }  
+  });
+
+
+ 
+  }
+
+  createStreetSourceAndLayer(){
+    const self:MapService = ((window as any).mapService as MapService);
+    const map = ((window as any).mapService as MapService).getMap();  // Add the source to the Mapbox map
+    if(!map.getSource('streetSource')){
+    map.addSource("streetSource", {
+    type: 'geojson',
+    data: {
+      "type": "FeatureCollection",
+      "features": []
+    }
+    });
+  }
+    if(!map.getSource('streetSourceFromSegment')){
+      map.addSource("streetSourceFromSegment", {
+        type: 'geojson',
+        data: {
+          "type": "FeatureCollection",
+          "features": []
+        }
+        });
+    }
+  // Add the layer to the Mapbox map
+  map.addLayer({
+    id: "maxspeedRenderLayer",
+    type: 'line',
+    source: "streetSource",
+    slot:'middle',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round',
+      'visibility': 'none'
+    },
+    paint: {
+      "line-opacity": 0.6,
+      'line-color': '#007cbf',
+      'line-width': 15,
+      "line-occlusion-opacity": 0.2
+    },
+  });
+
+  map.addLayer({
+    id: "maxspeedRenderLayerFromSegments",
+    type: 'line',
+    source: "streetSourceFromSegment",
+    slot:'middle',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round',
+      'visibility': 'none'
+    },
+    paint: {
+      "line-opacity": 0.6,
+      "line-occlusion-opacity": 0.2,
+      'line-color': 'black', // Parallel line color (green)
+      'line-width': 15,
+      'line-offset': -5 // Offset the second line by -5 pixels to the left (parallel to the original)
+    }  
+  });
+
+
+ 
   }
 
   addBookmarksSourceAndLayer( 
@@ -383,7 +508,7 @@ export class SourceAndLayerManagerService {
   
                   //'icon-rotate': ['get', 'bearing']
                 },
-                //"filter": ["<=", ["distance-from-center"], 0.5],
+                 //"filter": ["<=", ["distance-from-center"], 0.5],
   
                 "source": sourceId,
               });
@@ -446,6 +571,9 @@ export class SourceAndLayerManagerService {
       const map = ((window as any).mapService as MapService).getMap();
       if (map.getLayer("maxspeedRenderLayer")) {
         map.setLayoutProperty('maxspeedRenderLayer', "visibility", 'none');
+        if (map.getLayer("maxspeedRenderLayerFromSegments")) {
+          map.setLayoutProperty('maxspeedRenderLayerFromSegments', "visibility", 'none');
+        }
         self.showingMaxSpeedWayId = null;
         self.showingMaxSpeedWay = false;
       }
@@ -477,18 +605,25 @@ export class SourceAndLayerManagerService {
         .setLngLat(midPoint.geometry.coordinates as [number, number])
         .setHTML('<div><p> ' + 'MAX: ' + maxSpeed + ' Km/h.</p</div>');
         map.setLayoutProperty('maxspeedRenderLayer', 'visibility', 'visible');
-  
+        map.setLayoutProperty('maxspeedRenderLayerFromSegments', 'visibility', 'visible');
+
       let className: string = "red";
       map.setPaintProperty('maxspeedRenderLayer', 'line-color', '#E91E63');
-  
+      map.setPaintProperty('maxspeedRenderLayerFromSegments', 'line-color', 'skyblue');
+
       if (maxSpeed >= 60) {
         className = "yellow";
         map.setPaintProperty('maxspeedRenderLayer', 'line-color', '#ffc107');
+        map.setPaintProperty('maxspeedRenderLayerFromSegments', 'line-color', 'skyblue');
+
       }
       if (maxSpeed >= 75) {
         className = "green";
         map.setPaintProperty('maxspeedRenderLayer', 'line-color', '#079421');
+        map.setPaintProperty('maxspeedRenderLayerFromSegments', 'line-color', 'skyblue');
+
       }
+
       popUp.addClassName("maxSpeedWayPopUp");
   
       popUp.addClassName(className + "PopUp");
@@ -509,9 +644,11 @@ export class SourceAndLayerManagerService {
             "slot": "middle",
             "paint": {
               "line-color": "red",
-              "line-width": 10,
-              "line-opacity": 1,
-              "line-emissive-strength": 2,
+              "line-width": 12,
+              //"line-opacity": 0.6,
+              "line-emissive-strength": 8,
+              "line-occlusion-opacity": 0.2
+
             },
             "layout": {
               "visibility": "visible",
@@ -519,9 +656,36 @@ export class SourceAndLayerManagerService {
             "source": "streetSource",
           });
       }
+      if (!map.getLayer("maxspeedRenderLayerFromSegments")) {
+        map.addLayer(
+          {
+            "id": "maxspeedRenderLayerFromSegments",
+            "minzoom": 7,
+            "maxzoom": 22,
+            "type": "line",
+            "slot": "middle",
+            "paint": {
+              "line-color": "skyblue",
+              "line-width": 12,
+              //"line-opacity": 0.6,
+              "line-emissive-strength": 8,
+              "line-occlusion-opacity": 0.2,
+
+              'line-offset': -5 // Offset the second line by -5 pixels to the left (parallel to the original)
+
+            },
+            "layout": {
+              "visibility": "visible",
+            },
+            "source": "streetSourceFromSegment",
+          });
+      }
       if (self.userCurrentStreet) {
         map.setLayoutProperty("maxspeedRenderLayer", "visibility", "visible");
-  
+        if(self.userCurrentStreetSegment){
+          map.setLayoutProperty("maxspeedRenderLayerFromSegments", "visibility", "visible");
+        }
+
         if (self.userCurrentStreet.properties && self.userCurrentStreet.properties['@id']) {
           self.showingMaxSpeedWayId = self.userCurrentStreet.properties['@id'];
           self.showingMaxSpeedWay = true;
@@ -565,6 +729,7 @@ export class SourceAndLayerManagerService {
           "minzoom": minZoom,
           "maxzoom": maxZoom,
           "type": "line",
+          "slot": 'middle',
           "paint": {
             "line-color": lineColor,
             "line-width": linWidth,
@@ -758,15 +923,74 @@ export class SourceAndLayerManagerService {
   
 
 
-/*********************************************************************************
- * 
- * 
- * 
- * 
- * 
- */
 
+  update3DClipperData(coords:[number,number]){
+    const map = ((window as any).mapService as MapService).getMap();
 
+    if(!map.getSource('eraser')){
+      this.set3DClipperSourceAndLayer();
+    }
+    const data = {
+      'type': 'Feature',
+      'properties': {},
+      'geometry': {
+          'coordinates': [
+              [
+                  [-74.00618, 40.71406],
+                  [-74.00703, 40.71307],
+                  [-74.00787, 40.71206],
+                  [-74.00766, 40.71176],
+                  [-74.00624, 40.71204],
+                  [-74.00487, 40.71252],
+                  [-74.00421, 40.71315],
+                  [-74.00618, 40.71406]
+              ]
+          ],
+          'type': 'Polygon'
+      }
+    } 
+  }
+
+  set3DClipperSourceAndLayer(){
+    const map = ((window as any).mapService as MapService).getMap();
+
+      // add a geojson source with a polygon to be used in the clip layer.
+      map.addSource('eraser', {
+        'type': 'geojson',
+        'data': {
+            'type': 'FeatureCollection',
+            'features': [
+
+            ]
+        }
+    });
+
+    // add the clip layer and configure it to also remove symbols and trees.
+    // clipping becomes active from zoom level 16 and below.
+    map.addLayer({
+        'id': 'eraser',
+        'type': 'clip',
+        'source': 'eraser',
+        'layout': {
+            // specify the layer types to be removed by this clip layer
+            'clip-layer-types': ['symbol', 'model']
+        },
+        'minzoom': 15,
+        'maxzoom': 22
+    });
+
+    // add a line layer to visualize the clipping region.
+    map.addLayer({
+        'id': 'eraser-debug',
+        'type': 'line',
+        'source': 'eraser',
+        'paint': {
+            'line-color': 'rgba(255, 0, 0, 0.9)',
+            'line-dasharray': [0, 4, 3],
+            'line-width': 5
+        }
+    });
+  }
 
 
 

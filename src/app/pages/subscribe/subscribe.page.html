@@ -3,14 +3,54 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>{{ 'SUSCRIPCIONES' | translate }}</ion-title>
+    <ion-title>{{ 'SUSCRIPCION A RECOMPENSAS' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
 
   <div id="container">
-
+      <div class="subscription-container">
+        <ion-card color="medium">
+            <ion-card-content>
+            <p>
+              <ion-icon name="information-circle-outline" color="secondary"></ion-icon> Iron Street es una app gratuita para todos los usuarios. Sin embargo, puedes optar por un plan de suscripción que te permitirá participar en nuestras doce recompensas monetarias.
+            </p>
+            <p>
+              Con una suscripción anual, obtienes la oportunidad de ser recompensado cada mes. Las recompensas se otorgan en dólares estadounidenses mediante transferencia, y el monto se divide en partes iguales entre los usuarios que alcancen la meta mensual.
+            </p>
+            <p style="margin-top: 10px;">
+              <strong>Meta mensual:</strong> Completar <span class="goal-km">X kilómetros</span> en el mes sin registrar faltas de tránsito.
+            </p>
+            <ion-list>
+              <ion-item>
+                <ion-icon slot="start" name="speedometer-outline" color="danger"></ion-icon>
+                <ion-label>Exceso de velocidad</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon slot="start" name="hand-right-outline" color="warning"></ion-icon>
+                <ion-label>No respetar señales de pare</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon slot="start" name="remove-circle-sharp" color="danger"></ion-icon>
+                <ion-label>Realizar maniobras contramano</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon slot="start" name="phone-portrait-outline" color="tertiary"></ion-icon>
+                <ion-label>Uso de celular mientras conduces</ion-label>
+              </ion-item>
+            </ion-list>
+            
+          </ion-card-content>
+        </ion-card>
+    
+        <ion-card  class="warningcard" color="contrast">
+          <ion-card-content>
+            <p class="warning-text">⚠️ En esta versión demo, el menú de suscripciones no está disponible.</p>
+          </ion-card-content>
+        </ion-card>
+  
+      </div>
   </div>
 
 </ion-content>

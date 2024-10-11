@@ -7,6 +7,7 @@ import { LocationModalComponent } from '../modals/location-modal/location-modal.
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from '../modals/max-speed-details-modal/max-speed-details-modal.component';
 import { OsmModalComponent } from '../modals/osm-modal/osm-modal.component';
+import { ParkingModalComponent } from '../modals/parking-modal/parking-modal.component';
 import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
@@ -132,6 +133,14 @@ export const ComponentRef = {
     component: CalibrateAppModalComponent,
     cssClass: 'bottom-sheet-modal',
     breakpoints: [0, 0.5, 0.75, 1],
+    initialBreakpoint: 1,
+    backdropBreakpoint: 1,
+    props: {} // Añade las propiedades que necesites
+  },
+  [ModalComponents.Parking]: {
+    component: ParkingModalComponent,
+    cssClass: 'bottom-sheet-modal',
+    breakpoints: [0, 1],
     initialBreakpoint: 1,
     backdropBreakpoint: 1,
     props: {} // Añade las propiedades que necesites

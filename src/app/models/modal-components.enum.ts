@@ -13,7 +13,8 @@ export enum ModalComponents {
   Debug = 'Debug',
   UserMarkerSettings = 'UserMarkerSettingsModal',
   BookmarkSaved = 'BookmarkSaved',
-  CalibrateApp ='CalibrateApp'
+  CalibrateApp ='CalibrateApp',
+  Parking = 'Parking'
 }
 
 
@@ -27,6 +28,7 @@ import { LocationModalComponent } from '../modals/location-modal/location-modal.
 import { MapSettingsModalComponent } from '../modals/map-settings/mapsettings-modal.component';
 import { MaxSpeedDetailsModalComponent } from '../modals/max-speed-details-modal/max-speed-details-modal.component';
 import { OsmModalComponent } from '../modals/osm-modal/osm-modal.component';
+import { ParkingModalComponent } from '../modals/parking-modal/parking-modal.component';
 import { PlaceInfoModalComponent } from '../modals/place-info-modal/place-info-modal.component';
 import { SearchReverseModalComponent } from '../modals/search-reverse-modal/search-reverse-modal.component';
 import { SearchModalComponent } from '../modals/search/search-modal.component';
@@ -50,7 +52,9 @@ export const ModalComponentMap: { [key in ModalComponents]: any } = {
   [ModalComponents.Debug]: DebugModalComponent,
   [ModalComponents.UserMarkerSettings]: UserMarkerSettingsModalComponent,
   [ModalComponents.BookmarkSaved]: BookmarkSavedModalComponent,
-  [ModalComponents.CalibrateApp]: CalibrateAppModalComponent
+  [ModalComponents.CalibrateApp]: CalibrateAppModalComponent,
+  [ModalComponents.Parking]: ParkingModalComponent
+
 
 
 

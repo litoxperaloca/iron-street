@@ -97,10 +97,13 @@ export class TripSimulatorService{
       'id': 'route',
       'source': 'route',
       'type': 'line',
+      'slot': 'middle',
       'layout': {'visibility':'none'},
       'paint': {
         'line-width': 3,
-        'line-color': '#007cbf'
+        'line-color': '#007cbf',
+        'line-occlusion-opacity':0.1,
+        'line-emissive-strength':1
       }
     });
   }

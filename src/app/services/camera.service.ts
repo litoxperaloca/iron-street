@@ -42,17 +42,17 @@ export class CameraService {
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;
-        map.triggerRepaint();
+        //map.triggerRepaint();
       })
       map.once('zoomend', () => {
         self.locked = false;
         self.isFlying = false;
-        map.triggerRepaint();
+        //map.triggerRepaint();
       })
       map.once('pitchend', () => {
         self.locked = false;
         self.isFlying = false;
-        map.triggerRepaint();
+        //map.triggerRepaint();
       })
     }
   }

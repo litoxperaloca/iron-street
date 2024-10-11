@@ -8,6 +8,11 @@ import { Component, OnInit } from '@angular/core';
 export class SubscribePage implements OnInit {
 
   constructor() { }
+  
+  onSubscribeClick() {
+    console.log('Suscripción no disponible en la versión demo');
+    // Navegar a otra página o mostrar mensaje de no disponible
+  }
 
   ngOnInit() {
   }

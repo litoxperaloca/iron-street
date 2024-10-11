@@ -22,6 +22,7 @@ export class TrafficAlertService {
   streetsCamerasConfigured:boolean=true;
   lastUserCurrentStreet:MapboxGeoJSONFeature|null=null;
   lastUserCurrentStreetName:string|null=null;
+  lastUserCurrentStreetId:string|null=null;
   preannouncedObjects = new Set<number>(); // Set de objetos ya preanunciados
   announcedObjects = new Set<number>(); // Set de objetos ya anunciados
   newManeuverAlert = new EventEmitter<{
@@ -66,6 +67,9 @@ export class TrafficAlertService {
       const recommendedDuration:number = environment.trafficAlertServiceConf.alertsSettings.speedExceeded.recommendedDuration;
       this.newSpeedExceededAlert.emit({alertText,alertType,alertIconUrl,recommendedDuration});
     }
+    if(alertType === "speakOnly"){
+      
+    }
     if(speakAlert){
       const voiceInstructions = alertText;
       await this.voiceService.speak(voiceInstructions);
@@ -73,7 +77,7 @@ export class TrafficAlertService {
    
   }
 
-  async checkAlertableObjectsOnNewUserPositionFromArray(userPosition: Position, streetName:string,alertables:any[]){
+  async checkAlertableObjectsOnNewUserPositionFromArrayByName(userPosition: Position, streetName:string,alertables:any[]){
     if(!alertables || alertables.length<=0){
 
 
@@ -113,6 +117,50 @@ export class TrafficAlertService {
       })
     }
   }
+
+  async checkAlertableObjectsOnNewUserPositionFromArray(userPosition: Position, streetName:string,alertables:any[]){
+    if(!alertables || alertables.length<=0){
+
+
+      return;
+    };
+    let streetId:any = null;
+    if(alertables[0].tags['street_id']){
+      streetId = alertables[0].tags['street_id'];
+    }
+    if(streetId){
+
+
+      if(this.lastUserCurrentStreetId){
+        if(this.lastUserCurrentStreetId
+          && this.lastUserCurrentStreetId.toString()===streetId.toString()){
+            //sigo en la misma calle
+
+          }else{
+            //cambie de calle
+
+            this.preannouncedObjects.clear();
+            this.announcedObjects.clear();
+            this.lastUserCurrentStreetId=streetId;
+          }
+      }else{
+        //Primera calle
+
+        this.preannouncedObjects.clear();
+        this.announcedObjects.clear();
+        this.lastUserCurrentStreetId=streetId;
+      }
+      alertables.forEach(objAlertable=>{
+
+        if(objAlertable.status==='entering'){
+          const distanceToObj = objAlertable.distanceInMeters;
+          this.preAnnounceAlertableObj(distanceToObj, objAlertable,streetName);
+          this.announceAlertableObj(distanceToObj, objAlertable,streetName);
+        }
+      })
+    }
+  }
+
 
   private getAlertableConfig(type: string) {
 
