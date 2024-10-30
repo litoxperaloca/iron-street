@@ -6,6 +6,7 @@ import { PreferencesService } from './services/preferences.service';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { DeviceDataService } from './services/device-data.service';
+import { PathLocationStrategy } from '@angular/common';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -61,20 +62,20 @@ export class AppComponent {
     private translate: TranslateService,
     private router: Router,
     private modalController: ModalController,
-    private deviceDataService:DeviceDataService
-
+    private deviceDataService:DeviceDataService,
+    private location: PathLocationStrategy
     //private firebaseService: FirebaseService
     ) {
-
+      this.handleBrowserBackButton();
     // Establece el idioma predeterminado
     this.platform.ready().then(async () => {
       //this.firebaseService.startApp();
       //this.translate.addLangs(this.languages);
       await this.deviceDataService.deviceId();
-      await this.initializeBackButtonHandlers();
       await this.preferencesService.restoreSavedPreferences();
       await this.preferencesService.loadStoredTheme();
       await this.preferencesService.loadStoredLanguage();
+      
       this.preferencesService.languageChanged.subscribe(lang => {
         this.language = lang;
         this.initializePages();
@@ -89,6 +90,16 @@ export class AppComponent {
     });
   }
 
+
+  handleBrowserBackButton() {
+    this.location.onPopState(() => {
+      // Aquí controlas lo que quieres hacer cuando el usuario presiona "Back" en el navegador.
+      //console.log('Navegación hacia atrás detectada!');
+      // Prevenir navegación atrás con return false o manejando con Router.
+      return false;
+    });
+  }
+/* 
   async initializeBackButtonHandlers(): Promise<void> {
     // Manejar el botón físico de retroceso en Android
     this.platform.backButton.subscribeWithPriority(10, async (processNextHandler) => {
@@ -123,7 +134,7 @@ export class AppComponent {
         //window.history.back();
       }
     };
-  }
+  } */
 
   async toggleTheme() {
     await this.preferencesService.toggleTheme();

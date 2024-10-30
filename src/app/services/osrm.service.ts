@@ -3,6 +3,7 @@ import { Position } from '@capacitor/geolocation';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import {DeviceDataService} from './device-data.service';
+import { WebSocketService } from './web-socket.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,9 @@ export class OsrmService {
   lastHeading:number=0;
   positionIndex=0;
 
-  constructor(private deviceDataService:DeviceDataService
+  constructor(
+    private deviceDataService:DeviceDataService,
+    private webSocketService: WebSocketService
   ) { }
 
   public clear(){
@@ -38,7 +41,7 @@ export class OsrmService {
       if(!uuid){
         uuid=await this.deviceDataService.deviceId();
       }
-      console.log(uuid);
+      //console.log(uuid);
       this.lastestUserLocations.push(userPosition);
       if(this.lastestUserLocations.length>20){
         this.lastestUserLocations.shift();
@@ -66,7 +69,7 @@ export class OsrmService {
           speed:''+current
         }
         const data = await this.doGet(url,parms);
-        console.log(data);
+        //console.log(data);
           //console.log(data);
         if(data.data){
           const tracepoint= data.data.lastTracePoint;
@@ -139,7 +142,7 @@ export class OsrmService {
           n:uuid.identifier,
         }
         const data = await this.doGet(url,parms);
-        console.log(data);
+        //console.log(data);
           //console.log(data);
         if(data){
           return data;
@@ -150,5 +153,79 @@ export class OsrmService {
        throw error;
     }
   }
+
+  public async getMatchedPositionBySocket(userPosition: Position): Promise<any> {
+    try {
+      let uuid= this.deviceDataService.uuid;
+      if(!uuid){
+        uuid=await this.deviceDataService.deviceId();
+      }
+      //console.log(uuid);
+      this.lastestUserLocations.push(userPosition);
+      if(this.lastestUserLocations.length>20){
+        this.lastestUserLocations.shift();
+      }
+        let coordinates:string =  this.lastestUserLocations.map(position => `${position.coords.longitude},${position.coords.latitude}`).join(';');
+        let timestamps = this.lastestUserLocations.map(position=> `${Number(String(position.timestamp).slice(0, 10))}`).join(";");
+        let aux = userPosition.coords.speed;
+        if(aux==null){
+          aux=0;
+        }
+        let current = Math.round(aux * 60 * 60 / 1000);
+        //let url = `https://api.ironstreet.com.uy/nearest/v1/driving/${userPosition.coords.longitude},${userPosition.coords.latitude}.json`;
+         // Crear el mensaje para enviar a través de WebSocket
+      const message = {
+        coordinates: coordinates,
+        timestamps: timestamps,
+        n: uuid.identifier,
+        speed: '' + current,
+      };
+
+      // Enviar el mensaje a través de WebSocket y esperar la respuesta
+      const data = await this.webSocketService.sendMessage(message);
+      //console.log(data);
+      // Procesar la respuesta recibida a través del WebSocket
+      if (data) {
+ 
+          const tracepoint= data.lastTracePoint;
+          const roadName = tracepoint.name;
+          const lon = tracepoint.location[0];
+          const lat = tracepoint.location[1];
+          const maxspeed = tracepoint.maxSpeed;
+          const cameras = tracepoint.cameras;
+          const heading = tracepoint.bearing;
+          const currentFeature = tracepoint.feature;
+          const streetId = tracepoint.firstId;
+          const segments = tracepoint.segments;
+
+        // Verifica si la respuesta contiene coincidencias y ajusta la posición.
+          const response:any = {
+            lat: lat,
+            lon: lon,
+            roadName: roadName,
+            maxspeed:maxspeed,
+            cameras:cameras,
+            heading: heading,
+            currentFeature: currentFeature,
+            segments:segments,
+            streetId: streetId,
+            speed: userPosition.coords.speed,
+            accuracy: userPosition.coords.accuracy,
+            altitude: userPosition.coords.altitude,
+            timestamp: userPosition.timestamp,
+            totalKm: data.totalKm,
+            totalSpeedViolations: data.totalSpeedViolations,
+            isOverSpeeding: data.isOverSpeeding
+          }
+          return response;
+        }
+      
+    } catch (error) {
+      console.error('Error al ajustar la posición con Valhalla:', error);
+      this.clear();
+      throw error;
+    }
+  }
+
 
 }

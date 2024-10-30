@@ -103,3 +103,24 @@ ion-icon{
     /* position: relative; */
     display: flex;
 }
+
+ .map-style-card {
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .map-style-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  ion-slides {
+    height: 100%;
+    padding: 16px;
+  }
+
+  ion-card-title {
+    font-size: 1.2em;
+    font-weight: bold;
+  }

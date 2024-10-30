@@ -28,17 +28,18 @@ export class CameraService {
       if (!map) {
         return;
       }
-      map.easeTo({              
-        duration:200,
+      map.flyTo({              
+        duration:1000,
         center: [position.coords.longitude,
           position.coords.latitude],
-          zoom: 17,
-          //curve: 1,
+          zoom: 16,
+          curve: 1,
           essential: true,
-          pitch: 0,
-          bearing: 0
-
-    });
+          pitch: 25,
+          bearing: 0,
+          animate: true,
+          speed:0.5,
+        });
       map.once('moveend', () => {
         self.locked = false;
         self.isFlying = false;

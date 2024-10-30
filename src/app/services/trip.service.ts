@@ -229,14 +229,14 @@ private isUserOffRoute(userCoords: [number, number], lineString: Feature<LineStr
   // Calcular la distancia del usuario a la línea de la ruta
   const distanceToRoute = pointToLineDistance(userPoint, lineString, { units: 'meters' });
   const maxAllowedDeviation = environment.tripserviceConf.rerouteConf.maxAllowedDeviationDistanceInMeters; // Por ejemplo, 50 metros
-  console.log('isUseOffRoute:',distanceToRoute,maxAllowedDeviation,userCoords,userPoint,lineString);
+  //console.log('isUseOffRoute:',distanceToRoute,maxAllowedDeviation,userCoords,userPoint,lineString);
   // Determinar si el usuario está fuera del rango permitido
   return distanceToRoute > maxAllowedDeviation;
 }
 
 
 async updateUserPosition(coords: any) {
-    console.log(coords);
+   // console.log(coords);
      // Decodificar la geometría de la ruta completa (nivel de `route` en la respuesta)
   const routeGeometry = this.route!.geometry;
   const lineCoords = polyline.decode(routeGeometry).map((coord) => [coord[1], coord[0]]) as Array<[number, number]>;
@@ -246,14 +246,14 @@ async updateUserPosition(coords: any) {
 
   // Verificar si el usuario está desviado de la ruta
   const isUserOffRoute = this.isUserOffRoute(coords, lineStringRoute);
-  console.log('UpdateUserPostion',routeGeometry,lineCoords,lineStringRoute,isUserOffRoute)
+  //console.log('UpdateUserPostion',routeGeometry,lineCoords,lineStringRoute,isUserOffRoute)
 
   if (isUserOffRoute) {
     this.offRouteCounter++;
-    console.log(`Usuario fuera de la ruta - Contador de desviación: ${this.offRouteCounter}`);
+    //console.log(`Usuario fuera de la ruta - Contador de desviación: ${this.offRouteCounter}`);
     // Verificar si el contador de desviación supera el umbral y el tiempo desde el último recalculado
     if (this.offRouteCounter >=  environment.tripserviceConf.rerouteConf.maxAllowedOffRoutePositions && (Date.now() - this.lastRerouteTime) > environment.tripserviceConf.rerouteConf.maxAllowedtimeOffRouteInSeconds) { // 3 lecturas consecutivas y al menos 5 segundos
-      console.log("Usuario desviado durante un tiempo considerable, recalculando ruta...");
+      //console.log("Usuario desviado durante un tiempo considerable, recalculando ruta...");
       this.trafficAlertService.showAlert("Reajustando ruta...","speakOnly",'none',true);
       await this.mapService.reRoute(coords);
       // Reiniciar el estado del viaje después del recalculado
@@ -301,7 +301,7 @@ async updateUserPosition(coords: any) {
 
   // Actualizar la posición del usuario
   async updateUserPositionSimulation(coords: any) {
-    console.log(coords);
+    //console.log(coords);
     // Verificar si el usuario está desviado de la ruta
     const closestStepIndex = this.findClosestStepIndex(coords);
     const distanceToClosestStep = this.mapboxService.calculateDistance(

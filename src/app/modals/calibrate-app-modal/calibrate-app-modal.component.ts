@@ -45,7 +45,7 @@ export class CalibrateAppModalComponent implements OnInit {
     this.initialSnapServiceConf = { ...this.snapServiceConf };
     this.initialTrafficAlertServiceConf = { ...this.trafficAlertServiceConf };
 
-    console.log(this.gpsSettings, this.snapServiceConf,this.trafficAlertServiceConf);
+    //console.log(this.gpsSettings, this.snapServiceConf,this.trafficAlertServiceConf);
   }
 
   // Guardar los cambios de GPS Settings
@@ -54,7 +54,7 @@ export class CalibrateAppModalComponent implements OnInit {
       this.isLoading=true;
       // Guardar los cambios en Preferences y en el environment
       await this.preferencesService.setGpsSettings(this.gpsSettings);
-      console.log('GPS Settings actualizados en environment:', environment.gpsSettings);
+      //console.log('GPS Settings actualizados en environment:', environment.gpsSettings);
       this.isLoading=false;
     }
 
@@ -67,7 +67,7 @@ export class CalibrateAppModalComponent implements OnInit {
       // Guardar los cambios en Preferences y en el environment
       this.isLoading=true;
       await this.preferencesService.setSnapServiceConf(this.snapServiceConf);
-      console.log('Snap Conf actualizada en environment:', environment.snapServiceConf);
+      //console.log('Snap Conf actualizada en environment:', environment.snapServiceConf);
 
       this.isLoading=false;
     }
@@ -81,7 +81,7 @@ export class CalibrateAppModalComponent implements OnInit {
       // Guardar los cambios en Preferences y en el environment
       this.isLoading=true;
       await this.preferencesService.setTrafficAlertServiceConf(this.trafficAlertServiceConf);
-      console.log('Traffic Alert Config actualizados en environment:', environment.trafficAlertServiceConf);
+      //console.log('Traffic Alert Config actualizados en environment:', environment.trafficAlertServiceConf);
       this.isLoading=false;
     }
 

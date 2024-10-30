@@ -110,7 +110,7 @@ export const environment = {
 
       }
     },
-    {
+    /*{
       img: '/assets/img/cars/izh-2715-pickup.png',
       name: 'Pickup',
       id: 'izh-2715-pickup',
@@ -126,7 +126,7 @@ export const environment = {
         rotationDeg: {x:270, y:0, z:0}
 
       }
-    },
+    },*/
     {
       img: '/assets/img/motorbikes/moto_vespa.png',
       name: 'Vespa',
@@ -273,7 +273,7 @@ export const environment = {
       {
         maneuverType: 'merge',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, presta atención, {instruction}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
         announcement: '{instruction}.',
@@ -340,7 +340,7 @@ export const environment = {
         preAnnouncement: '',
         preAnnouncementDistance: 0,
         announce: true,
-        announcement: 'A continuación, {instruction} aproximadamente {distanceToNextStep} metros.',
+        announcement: 'A continuación, {instruction}.',
         announcementDistance: 10,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',
@@ -369,10 +369,10 @@ export const environment = {
       {
         maneuverType: 'roundabout',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, entre en la rotonda y tome la salida {exit}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
-        announcement: 'Tome la salida {exit}.',
+        announcement: '{instruction}.',
         announcementDistance: 50,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',
@@ -385,10 +385,10 @@ export const environment = {
       {
         maneuverType: 'rotary',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, entre en la glorieta {rotary_name} y tome la salida {exit}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
-        announcement: 'Tome la salida {exit}.',
+        announcement: '{instruction}.',
         announcementDistance: 50,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',
@@ -401,10 +401,10 @@ export const environment = {
       {
         maneuverType: 'roundabout turn',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, gire en la rotonda y tome la salida {exit}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
-        announcement: 'Tome la salida {exit}.',
+        announcement: '{instruction}.',
         announcementDistance: 50,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',
@@ -417,10 +417,10 @@ export const environment = {
       {
         maneuverType: 'exit roundabout',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, salga de la rotonda en la salida {exit}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
-        announcement: 'Salga de la rotonda en la salida {exit}.',
+        announcement: '{instruction}.',
         announcementDistance: 50,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',
@@ -433,10 +433,10 @@ export const environment = {
       {
         maneuverType: 'exit rotary',
         preAnnounce: true,
-        preAnnouncement: 'En {distance} metros, salga de la glorieta en la salida {exit}.',
+        preAnnouncement: 'En {distance} metros, {instruction}.',
         preAnnouncementDistance: 200,
         announce: true,
-        announcement: 'Salga de la glorieta en la salida {exit}.',
+        announcement: '{instruction}.',
         announcementDistance: 50,
         announceAsNextInmediatly: false,
         announceAsNextInmediatlyAnnouncement: '',
@@ -498,12 +498,12 @@ export const environment = {
     showUserHeading: true
   },
   gpsSettings:{
-    locationIntervalTimeInMs:600,
-    simulationIntervalTimeInMs:600,
+    locationIntervalTimeInMs:350,
+    simulationIntervalTimeInMs:350,
     userMarkerAnimationDurationInMs:900,
     positionMaxAge:0,
-    timeOut:5000,
-    timeBetweenRealAndSimulation: 200,
+    timeOut:5500,
+    timeBetweenRealAndSimulation: 300,
     timeBeforeStartInMs:400,
     timeRotating:2000
   },

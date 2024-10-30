@@ -119,7 +119,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
         this.startWatchingPosition();
       },environment.gpsSettings.timeRotating);
     }, environment.gpsSettings.timeBeforeStartInMs);
-    console.log(environment.gpsSettings);
+    //console.log(environment.gpsSettings);
     this.windowService.attachedTimeOut("home", "waitAndRender", timeOut);
   }
 
@@ -284,7 +284,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
   async setOdometer(km:number){
     setTimeout(function(){
-      console.log(km);
+      //console.log(km);
       var el = document.querySelector('.odometer-theme-car');
       if(el){
         const fakeKm=km+10000
@@ -297,7 +297,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
             kmStr = kmStr+'0';
           }
         }
-        console.log(kmStr);
+        //console.log(kmStr);
         el.innerHTML = kmStr;
       }
     

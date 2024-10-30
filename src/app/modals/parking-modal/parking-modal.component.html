@@ -14,9 +14,6 @@
   <div class="ticket-div">
     <ion-text color="primary"><h3>Medio de pago: SMS al 466</h3></ion-text>
     <ion-text color="secondary"><h3>Costo: $52 la hora</h3></ion-text>
-    <ion-label color="dark">Se abrirá tu app de mensajes con un SMS y debes confirmar el envío. </ion-label>
-    <br/><ion-label color="warning">Si el sistema no confirma la compra debe repetir el procedimiento.</ion-label>
-    <br/><ion-note color="dark">Consulta la información detalla en la web oficial de la <a href="https://montevideo.gub.uy/areas-tematicas/movilidad/estacionamiento-tarifado/precio-del-ticket-y-como-pagarlo-0">Intendencia de Montevideo.</a></ion-note>
   </div>
   <div class="ticket-div">
     <ion-item>
@@ -24,16 +21,16 @@
         [(ngModel)]="matricula" 
         required
         label="Matrícula"
-        labelPlacement="stacked"
         [clearInput]="true"
-        placeholder="Ingresa aquí la matrícula">
+        (ngModelChange)="convertirMayusculas($event)"
+        placeholder="Ingresar (ej: SFW1234)">
     </ion-input>
   </ion-item>
   <ion-item *ngIf="errores.matricula" >
     <ion-label color="danger">Por favor, ingrese una matrícula válida.</ion-label>
   </ion-item>
-  <ion-item *ngIf="errores.matriculaFormato" color="danger">
-    <ion-label>El formato debe ser tres letras (mayúsculas) seguidas de cuatro dígitos (por ejemplo, SZS1234).</ion-label>
+  <ion-item *ngIf="errores.matriculaFormato">
+    <ion-label color="danger">El formato debe ser tres letras seguidas de cuatro dígitos (por ejemplo, SZS1234).</ion-label>
   </ion-item>
 
   <ion-item>
@@ -61,9 +58,35 @@
   <ion-item *ngIf="errores.minutosEspecificos" color="">
     <ion-label color="danger">Por favor, ingrese un valor válido de minutos.</ion-label>
   </ion-item>
+  <!-- Pregunta sobre el horario de inicio -->
+  <ion-item>
+    <ion-label>¿A partir de cuándo?</ion-label>
+    <ion-radio-group [(ngModel)]="horarioInicioSeleccionado">
+      <ion-item>
+        <ion-label>AHORA</ion-label>
+        <ion-radio slot="start" value="ahora"></ion-radio>
+      </ion-item>
+      <ion-item>
+        <ion-label>Elegir horario</ion-label>
+        <ion-radio slot="start" value="especificar"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </ion-item>
+
+  <!-- Mostrar timepicker si se selecciona "Especificar horario de inicio" -->
+  <ion-item *ngIf="horarioInicioSeleccionado === 'especificar'">
+    <ion-label>Horario de inicio</ion-label>
+    <ion-datetime display-format="HH:mm" picker-format="HH:mm" hourValues="10,11,12,13,14,15,16,17" hourCycle="h24" presentation="time" [(ngModel)]="horarioInicio"></ion-datetime>
+  </ion-item>
+
+
   <ion-text color="secondary" *ngIf="total" ><h3>TOTAL: ${{total}}</h3></ion-text>
 
   <ion-button expand="block" (click)="enviarSMS()">Comprar vía SMS al 466</ion-button>
+  <br/><ion-note color="contrast">El horario de funcionamiento del sistema de estacionamiento tarifado es de lunes a viernes de 10 a 18 h.</ion-note>
+  <br/><br/><ion-note color="warning">Si el sistema no confirma la compra debe repetir el procedimiento.</ion-note>
+  <br/><br/><ion-note color="contrast">Consulta la información detalla en la web oficial de la <a href="https://montevideo.gub.uy/areas-tematicas/movilidad/estacionamiento-tarifado/precio-del-ticket-y-como-pagarlo-0">Intendencia de Montevideo.</a></ion-note>
+
   </div>
 
 

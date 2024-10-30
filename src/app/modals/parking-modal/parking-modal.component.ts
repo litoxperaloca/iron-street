@@ -22,6 +22,9 @@ export class ParkingModalComponent {
   costoHora:number=environment.parking.costPerHour;
   SMSnumber:number=environment.parking.SMSnumber;
   opcionesMinutos: any[] = [30, 45, 60, 'Especificar'];
+  horarioInicioSeleccionado: string = 'ahora'; // Valor por defecto
+  horarioInicio: string=''; // Formato HH:mm
+  
   errores:any = {
     matricula: false,
     matriculaFormato: false,
@@ -80,10 +83,35 @@ export class ParkingModalComponent {
 
     // Construir el mensaje SMS
     const minutosEnviar = this.minutosSeleccionados !== 'Especificar' ? this.minutosSeleccionados : this.minutos;
-    const mensaje = `E ${this.matricula.toUpperCase()} ${minutosEnviar}`;
+    const horario:string = this.horarioInicioSeleccionado === 'especificar' && this.horarioInicio ? this.horarioInicio : '';
+    let horarioNormalized:string='';
+    if(horario){
+      if(horario.length>5){
+        horarioNormalized = ' ' + horario.slice(-8, -3);
+      }
+    }
+    const mensaje = `E ${this.matricula.toUpperCase()} ${minutosEnviar}${horarioNormalized}`;
 
     // Abrir el gestor de SMS con el mensaje y el número de destino
     window.open(`sms:${this.SMSnumber}?&body=${mensaje}`, '_system');
+  }
+
+  // Convertir la matrícula a mayúsculas y permitir solo letras y dígitos en tiempo real
+  convertirMayusculas(event: any) {
+    // Eliminar caracteres que no sean letras ni dígitos
+    let valor = event ? event.toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+    // Limitar el valor a 7 caracteres como máximo
+    valor = valor.substring(0, 7);
+
+    // Separar las letras y los dígitos
+    const letras = valor.substring(0, 3); // Primeras 3 letras
+    const digitos = valor.substring(3, 7); // Siguientes 4 dígitos
+
+    // Limitar a 3 letras y 4 dígitos como máximo
+    this.matricula = `${letras}${digitos}`;
+
+    // Validar longitud de la matrícula
+    //this.errores.matriculaFormato = !/^[A-Z]{3}[0-9]{4}$/.test(this.matricula);
   }
 
   resetearErrores() {

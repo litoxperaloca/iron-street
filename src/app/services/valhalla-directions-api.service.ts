@@ -35,7 +35,7 @@ export class ValhallaDirectionsApiService {
           n:uuid.identifier,
         }
         const data = await this.doGet(url,parms);
-        console.log(data);
+        //console.log(data);
           //console.log(data);
         if(data){
           return data;

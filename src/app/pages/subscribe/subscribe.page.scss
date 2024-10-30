@@ -5,20 +5,20 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: black !important;
-    padding-top: 20px;
+    /*background-color: black !important;*/
+    padding-top: 25px;
   }
   
   .subscription-container ion-card {
     width: 95%;
-    margin: 20px 0;
-    background-color: black !important;
+    /*margin: 20px 0;*/
+    background-color: var(--ion-background) !important;
 
   }
   
   .subscription-container ion-card-header,
   .subscription-container ion-card-content {
-    color: #ffffff; /* Color blanco para texto */
+    color: var(--iron-color-contrast); /* Color blanco para texto */
     font-size: 10pt;
 }
   
@@ -45,7 +45,7 @@
   
   .subscription-container ion-list {
     background: transparent;
-    color: #ffffff;
+    color: var(--iron-color-contrast);
   }
   
   .subscription-container ion-list ion-item {
@@ -58,7 +58,7 @@
   
   .warning-text {
     text-align: center;
-    color: black; /* Rojo para advertencia */
+    color: var(--iron-color-contrast);
     font-size: 1.1em;
     margin-top: 10px;
   }
@@ -68,7 +68,7 @@
   }
 
   .warningcard{
-    color: black;
+    color: var(--iron-color-contrast);
     font-size: 10pt;
     background-color:  var(--ion-text-color-step-300) !important;
   }
@@ -99,7 +99,7 @@ ion-menu-button {
 #container p {
   font-size: 16px;
   line-height: 22px;
-  color: #8c8c8c;
+  /*color: #8c8c8c;*/
   margin: 0;
 }
 

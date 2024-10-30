@@ -160,7 +160,7 @@ export class GeoLocationAnimatedService {
 
     // Filtrar posiciones según el tiempo (mínimo 1500ms, máximo 4000ms)
     if (timeSinceLastPosition < 1500 || timeSinceLastPosition > 4000) {
-      console.log(`Posición descartada: ${timeSinceLastPosition}ms`);
+      //console.log(`Posición descartada: ${timeSinceLastPosition}ms`);
       return;
     }
     this.lastPositionTime = currentTime; // Actualiza el tiempo de la última posición

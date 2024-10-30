@@ -16,6 +16,7 @@ import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { Capacitor } from '@capacitor/core';
 import { GeoLocationMockService } from '../mocks/geo-location-mock.service';
 import { AlertService } from './alert.service';
+import { WebSocketService } from './web-socket.service';
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +43,8 @@ export class GeoLocationAnimatedService {
     private sensorService:SensorService, 
     private speedService:SpeedService,
     private geoLocationMockService:GeoLocationMockService,
-    private alertService:AlertService
+    private alertService:AlertService,
+    private webSocketService:WebSocketService
   ) {
   }
 
@@ -120,6 +122,17 @@ export class GeoLocationAnimatedService {
       return true;
     }
   }
+
+  async initializeWebSocketLink():Promise<boolean> {
+    try {
+      await this.webSocketService.connect(); // Espera hasta que la conexión WebSocket esté lista
+      //console.log('WebSocket conectado, listo para enviar mensajes');
+      return true;
+    } catch (error) {
+      console.error('Error al conectar con WebSocket:', error);
+      return false;
+    }
+  }
     
   // Inicia la observación de la posición del usuario
   public async  startWatchingPosition():Promise<void> {
@@ -130,6 +143,7 @@ export class GeoLocationAnimatedService {
 
     if(self.geoLocPermIsOk){
       // Inicia el watchPosition
+      const conn = await this.webSocketService.connect();
       const options = {
                         enableHighAccuracy: true,
                         timeout: environment.gpsSettings.timeOut,
@@ -195,9 +209,9 @@ export class GeoLocationAnimatedService {
       return;
     }
     if(self.lastPosition){
-      console.log("LASTPOSITION",self.lastPosition,position.timestamp,self.lastPosition!.timestamp)
+      //console.log("LASTPOSITION",self.lastPosition,position.timestamp,self.lastPosition!.timestamp)
       const timeDifference = position.timestamp - self.lastPosition.timestamp;
-      console.log(timeDifference);
+      //console.log(timeDifference);
       if(timeDifference<environment.gpsSettings.locationIntervalTimeInMs){
         return;
       }
@@ -207,8 +221,10 @@ export class GeoLocationAnimatedService {
     self.isBusy=true;
     try{
       // Llama al servicio de snap para ajustar la posición
-      const matchedPosition = await self.osrmService.getMatchedPosition(position);
-      //UNLOCK
+     // const matchedPosition = await self.osrmService.getMatchedPosition(position);
+     const matchedPosition = await self.osrmService.getMatchedPositionBySocket(position);
+
+     //UNLOCK
       self.isBusy=false;
 
       //Procesar resultado de snap:
@@ -284,7 +300,7 @@ export class GeoLocationAnimatedService {
       self.mapService.setUserCurrentSegment(currentSegment);
 
       if (self.mapService.isRotating) {
-      console.log(snapedPos)
+      //console.log(snapedPos)
         const streetHeading = self.mapService.userCurrentStreetHeading;
         self.markerAnimationService.currentMarkerPosition=snapedPos;
         self.markerAnimationService.currentHeading=streetHeading;
@@ -293,7 +309,7 @@ export class GeoLocationAnimatedService {
         return;
       }
      
-      console.log(matchedPosition);
+      //console.log(matchedPosition);
       // Ejecuta las tareas en paralelo después de obtener la posición ajustada
       if(useStreetHeading||heading===0){
         snapedPos.coords.heading=self.mapService.userCurrentStreetHeading;
@@ -319,6 +335,7 @@ export class GeoLocationAnimatedService {
 
   // Detiene la observación de la posición
   async stopWatchingPosition() {
+    this.webSocketService.closeConnection();
     const self=this;
     // Asegúrate de detener cualquier observación previa
     if (self.watchId) {

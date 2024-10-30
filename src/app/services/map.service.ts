@@ -121,6 +121,7 @@ export class MapService {
       maxZoom: environment.mapboxMapConfig.maxZoom,
       //projection: 'globe' as any,
       antialias:environment.mapboxMapConfig.antialias
+      //antialias: true
     });
 
     /*const geoControl = new mapboxgl.GeolocateControl({
@@ -196,7 +197,7 @@ export class MapService {
 
     const self = this;
     map.on('style.load', (event) => {
-      map.setTerrain(undefined);
+      //map.setTerrain(undefined);
 
       self.addAdditionalSourceAndLayer(self.sourcesAndLayers);
       if (self.isStandardMap) {
@@ -214,7 +215,7 @@ export class MapService {
       self.set3D();
       self.mapbox.resize();
        // eslint-disable-next-line no-undef
-      map.setTerrain(undefined);
+      //map.setTerrain(undefined);
 
     }); 
   }
@@ -345,7 +346,7 @@ export class MapService {
   onLongPress(e: TouchEvent) {
     if (this.isLongPress) {
       const coords = this.mapbox.unproject([e.touches[0].clientX, e.touches[0].clientY]);
-      console.log('Long press detected at:', coords);
+      //console.log('Long press detected at:', coords);
       // Add your long press logic here, e.g., add a marker at the press location
       if (this.popUpMapPressed) {
         this.popUpMapPressed.remove();
@@ -1107,7 +1108,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
         if (userLocation) {
           // Get route information
           const route = ((window as any).mapService as MapService).actualRoute;
-          console.log("Route:", route);
+          //console.log("Route:", route);
           if (route && route.legs && route.legs[0]) {
             const steps = route.legs[0].steps;
             // Set initial step index to 0
@@ -1225,14 +1226,14 @@ async add3DModelMarkerSimulator(map:any, origin:any){
       this.isRerouting=true;
       await this.mapControls.directions.setOrigin(coordsOrigin);
     }catch(error){
-      console.log(error);
+      //console.log(error);
       this.isRerouting=false;
     }
     return;
   }
 
   processRerouteResult(event:any){
-    console.log(event);
+    //console.log(event);
     const mapService:MapService = ((window as any).mapService as MapService);
     const selectedIndex: number = mapService.mapControls.directions._stateSnapshot.routeIndex;
     mapService.actualRoute = event.route[selectedIndex];
@@ -1268,7 +1269,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
   }
 
   directionsOnNewRouteAction(event:any){
-    console.log(event);
+    //console.log(event);
     const mapService = ((window as any).mapService as MapService);
     const selectedIndex: number = mapService.mapControls.directions._stateSnapshot.routeIndex;
         const homePage = ((window as any).homePage as HomePage);
@@ -1961,7 +1962,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
   }
 
   private async completeAnimation(newPosition: mapboxgl.LngLat, newHeading: number,userMoved:boolean) {
-    console.log("ENTER to COMPLETE, last completed: ",this.lastLocationAnimationCompleted);
+    //console.log("ENTER to COMPLETE, last completed: ",this.lastLocationAnimationCompleted);
 
     if(this.lastLocationAnimationCompleted>this.positionIndex)return;
     const userMarker = this.getUserMarker();
@@ -1980,7 +1981,7 @@ async add3DModelMarkerSimulator(map:any, origin:any){
       this.resetMapEventTrackingFlag();
     }
     this.lastLocationAnimationCompleted=this.positionIndex;
-    console.log("ANIMATION COMPLETED: ",this.lastLocationAnimationCompleted,newPosition);
+    //console.log("ANIMATION COMPLETED: ",this.lastLocationAnimationCompleted,newPosition);
 
 
   }
@@ -1992,11 +1993,11 @@ async add3DModelMarkerSimulator(map:any, origin:any){
 
 
   public async updateUserMarkerSnapedPositionOsrm(newCoordinates: [number, number] ,useStreetHeading:boolean,userMoved:boolean,instantUpdate:boolean, newHeading:number, geoIndex:number) {
-    console.log("Entering ANIMATION, last checked",this.positionIndex);
+    //console.log("Entering ANIMATION, last checked",this.positionIndex);
 
     if(geoIndex<=this.positionIndex)return;
     this.positionIndex=geoIndex;
-    console.log("ANIMATING",this.positionIndex,newCoordinates);
+    //console.log("ANIMATING",this.positionIndex,newCoordinates);
 
     const newPosition = new mapboxgl.LngLat(newCoordinates[0], newCoordinates[1]);
     const userMarker = this.getUserMarker();

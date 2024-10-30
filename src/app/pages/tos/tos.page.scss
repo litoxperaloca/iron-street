@@ -4,24 +4,24 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: black !important;
+    background-color: var(--background) !important;
     margin-top: 35px;
   }
   
   .terms-container ion-card {
     width: 95%;
     margin: 20px 0;
-    background-color: black !important;
+    background-color: var(--background) !important;
   }
   
   .terms-container ion-card-content {
-    color: #ffffff;
+    color: var(--iron-color-contrast);
     font-size: 10pt;
   }
   
   .terms-container ion-list ion-item {
     --background: transparent;
-    color: #ffffff;
+    color: var(--iron-color-contrast);
   }
   
   .terms-container ion-icon {

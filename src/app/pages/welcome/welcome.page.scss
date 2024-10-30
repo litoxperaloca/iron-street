@@ -4,12 +4,12 @@
   position: fixed;
   display: block;
   width: 100%;
-  bottom: 70px;
-  height: 250px;
+  bottom: 60px;
+  height: 100%;
   overflow: hidden;
   border-bottom: 4px solid #7f7f7f;
   color: #fff;
-  background-color: black;
+  background-image: linear-gradient(#000000 0%, #03103680 120%);;
 }
 .mountain {
   position: absolute;
@@ -30,7 +30,8 @@ position: absolute;
     animation: sky 30s linear infinite;
     background: url(/assets/img/icons/sky2.png);
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
+    opacity: 0.4;
 }
 .mnt {
 position: absolute;
@@ -236,7 +237,7 @@ position: absolute;
   background: url(/assets/icons/icon-512x512.png);
   background-repeat: no-repeat;
     background-size: cover;
-
+    z-index:9;
     position: relative;
   height: 130px;
   width: 130px;
@@ -316,11 +317,43 @@ position: absolute;
       display: flex;
     justify-content: center;
     /* position: RELATIVE; */
+    position: relative;
+    z-index: 9;
     margin-top: 50px;
 }
 
 #firstTime h2{
   font-style: 14pt;
   font-weight: 600;
+  color: white;
 }
 
+body.light,.ios body.light,.md body.light  {
+  --ion-background: linear-gradient(to top, #ffb876 0%, #50abff 30%, #0c77ff 60%, #2545e5 80%, #101c65 100%) !important;
+  --ion-background-color: linear-gradient(to top, #ffb876 0%, #50abff 30%, #0c77ff 60%, #2545e5 80%, #101c65 100%) !important;
+  --background: linear-gradient(to top, #ffb876 0%, #50abff 30%, #0c77ff 60%, #2545e5 80%, #101c65 100%) !important;
+
+  #menuShortcuts .icon-inner{
+    color: black!important;
+  }
+    
+    ion-menu-button {
+      color: #FFFFFF !important;
+    }
+  
+  .toolbar-background{
+    background-color: #02135e !important;
+  }
+  
+  
+  .info-container .info-text{
+    text-align: center;
+    color: #5c4900 !important;
+    font-size: 10pt !important;
+    margin-top: 0px !important;
+    font-weight: 600 !important;
+  }
+  
+ 
+
+}

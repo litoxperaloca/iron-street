@@ -18,7 +18,7 @@ export class MarkerAnimationService {
     isAnimating:boolean= false;
     // Método para actualizar el marcador del usuario con animación
     async updateUserMarker(snappedPosition:  Position ): Promise<void> {
-      console.log(snappedPosition);
+     // console.log(snappedPosition);
       // Añadir la animación a la cola
       this.enqueueAnimation(() => this.animateMarkerToPosition(snappedPosition));
     }

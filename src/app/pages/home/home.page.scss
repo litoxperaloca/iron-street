@@ -272,6 +272,20 @@ right: 5px;
   box-shadow: none;
 }
 
+#kmLabelOdom{
+  position: absolute;
+  font-weight: 800;
+  top: 203px;
+  background-color: transparent;
+  color: #fff;
+  z-index: 10;
+  right: 25px;
+  /* height: 20px; */
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
 .card_stats ion-card-header.kms {
   width: 60px;
   height: 55px;

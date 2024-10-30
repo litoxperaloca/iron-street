@@ -150,7 +150,7 @@ export class GeoLocationService {
         const coords: Position = await this.geoLocationMockService.getNextPosition();
         if (coords.coords.latitude === 0 && coords.coords.longitude === 0 
           || ((window as any).homePage as HomePage).simulation==false) {
-          console.log('Termino la simulacion');
+          //console.log('Termino la simulacion');
           //const coordinates = await Geolocation.getCurrentPosition(options);
           //return coordinates;
             return null;
@@ -260,5 +260,31 @@ export class GeoLocationService {
   getCurrentPositionScreenBox(): [[number, number], [number, number]] {
     const userPos: Position = this.getLastCurrentLocation();
     return this.createBoundingBox(userPos.coords, 2);
+  }
+
+  async getPositionOnlyOnce(){
+    if (Capacitor.isNativePlatform()) {
+      const coordinates = await Geolocation.getCurrentPosition();
+      console.log('Current position:', coordinates);
+    } else {
+      if (navigator.geolocation) {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              console.log("Ubicación obtenida:", position);
+              // Aquí puedes manejar la ubicación obtenida
+            },
+            (error) => {
+              console.error("Error al obtener la ubicación:", error);
+              // Aquí puedes manejar el error
+            },
+            { enableHighAccuracy: true } // Ajusta la precisión si es necesario
+          );
+        } else {
+          console.error("La geolocalización no está soportada por este navegador.");
+        }
+      }
+    }
+    
   }
 }

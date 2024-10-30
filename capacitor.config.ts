@@ -78,11 +78,9 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       backgroundColor: "#000000ff",
       androidSplashResourceName: "splash",
-      iosSplashResourceName: "splash",
       splashFullScreen: true,
       splashImmersive: true,
-      fadeInDuration: 500,  // Smooth fade-in transition
-      fadeOutDuration: 500  // Smooth fade-out transition
+      launchFadeOutDuration: 500,  // Smooth fade-in transition
     },
     PushNotifications: {
       presentationOptions: ["alert", "badge", "sound"]

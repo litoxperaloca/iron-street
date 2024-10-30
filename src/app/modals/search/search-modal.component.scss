@@ -1,6 +1,12 @@
 // Importing variables for theme consistency
 @import 'src/theme/variables.scss';
 
+div.icon-above-text ion-img{
+  border-radius:50% !important;
+}
+
+
+
 .search-modal {
   ion-header {
     --background: var(--background-color);

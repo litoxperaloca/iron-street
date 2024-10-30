@@ -112,7 +112,7 @@ export class SearchModalComponent {
       if (searchMpde == "strContains") {
         this.groupedPlaces = {};
         await this.ironLocationServiceService.suggestPlace(this.searchTerm).then((response) => {
-          console.log(response);
+          //console.log(response);
           if (response) this.suggestions = response.data.results;
           this.suggestions.forEach(place => {
             const countryCode: string = place.country;
