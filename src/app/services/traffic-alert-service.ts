@@ -1,13 +1,8 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { HomePage } from '../pages/home/home.page';
 import { MapService } from './map.service'; // Your MapService with updateUserMarker method
 import { VoiceService } from './voice.service'; // Assuming you have a VoiceService for speaking instructions
 import { WindowService } from './window.service';
-import { Subject } from 'rxjs';
 import { Position } from '@capacitor/geolocation';
-import distance from '@turf/distance';
-import { Feature, LineString, lineString, point } from '@turf/helpers';
-import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { SpeedService } from './speed.service';
 import { MapboxService } from './mapbox.service';

@@ -1,5 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import { Feature, LineString, FeatureCollection } from '@turf/helpers';
+import { Feature, LineString, FeatureCollection } from 'geojson';
 import * as turf from '@turf/turf';
 import polyline from '@mapbox/polyline';
 import { ValhallaDirectionsApiService } from '../valhalla-directions-api.service';

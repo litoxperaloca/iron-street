@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Position } from '@capacitor/geolocation';
-import { MenuController, ToastController } from '@ionic/angular'; // Add this line
+import { MenuController } from '@ionic/angular'; // Add this line
 import { TranslateService } from '@ngx-translate/core';
 import { GeoLocationMockService } from 'src/app/mocks/geo-location-mock.service';
 import { AlertService } from 'src/app/services/alert.service';
@@ -13,7 +13,6 @@ import { environment } from 'src/environments/environment';
 import { ActionSheetService } from '../../services/action-sheet.service';
 import { CameraService } from '../../services/camera.service';
 import { GeoLocationService } from '../../services/geo-location.service';
-//import { IntersectionService } from '../../services/intersection.service';
 import { MapService } from '../../services/map.service';
 import { ModalService } from '../../services/modal.service';
 import { OsmService } from '../../services/osm.service';
@@ -41,7 +40,7 @@ import { Router } from '@angular/router';
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage implements AfterViewInit, OnDestroy, OnInit {
+export class HomePage implements OnDestroy, OnInit {
   speechRecogEnabled: boolean = false;
   userLoggedIn: boolean = false;
   audioOn: boolean = true;
@@ -132,15 +131,11 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
     const self = this;
     if(self.geoLocationAnimatedService){
       let waitTime=setTimeout(async()=>{
-        await self.geoLocationAnimatedService!.startWatchingPosition();
+        await self.geoLocationAnimatedService?.startWatchingPosition();
         //clearTimeout(waitTime);
       },environment.gpsSettings.timeBetweenRealAndSimulation);
         
     }
-  }
-
-  ngOnInit() {
-
   }
 
   private initSubscriptions() {
@@ -254,7 +249,7 @@ export class HomePage implements AfterViewInit, OnDestroy, OnInit {
 
 
   
-  ngAfterViewInit() {
+  ngOnInit() {
     (window as any).startOdometer();
     (window as any).mapService = this.mapService;
     (window as any).geoLocationService = this.geoLocationService;

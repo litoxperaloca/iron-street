@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-//import { FirebaseService } from './services/firebase.service';
 import { PreferencesService } from './services/preferences.service';
 import { Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
 import { DeviceDataService } from './services/device-data.service';
-import { PathLocationStrategy } from '@angular/common';
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -61,12 +59,9 @@ export class AppComponent {
     public platform: Platform,
     private translate: TranslateService,
     private router: Router,
-    private modalController: ModalController,
     private deviceDataService:DeviceDataService,
-    private location: PathLocationStrategy
     //private firebaseService: FirebaseService
     ) {
-      this.handleBrowserBackButton();
     // Establece el idioma predeterminado
     this.platform.ready().then(async () => {
       //this.firebaseService.startApp();
@@ -91,52 +86,7 @@ export class AppComponent {
   }
 
 
-  handleBrowserBackButton() {
-    this.location.onPopState(() => {
-      // Aquí controlas lo que quieres hacer cuando el usuario presiona "Back" en el navegador.
-      //console.log('Navegación hacia atrás detectada!');
-      // Prevenir navegación atrás con return false o manejando con Router.
-      return false;
-    });
-  }
-/* 
-  async initializeBackButtonHandlers(): Promise<void> {
-    // Manejar el botón físico de retroceso en Android
-    this.platform.backButton.subscribeWithPriority(10, async (processNextHandler) => {
-      const modal = await this.modalController.getTop();  // Verificar si hay un modal activo
-
-      if (modal) {
-        // Si hay un modal abierto, cerrarlo en lugar de retroceder en la navegación
-        await modal.dismiss();
-      } else {
-        const currentUrl = this.router.url;  // Obtener la URL de la página actual
-
-        if (currentUrl === '/home') {
-          // Si estás en la página de inicio, por ejemplo, puedes salir de la app o mostrar una confirmación
-          //App.exitApp();  // O mostrar un modal de confirmación para salir
-        } else {
-          // Si no estás en la página principal, permitir la acción de retroceso
-          processNextHandler();
-        }
-      }
-    });
-
-    // Manejar el botón de retroceso en el navegador (para PWAs)
-    window.onpopstate = async (event) => {
-      event.preventDefault(); 
-      const modal = await this.modalController.getTop();  // Verificar si hay un modal activo
-
-      if (modal) {
-        // Si hay un modal abierto, cerrarlo en lugar de retroceder
-        await modal.dismiss();
-      } else {
-        // Si no hay modal, permitir la navegación hacia atrás
-        //window.history.back();
-      }
-    };
-  } */
-
-  async toggleTheme() {
+ async toggleTheme() {
     await this.preferencesService.toggleTheme();
   }
 

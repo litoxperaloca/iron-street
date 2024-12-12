@@ -2,7 +2,7 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { ValhallaDirectionsApiService } from '../valhalla-directions-api.service';
 import { MapService } from '../map.service';
 import { GeoLocationAnimatedService } from '../geo-location-animated.service';
-import { Feature, FeatureCollection, LineString } from '@turf/helpers';
+import { Feature, FeatureCollection, LineString } from 'geojson';
 import * as turf from '@turf/turf';
 import polyline from '@mapbox/polyline';
 import mapboxgl from 'mapbox-gl';

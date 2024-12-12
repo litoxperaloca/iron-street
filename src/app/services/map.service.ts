@@ -1,26 +1,20 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import polyline from '@mapbox/polyline';
 import * as turf from '@turf/turf';
-import {Feature,LineString} from '@turf/helpers';
+import {Feature,LineString} from 'geojson';
 
-import mapboxgl, { AnyLayer, GeoJSONFeature, LngLatBounds, MapboxGeoJSONFeature, MapEvent } from 'mapbox-gl';
+import mapboxgl, { LngLatBounds, MapboxGeoJSONFeature } from 'mapbox-gl';
 
-//import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from '@capacitor/geolocation';
 import { environment } from 'src/environments/environment';
 import { GeoLocationService } from './geo-location.service';
 import { WindowService } from "./window.service";
-//import { GeoJSON } from 'mapbox-gl';
 
-//import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-//import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import { Place, PlaceGeometry } from 'src/app/models/route.interface';
 import { HomePage } from '../pages/home/home.page';
 import { CameraService } from './camera.service';
 import { SensorService } from './sensor.service';
 import { TripService } from './trip.service';
-import { BookmarksService } from './bookmarks.service';
-import { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import { Trip,Route } from '../models/route.interface';
 import { SourceAndLayerManagerService } from './mapHelpers/source-and-layer-manager.service';
 import { TripSimulatorService } from './trip-simulator.service';
@@ -124,26 +118,7 @@ export class MapService {
       //antialias: true
     });
 
-    /*const geoControl = new mapboxgl.GeolocateControl({
-      positionOptions: {
-          enableHighAccuracy: true
-      },
-      // When active the map will receive updates to the device's location as it changes.
-      trackUserLocation: true,
-      // Draw an arrow next to the location dot to indicate which direction the device is heading.
-      showUserHeading: true
-  });*/
- /* geoControl.on('geolocate', (event) => {
-        console.log('A geolocate event has occurred.', event);
-    });
-
-    map.addControl(
-      geoControl,
-      'bottom-right'
-    );*/
-
-
-    const MapboxDirections: any = require('@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions');
+      const MapboxDirections: any = require('@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions');
     const directions: any = new MapboxDirections(environment.mapboxControlDirectionsConfig);
 
     map.addControl(
@@ -154,6 +129,10 @@ export class MapService {
     this.mapControls.directions = directions;
 
     this.mapbox = map;
+
+    map.on('error', (e) => {
+      console.error('Error en Mapbox:', e);
+    });
 
     map.on('load', () => {
       //map.setTerrain(undefined);

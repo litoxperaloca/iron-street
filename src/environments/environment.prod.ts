@@ -511,7 +511,6 @@ export const environment = {
     accessToken: 'pk.eyJ1IjoibGl0b3hwZXJhbG9jYSIsImEiOiJjbGc3ZW95OGQwNXRtM2V0bHM3ZTcwajVmIn0.rZXdOoZoUFuJ2K4eFyxamg',
     container: 'mapbox',
     style: "mapbox://styles/mapbox/standard",
-    //style: "mapbox://styles/litoxperaloca/clun8375j04km01nwcqa93oq7",
     zoom: 0,
     minZoom: 0,
     center: [0, 0],

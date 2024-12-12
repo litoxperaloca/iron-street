@@ -62,7 +62,6 @@
     </ion-card>
   <div class="odometer-container-cash">
            
-      <!--<ion-icon color="success" name="cash-outline" size="small"></ion-icon> -->
     <span class='odometer dollars'>U$D</span> <div class="odometer odometer-theme-digital odometer-animating-down odometer-animating"></div>
   </div>
     <ion-card class="card_stats" id="card_stats">
@@ -91,7 +90,7 @@
 
       <ion-fab id="fab-map-controls" slot="fixed" vertical="bottom" size="small" horizontal="start">
 
-        <ion-fab-button *ngIf="isNative" color="light" (click)="toggleSpeechRecognition()">
+        <ion-fab-button id="microphoneButton" *ngIf="isNative" color="light" (click)="toggleSpeechRecognition()">
           <ion-icon color="danger" name="mic-outline"></ion-icon>
         </ion-fab-button>
 
@@ -113,19 +112,12 @@
         <ion-fab-button color="light" (click)="openModal('UserMarkerSettings')">
           <ion-icon color="danger" name="car-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button *ngIf="audioOn" color="light" (click)="toggleAudio()">
+        <ion-fab-button id="speakerButton" *ngIf="audioOn" color="light" (click)="toggleAudio()">
           <ion-icon color="warning" name="volume-high-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button *ngIf="!audioOn" color="light" (click)="toggleAudio()">
+        <ion-fab-button id="speakerButton" *ngIf="!audioOn" color="light" (click)="toggleAudio()">
           <ion-icon color="warning" name="volume-mute-outline"></ion-icon>
         </ion-fab-button>
-        
-        <!--<ion-fab-button color="light" (click)="openModal('CalibrateApp')">
-          <ion-icon color="success" name="car-outline"></ion-icon>
-        </ion-fab-button>
-        <ion-fab-button color="light" (click)="openModal('Debug')">
-          <ion-icon color="success" name="bug-outline"></ion-icon>
-        </ion-fab-button>-->
       </ion-fab>
     </div>
 </div>

@@ -11,7 +11,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-            "builder": "@angular-devkit/build-angular:browser-esbuild",
+            "builder": "@angular-devkit/build-angular:browser",
             "options": {
             "outputPath": "www",
             "index": "src/index.html",
@@ -21,8 +21,6 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "serviceWorker": true,
-            "ngswConfigPath": "ngsw-config.json",
             "assets": [
               {
                 "glob": "**/*",
@@ -34,13 +32,11 @@
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
               },
-              "src/manifest.webmanifest",
               "src/assets"
             ],
             "styles": [
               "src/global.scss", 
               "src/theme/variables.scss", 
-              "src/mapbox-gl.scss",
               "src/mapbox-gl-directions.scss",
               "src/threebox.scss",
               "src/odometer.scss"
@@ -49,12 +45,6 @@
               "src/threebox.js",
               "src/odometer.js"
             ],
-            "optimization": true,
-            "sourceMap": false,
-            "namedChunks": true,
-            "vendorChunk": false,
-            "buildOptimizer": true,
-            "aot": true,
             "allowedCommonJsDependencies": [
                 "camelcase-keys",
                 "geojson-equality",
@@ -72,11 +62,12 @@
           },
           "configurations": {
             "production": {
+              "optimization": true,
+              "aot": true,
               "sourceMap": false,
-              "namedChunks": true,
+              "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "aot": true,
               "budgets": [
                 {
                   "type": "initial",

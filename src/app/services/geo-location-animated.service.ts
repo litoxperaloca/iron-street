@@ -137,9 +137,9 @@ export class GeoLocationAnimatedService {
   // Inicia la observación de la posición del usuario
   public async  startWatchingPosition():Promise<void> {
     const self:GeoLocationAnimatedService = this;
-    if(!self.geoLocPermIsOk){
+   // if(!self.geoLocPermIsOk){
       self.geoLocPermIsOk  = await self.requestPermissions();
-    }
+    //}
 
     if(self.geoLocPermIsOk){
       // Inicia el watchPosition

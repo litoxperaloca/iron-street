@@ -608,7 +608,20 @@ ion-title.title-default.hydrated {
     margin-bottom:15 px !important;
   }
 
- 
+  app-user-marker-settings-modal {
+    ion-row {
+      display: ruby;
+      margin: 0 auto;
+      padding: 4.5%;
+    }
+    
+    ion-col {
+      width: 14% !important;
+      /* height: 100px !important; */
+      margin-left: 5px;
+      margin-right: 5px;
+    }
+  }
  
 
   #cadillacBack {

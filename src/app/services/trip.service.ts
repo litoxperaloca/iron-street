@@ -7,7 +7,8 @@ import { Subject } from 'rxjs';
 import { TrafficAlertService } from './traffic-alert-service';
 import { environment } from 'src/environments/environment';
 import { Route,Trip } from 'src/app/models/route.interface';
-import { Feature, LineString, lineString, point } from '@turf/helpers';
+import { Feature, LineString} from 'geojson';
+import { lineString, point } from '@turf/helpers';
 import { nearestPointOnLine, pointToLineDistance } from '@turf/turf';
 import polyline from '@mapbox/polyline';
 

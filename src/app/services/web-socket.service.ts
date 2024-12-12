@@ -12,6 +12,7 @@ export class WebSocketService {
   // Método para conectar al WebSocket (devuelve una promesa)
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
+      this.isManuallyClosed=false;
       const wsUrl = `wss://geov2.ironstreet.com.uy`;
       this.webSocket = new WebSocket(wsUrl);
 

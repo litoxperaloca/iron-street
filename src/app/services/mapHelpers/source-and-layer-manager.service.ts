@@ -1,4 +1,4 @@
-import { Injectable, ɵtruncateMiddle } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MapService } from '../map.service';
 import { environment } from 'src/environments/environment';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
@@ -9,7 +9,6 @@ import mapboxgl, { AnyLayer, GeoJSONFeature, LngLatBounds, MapboxGeoJSONFeature,
 import { lineString } from '@turf/helpers';
 import length from '@turf/length';
 import { along } from '@turf/turf';
-import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'

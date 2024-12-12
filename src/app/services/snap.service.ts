@@ -1,21 +1,19 @@
 import { Injectable } from '@angular/core';
 import { Position } from '@capacitor/geolocation';
 import distance from '@turf/distance';
-import { Feature, LineString, lineString, point } from '@turf/helpers';
-import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import { Feature, LineString} from 'geojson';
+import {lineString, point } from '@turf/helpers';
 import { MapboxGeoJSONFeature } from 'mapbox-gl';
 import { GeoLocationService } from './geo-location.service';
 import { MapService } from './map.service';
 import { OsmService } from './osm.service';
 import { SensorService } from './sensor.service';
-import { retry } from 'rxjs';
 import { MapboxService } from './mapbox.service';
 import { TrafficAlertService } from './traffic-alert-service';
 import { HomePage } from '../pages/home/home.page';
 import {bearing} from "@turf/turf";
 import { SpeedService } from './speed.service';
 import { environment } from 'src/environments/environment';
-import { trace } from 'node:console';
 import { TripService } from './trip.service';
 //import distance from '@turf/distance';
 interface Way {
