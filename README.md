@@ -1,6 +1,8 @@
 Iron Street: "Todos somos parte del tránsito, seamos todos parte de la solución"
 Aplicación de navegación GPS híbrida y progresiva (PWA) de última generación.
 
+<a href="https://ironplatform.com.uy/ironplatformv1/ironstreet/">LANDPAGE DEL PROYECTO</a>
+<a href="https://ironstreet.com.uy">VERSION WEB FUNCIONANDO PARA LANZAMIENTO EN URUGUAY</a>
 <a href="https://g.co/gemini/share/ab08f3149454">ANALISIS Y REPORTE TECNICO SOBRE ESTA APP</a>
 
 Problema que intenta resolver: 
