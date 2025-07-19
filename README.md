@@ -1,6 +1,8 @@
 Iron Street: "Todos somos parte del tránsito, seamos todos parte de la solución"
 Aplicación de navegación GPS híbrida y progresiva (PWA) de última generación.
 
+<a href="https://g.co/gemini/share/ab08f3149454">ANALISIS Y REPORTE TECNICO SOBRE ESTA APP</a>
+
 Problema que intenta resolver: 
   tránsito y seguridad vial. 
   Disminuir los accidentes de tránsito
